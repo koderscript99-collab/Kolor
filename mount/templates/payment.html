@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* TOP NAV */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 32px;
+            border-bottom: 1.5px solid #e5e7eb;
+            position: sticky; top: 0;
+            background: #fff; z-index: 100;
+        }
+
+        .brand-name {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 15px;
+        }
+
+        .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+
+        /* MAIN LAYOUT */
+        .container {
+            display: flex; gap: 24px;
+            padding: 28px 32px;
+            max-width: 1200px; margin: 0 auto;
+        }
+
+        .left  { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+        .right { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+        /* CARD */
+        .card {
+            background: #fff; border-radius: 16px;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+            padding: 28px 24px;
+        }
+
+        .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
+        .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+
+        /* PROFILE CARD */
+        .profile-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            border-radius: 16px; border: none;
+            box-shadow: 0 4px 24px rgba(0,0,0,.12);
+            padding: 28px 24px; color: white;
+        }
+
+        .profile-card .label {
+            font-size: 11px; font-weight: 600; color: #7dd3fc;
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px;
+        }
+        .profile-card .value { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 12px; }
+        .profile-username    { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 16px; }
+        .balance-label       { font-size: 11px; font-weight: 700; color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.8px; }
+        .balance-amount      { font-size: 30px; font-weight: 900; color: #fff; margin-top: 4px; letter-spacing: -0.5px; }
+        .divider             { height: 1px; background: rgba(255,255,255,.1); margin: 16px 0; }
+
+        /* INFO CARD */
+        .info-item { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .info-item:last-child { margin-bottom: 0; }
+        .info-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px; }
+        .info-value { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-top: 2px; }
+
+        /* ALERTS */
+        .alert {
+            padding: 12px 16px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; margin-bottom: 4px;
+        }
+        .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+        /* FORM */
+        label {
+            display: block; font-size: 13px; font-weight: 700;
+            color: #374151; margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%; padding: 12px 14px;
+            background: #f9fafb; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; color: #1a1a1a;
+            font-size: 14px; font-family: 'Nunito', sans-serif;
+            font-weight: 600; outline: none;
+            transition: border-color .25s, background .2s;
+            margin-bottom: 14px;
+            appearance: none; -webkit-appearance: none;
+        }
+
+        input:focus, select:focus { border-color: #3b82f6; background: #fff; }
+        input::placeholder { color: #b0b8c4; font-weight: 400; }
+
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '▾'; position: absolute;
+            right: 14px; top: 50%; transform: translateY(-65%);
+            color: #9ca3af; pointer-events: none; font-size: 13px;
+        }
+        .select-wrap select { margin-bottom: 0; padding-right: 36px; cursor: pointer; }
+
+        .field-group { margin-bottom: 14px; }
+        .field-group label { margin-bottom: 6px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-row .field-group { margin-bottom: 0; }
+
+        /* READONLY COST FIELD */
+        .cost-input {
+            background: #f3f4f6 !important;
+            color: #6b7280 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* BUTTON */
+        .btn-send {
+            width: 100%; padding: 13px; border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+            color: white; font-size: 15px; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer;
+            margin-top: 6px; transition: opacity .2s, transform .15s;
+            letter-spacing: 0.3px;
+        }
+        .btn-send:hover   { opacity: .9; transform: translateY(-1px); }
+        .btn-send:active  { transform: translateY(0); }
+
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            padding: 0 10px 12px; text-align: left;
+            border-bottom: 1.5px solid #e5e7eb;
+        }
+        tbody td {
+            padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
+            font-size: 13px; font-weight: 600; color: #374151;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #f9fafb; }
+
+        .tag {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: 700;
+            text-transform: capitalize; letter-spacing: 0.3px;
+        }
+        .deposit  { background: #dcfce7; color: #15803d; }
+        .withdraw { background: #fee2e2; color: #dc2626; }
+        .transfer { background: #dbeafe; color: #1d4ed8; }
+        .data     { background: #fef9c3; color: #854d0e; }
+
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
+        .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .status-pill.successful::before { background:#22c55e; }
+        .status-pill.pending::before    { background:#f59e0b; }
+        .status-pill.failed::before     { background:#ef4444; }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            display: none;
+            position: fixed; bottom: 0; width: 100%;
+            background: white; border-top: 1.5px solid #e5e7eb;
+            justify-content: space-around;
+            padding: 10px 0 6px; z-index: 100;
+        }
+        .bottom-nav a {
+            text-decoration: none; color: #9ca3af;
+            font-size: 11px; font-weight: 700;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 3px;
+        }
+        .bottom-nav a.active { color: #3b82f6; }
+        .bottom-nav .nav-icon { font-size: 20px; }
+
+        @media (max-width: 860px) {
+            .container { flex-direction: column; padding: 20px 16px 90px; }
+            .left { width: 100%; }
+            .form-row { grid-template-columns: 1fr; }
+            .bottom-nav { display: flex; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+    <div class="brand-name">kolor</div>
+    <div class="topbar-right">
+        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span class="user-name">{{ user.username }}</span>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- LEFT PANEL -->
+    <aside class="left">
+
+        <div class="profile-card">
+            <div class="profile-username">{{ user.username }}</div>
+            <div class="label">Email</div>
+            <div class="value">{{ user.email }}</div>
+            <div class="label">Phone</div>
+            <div class="value">{{ detail.phone_number|default:"—" }}</div>
+            <div class="label">Account No.</div>
+            <div class="value">{{ account.account_number }}</div>
+            <div class="divider"></div>
+            <div class="balance-label">Available Balance</div>
+            <div class="balance-amount">₦ {{ account.balance }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Bank Info</div>
+            <div class="card-sub">Your linked account details</div>
+            <div class="info-item">
+                <span class="info-label">Bank</span>
+                <span class="info-value">{{ account.bank_name|default:"—" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Virtual Account</span>
+                <span class="info-value">{{ account.virtual_account_number|default:"—" }}</span>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="right">
+
+        <!-- DJANGO MESSAGES -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- TRANSACTION CARD -->
+        <div class="card">
+            <div class="card-title">Make a Transaction</div>
+            <div class="card-sub">Deposit, withdraw or transfer funds instantly.</div>
+
+            <form method="POST" action="{% url 'transaction' %}">
+                {% csrf_token %}
+
+                <div class="form-row">
+                    <div class="field-group">
+                        <label>Amount (₦)</label>
+                        <input type="number" name="amount" placeholder="0.00" min="1" required>
+                    </div>
+                    <div class="field-group">
+                        <label>Transaction Type</label>
+                        <div class="select-wrap">
+                            <select name="transaction_type" id="tx_type" onchange="toggleReceiverField()">
+                                <option value="deposit">Deposit</option>
+                                <option value="withdraw">Withdraw</option>
+                                <option value="transfer">Transfer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Only shown for transfer -->
+                <div class="field-group" id="receiver_field" style="display:none;">
+                    <label>Recipient Account Number</label>
+                    <input type="text" name="receiver" placeholder="10-digit account number" maxlength="10">
+                </div>
+
+                <button class="btn-send" type="submit">Submit Transaction</button>
+            </form>
+        </div>
+
+        <!-- BUY DATA CARD -->
+        <div class="card">
+            <div class="card-title">Buy Data</div>
+            <div class="card-sub">Top up data for any Nigerian network.</div>
+
+            <form method="POST" action="{% url 'buy_data' %}">
+                {% csrf_token %}
+
+                <div class="form-row">
+                    <div class="field-group">
+                        <label>Network</label>
+                        <div class="select-wrap">
+                            <select name="network" id="network" onchange="updatePlans()">
+                                <option value="MTN">MTN</option>
+                                <option value="GLO">Glo</option>
+                                <option value="AIRTEL">Airtel</option>
+                                <option value="9MOBILE">9mobile</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone_number"
+                               placeholder="08XXXXXXXXX" maxlength="11" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Data Plan</label>
+                    <div class="select-wrap">
+                        <!-- product_code value = real ClubKonnect plan ID e.g. "500.0" -->
+                        <select name="product_code" id="product_code" onchange="updateCost()"></select>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Cost</label>
+                    <input type="text" id="plan_cost" class="cost-input"
+                           readonly placeholder="Select a plan">
+                </div>
+
+                <button class="btn-send" type="submit">Purchase Data</button>
+            </form>
+        </div>
+
+        <!-- TRANSACTION HISTORY -->
+        <div class="card">
+            <div class="card-title">Recent Transactions</div>
+            <div class="card-sub">Your latest account activity.</div>
+
+            {% if transactions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td><span class="tag {{ t.transaction_type }}">{{ t.transaction_type }}</span></td>
+                        <td>₦ {{ t.amount }}</td>
+                        <td><span class="status-pill {{ t.status }}">{{ t.status|title }}</span></td>
+                        <td>{{ t.created_at|date:"d M, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="text-align:center;color:#9ca3af;font-size:13px;padding:24px 0;">
+                No transactions yet.
+            </p>
+            {% endif %}
+        </div>
+
+    </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <a href="/home/"><span class="nav-icon">🏠</span>Home</a>
+    <a href="/payment/" class="active"><span class="nav-icon">💳</span>Payment</a>
+    <a href="/market/"><span class="nav-icon">🛍️</span>Market</a>
+    <a href="/report/"><span class="nav-icon">📊</span>Reports</a>
+</div>
+
+<script>
+    // ── Real ClubKonnect plans injected from Django view ──
+    const plans = {{ data_plans_json|safe }};
+
+    function updatePlans() {
+        const network = document.getElementById("network").value;
+        const select  = document.getElementById("product_code");
+        select.innerHTML = "";
+
+        (plans[network] || []).forEach(p => {
+            const opt         = document.createElement("option");
+            opt.value         = p.id;        // real ClubKonnect ID e.g. "500.0"
+            opt.textContent   = `${p.label} — ₦${p.amount.toLocaleString()}`;
+            opt.dataset.price = p.amount;
+            select.appendChild(opt);
+        });
+
+        updateCost();
+    }
+
+    function updateCost() {
+        const select   = document.getElementById("product_code");
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.dataset.price) {
+            document.getElementById("plan_cost").value =
+                "₦" + Number(selected.dataset.price).toLocaleString();
+        }
+    }
+
+    function toggleReceiverField() {
+        const type  = document.getElementById("tx_type").value;
+        const field = document.getElementById("receiver_field");
+        field.style.display = type === "transfer" ? "block" : "none";
+    }
+
+    // Initialise on load
+    updatePlans();
+    toggleReceiverField();
+</script>
+
+</body>
+</html>

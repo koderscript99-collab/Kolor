@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kolor - Deposit</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .brand-name {
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      padding: 36px 32px;
+      border-radius: 16px;
+      border: 1.5px solid #e5e7eb;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    /* ── Balance pill ── */
+    .balance-pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f0f7ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+
+    .balance-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .balance-value {
+      font-size: 18px;
+      font-weight: 900;
+      color: #3b82f6;
+    }
+
+    /* ── Messages ── */
+    .messages {
+      margin-bottom: 16px;
+    }
+
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .msg.error {
+      background: #fef2f2;
+      border: 1.5px solid #fecaca;
+      color: #dc2626;
+    }
+
+    .msg.success {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      color: #16a34a;
+    }
+
+    /* ── Label ── */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    /* ── Amount input ── */
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      font-weight: 900;
+      color: #3b82f6;
+      pointer-events: none;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 14px 16px 14px 36px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      color: #1a1a1a;
+      font-size: 22px;
+      font-weight: 900;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: #3b82f6;
+      background: #fff;
+    }
+
+    input[type="number"]::placeholder {
+      color: #b0b8c4;
+      font-size: 18px;
+    }
+
+    /* ── Quick amounts ── */
+    .quick-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .quick-amounts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .quick-btn {
+      padding: 10px 4px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .quick-btn:hover {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .quick-btn.active {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: #dbeafe;
+    }
+
+    /* ── Submit button — exact same as report.html ── */
+    .btn-send {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-send:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-send:active {
+      transform: translateY(0);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 20px 0;
+    }
+
+    /* ── Flutterwave footer ── */
+    .flw-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 600;
+    }
+
+    .flw-name {
+      font-weight: 900;
+      color: #f5a623;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: #3b82f6; }
+
+    /* ── Redirect overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.93);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .overlay-text {
+      font-size: 16px;
+      font-weight: 900;
+      color: #1a1a1a;
+    }
+
+    .overlay-sub {
+      font-size: 13px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-align: center;
+      max-width: 240px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-wrap">
+    <div class="brand-name">kolor</div>
+  </div>
+
+  <div class="card">
+
+    <a href="{% url 'home' %}" class="back-link">← Back to dashboard</a>
+
+    <div class="card-title">Fund Wallet</div>
+    <div class="card-sub">Enter an amount and pay securely via Flutterwave.</div>
+
+    {% if account %}
+    <div class="balance-pill">
+      <span class="balance-label">Current Balance</span>
+      <span class="balance-value">₦{{ account.balance|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="msg {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'deposit' %}" id="depositForm">
+      {% csrf_token %}
+
+      <label for="amount">Amount (NGN)</label>
+      <div class="input-wrap">
+        <span class="currency-symbol">₦</span>
+        <input
+          type="number"
+          id="amount"
+          name="amount"
+          placeholder="0.00"
+          min="100"
+          step="any"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="quick-label">Quick amounts</div>
+      <div class="quick-amounts">
+        <button type="button" class="quick-btn" data-val="500">₦500</button>
+        <button type="button" class="quick-btn" data-val="1000">₦1k</button>
+        <button type="button" class="quick-btn" data-val="5000">₦5k</button>
+        <button type="button" class="quick-btn" data-val="10000">₦10k</button>
+      </div>
+
+      <button type="submit" class="btn-send" id="submitBtn">
+        Proceed to Payment
+      </button>
+    </form>
+
+    <div class="divider"></div>
+
+    <div class="flw-footer">
+      🔒 Secured &amp; powered by <span class="flw-name">Flutterwave</span>
+    </div>
+
+  </div>
+
+  <!-- Redirect overlay -->
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <div class="overlay-text">Redirecting to Flutterwave…</div>
+    <div class="overlay-sub">Please wait while we prepare your secure payment page.</div>
+  </div>
+
+  <script>
+    // Quick amount buttons
+    const amountInput = document.getElementById('amount');
+    const quickBtns = document.querySelectorAll('.quick-btn');
+
+    quickBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        amountInput.value = btn.dataset.val;
+        quickBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    amountInput.addEventListener('input', () => {
+      quickBtns.forEach(b => {
+        b.classList.toggle('active', b.dataset.val === amountInput.value);
+      });
+    });
+
+    // Show overlay on submit
+    const form = document.getElementById('depositForm');
+    const overlay = document.getElementById('overlay');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', () => {
+      const val = parseFloat(amountInput.value);
+      if (!val || val < 100) return;
+      overlay.classList.add('show');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing…';
+    });
+  </script>
+
+</body>
+</html>

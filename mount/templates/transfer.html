@@ -1,0 +1,22 @@
+<!-- TRANSFER CARD — add this to payment.html right panel -->
+<div class="card">
+    <div class="card-title">Transfer Funds</div>
+    <div class="card-sub">Send money to another Kolor account instantly.</div>
+
+    <form method="POST" action="{% url 'transfer' %}">
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div class="field-group">
+                <label>Recipient Account Number</label>
+                <input type="text" name="receiver" placeholder="10-digit account number" maxlength="10" required>
+            </div>
+            <div class="field-group">
+                <label>Amount (₦)</label>
+                <input type="number" name="amount" placeholder="0.00" min="1" required>
+            </div>
+        </div>
+
+        <button class="btn-send" type="submit">Send Money →</button>
+    </form>
+</div>

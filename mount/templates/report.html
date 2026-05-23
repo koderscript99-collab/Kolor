@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kolor - Report</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .logo-wrap {
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .brand-name {
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+  }
+
+  .card {
+    background: #fff;
+    width: 100%;
+    max-width: 480px;
+    padding: 36px 32px;
+    border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .card-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 24px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 160px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    color: #1a1a1a;
+    font-size: 15px;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    resize: none;
+    transition: border-color 0.25s;
+    line-height: 1.6;
+  }
+
+  textarea::placeholder {
+    color: #b0b8c4;
+  }
+
+  textarea:focus {
+    border-color: #3b82f6;
+    background: #fff;
+  }
+
+  .btn-send {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-send:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .btn-send:active {
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <div class="logo-wrap">
+    <div class="brand-name">kolor</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Report</div>
+    <div class="card-sub">Describe the issue and we'll look into it.</div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <textarea name="message" placeholder="Write your report here..." required></textarea>
+      <button class="btn-send" type="submit">Send Report</button>
+    </form>
+  </div>
+
+</body>
+</html>
