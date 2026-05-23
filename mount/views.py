@@ -97,6 +97,164 @@ def logout_view(request):
 
 
 # =========================
+# CLUBKONNECT DATA PLANS
+# (defined here so payment view can access DATA_PLANS)
+# =========================
+
+NETWORK_CODES = {
+    "MTN":     "01",
+    "GLO":     "02",
+    "AIRTEL":  "04",
+    "9MOBILE": "03",
+}
+
+DATA_PLANS = {
+    "MTN": [
+        {"id": "500.0",     "label": "500MB - 7 days (SME)",           "amount": 305},
+        {"id": "1000.0",    "label": "1GB - 7 days (SME)",             "amount": 567},
+        {"id": "2000.0",    "label": "2GB - 7 days (SME)",             "amount": 1134},
+        {"id": "3000.0",    "label": "3GB - 7 days (SME)",             "amount": 1659},
+        {"id": "5000.0",    "label": "5GB - 7 days (SME)",             "amount": 2540},
+        {"id": "100.01",    "label": "110MB - 1 day (Awoof)",          "amount": 100},
+        {"id": "200.01",    "label": "230MB - 1 day (Awoof)",          "amount": 200},
+        {"id": "350.01",    "label": "500MB - 1 day (Awoof)",          "amount": 350},
+        {"id": "500.01",    "label": "1GB Daily + 1.5mins (Awoof)",    "amount": 500},
+        {"id": "750.01",    "label": "2.5GB - 1 day (Awoof)",          "amount": 750},
+        {"id": "900.01",    "label": "2.5GB - 2 days (Awoof)",         "amount": 900},
+        {"id": "1000.01",   "label": "3.2GB - 2 days (Awoof)",         "amount": 1000},
+        {"id": "500.02",    "label": "500MB - 7 days (Direct)",        "amount": 500},
+        {"id": "800.01",    "label": "1GB - 7 days (Direct)",          "amount": 800},
+        {"id": "1000.03",   "label": "1.5GB - 7 days (Direct)",        "amount": 1000},
+        {"id": "1500.03",   "label": "3.5GB - 7 days (Direct)",        "amount": 1500},
+        {"id": "2500.01",   "label": "6GB - 7 days (Direct)",          "amount": 2500},
+        {"id": "3500.01",   "label": "11GB - 7 days (Direct)",         "amount": 3500},
+        {"id": "5000.01",   "label": "20GB - 7 days (Direct)",         "amount": 5000},
+        {"id": "1500.02",   "label": "2GB+2mins - 30 days (Direct)",   "amount": 1500},
+        {"id": "2000.01",   "label": "2.7GB+2mins - 30 days (Direct)", "amount": 2000},
+        {"id": "2500.02",   "label": "3.5GB+5mins - 30 days (Direct)", "amount": 2500},
+        {"id": "3500.02",   "label": "7GB - 30 days (Direct)",         "amount": 3500},
+        {"id": "4500.01",   "label": "10GB+10mins - 30 days (Direct)", "amount": 4500},
+        {"id": "5500.01",   "label": "12.5GB - 30 days (Direct)",      "amount": 5500},
+        {"id": "6500.01",   "label": "16.5GB - 30 days (Direct)",      "amount": 6500},
+        {"id": "7500.01",   "label": "20GB - 30 days (Direct)",        "amount": 7500},
+        {"id": "9000.01",   "label": "25GB - 30 days (Direct)",        "amount": 9000},
+        {"id": "11000.01",  "label": "36GB - 30 days (Direct)",        "amount": 11000},
+        {"id": "18000.01",  "label": "75GB - 30 days (Direct)",        "amount": 18000},
+        {"id": "35000.01",  "label": "165GB - 30 days (Direct)",       "amount": 35000},
+        {"id": "40000.01",  "label": "150GB - 60 days (Direct)",       "amount": 40000},
+        {"id": "90000.03",  "label": "480GB - 90 days (Direct)",       "amount": 90000},
+    ],
+    "GLO": [
+        {"id": "200",       "label": "200MB - 14 days (SME)",          "amount": 94},
+        {"id": "500",       "label": "500MB - 7 days (SME)",           "amount": 235},
+        {"id": "1000.11",   "label": "1GB - 3 days (SME)",             "amount": 282},
+        {"id": "3000.11",   "label": "3GB - 3 days (SME)",             "amount": 846},
+        {"id": "5000.11",   "label": "5GB - 3 days (SME)",             "amount": 1410},
+        {"id": "1000.12",   "label": "1GB - 7 days (SME)",             "amount": 329},
+        {"id": "3000.12",   "label": "3GB - 7 days (SME)",             "amount": 987},
+        {"id": "5000.12",   "label": "5GB - 7 days (SME)",             "amount": 1645},
+        {"id": "1000.21",   "label": "1GB Night - 14 days (SME)",      "amount": 329},
+        {"id": "3000.21",   "label": "3GB Night - 14 days (SME)",      "amount": 987},
+        {"id": "5000.21",   "label": "5GB Night - 14 days (SME)",      "amount": 1645},
+        {"id": "10000.21",  "label": "10GB Night - 14 days (SME)",     "amount": 3290},
+        {"id": "1000",      "label": "1GB - 30 days (SME)",            "amount": 470},
+        {"id": "2000",      "label": "2GB - 30 days (SME)",            "amount": 940},
+        {"id": "3000",      "label": "3GB - 30 days (SME)",            "amount": 1410},
+        {"id": "5000",      "label": "5GB - 30 days (SME)",            "amount": 2350},
+        {"id": "10000",     "label": "10GB - 30 days (SME)",           "amount": 4700},
+        {"id": "100.01",    "label": "125MB - 1 day (Awoof)",          "amount": 100},
+        {"id": "200.01",    "label": "260MB - 2 days (Awoof)",         "amount": 200},
+        {"id": "500.01",    "label": "1.5GB - 14 days (Direct)",       "amount": 500},
+        {"id": "1000.01",   "label": "2.6GB - 30 days (Direct)",       "amount": 1000},
+        {"id": "1500.01",   "label": "5GB - 30 days (Direct)",         "amount": 1500},
+        {"id": "2000.01",   "label": "6.15GB - 30 days (Direct)",      "amount": 2000},
+        {"id": "2500.01",   "label": "7.5GB - 30 days (Direct)",       "amount": 2500},
+        {"id": "3000.01",   "label": "10GB - 30 days (Direct)",        "amount": 3000},
+        {"id": "4000.01",   "label": "12.5GB - 30 days (Direct)",      "amount": 4000},
+        {"id": "5000.01",   "label": "16GB - 30 days (Direct)",        "amount": 5000},
+        {"id": "8000.01",   "label": "28GB - 30 days (Direct)",        "amount": 8000},
+        {"id": "10000.01",  "label": "38GB - 30 days (Direct)",        "amount": 10000},
+        {"id": "15000.01",  "label": "64GB - 30 days (Direct)",        "amount": 15000},
+        {"id": "20000.01",  "label": "107GB - 30 days (Direct)",       "amount": 20000},
+        {"id": "500.02",    "label": "2GB - 1 day (Awoof)",            "amount": 500},
+        {"id": "1500.02",   "label": "6GB - 7 days (Direct)",          "amount": 1500},
+        {"id": "500.03",    "label": "2.5GB Weekend [Sat&Sun] (Awoof)","amount": 500},
+        {"id": "200.02",    "label": "875MB Weekend [Sun] (Awoof)",    "amount": 200},
+        {"id": "30000.01",  "label": "165GB - 30 days (Direct)",       "amount": 30000},
+        {"id": "36000.01",  "label": "220GB - 30 days (Direct)",       "amount": 40000},
+        {"id": "50000.01",  "label": "320GB - 30 days (Direct)",       "amount": 50000},
+        {"id": "60000.01",  "label": "380GB - 30 days (Direct)",       "amount": 60000},
+        {"id": "75000.01",  "label": "475GB - 30 days (Direct)",       "amount": 75000},
+        {"id": "150000.03", "label": "1TB - 365 days (Direct)",        "amount": 150000},
+    ],
+    "AIRTEL": [
+        {"id": "499.91",    "label": "1GB - 1 day (Awoof)",            "amount": 500},
+        {"id": "599.91",    "label": "1.5GB - 2 days (Awoof)",         "amount": 600},
+        {"id": "749.91",    "label": "2GB - 2 days (Awoof)",           "amount": 750},
+        {"id": "999.91",    "label": "3GB - 2 days (Awoof)",           "amount": 1000},
+        {"id": "1499.91",   "label": "5GB - 2 days (Awoof)",           "amount": 1500},
+        {"id": "499.92",    "label": "500MB - 7 days (Direct)",        "amount": 500},
+        {"id": "799.91",    "label": "1GB - 7 days (Direct)",          "amount": 800},
+        {"id": "999.92",    "label": "1.5GB - 7 days (Direct)",        "amount": 1000},
+        {"id": "1499.92",   "label": "3.5GB - 7 days (Direct)",        "amount": 1500},
+        {"id": "2499.91",   "label": "6GB - 7 days (Direct)",          "amount": 2500},
+        {"id": "2999.91",   "label": "10GB - 7 days (Direct)",         "amount": 3000},
+        {"id": "4999.91",   "label": "18GB - 7 days (Direct)",         "amount": 5000},
+        {"id": "1499.93",   "label": "2GB - 30 days (Direct)",         "amount": 1500},
+        {"id": "1999.91",   "label": "3GB - 30 days (Direct)",         "amount": 2000},
+        {"id": "2499.92",   "label": "4GB - 30 days (Direct)",         "amount": 2500},
+        {"id": "2999.92",   "label": "8GB - 30 days (Direct)",         "amount": 3000},
+        {"id": "3999.91",   "label": "10GB - 30 days (Direct)",        "amount": 4000},
+        {"id": "4999.92",   "label": "13GB - 30 days (Direct)",        "amount": 5000},
+        {"id": "5999.91",   "label": "18GB - 30 days (Direct)",        "amount": 6000},
+        {"id": "7999.91",   "label": "25GB - 30 days (Direct)",        "amount": 8000},
+        {"id": "9999.91",   "label": "35GB - 30 days (Direct)",        "amount": 10000},
+        {"id": "14999.91",  "label": "60GB - 30 days (Direct)",        "amount": 15000},
+        {"id": "19999.91",  "label": "100GB - 30 days (Direct)",       "amount": 20000},
+        {"id": "29999.91",  "label": "160GB - 30 days (Direct)",       "amount": 30000},
+        {"id": "39999.91",  "label": "210GB - 30 days (Direct)",       "amount": 40000},
+        {"id": "49999.91",  "label": "300GB - 90 days (Direct)",       "amount": 50000},
+        {"id": "59999.91",  "label": "350GB - 90 days (Direct)",       "amount": 60000},
+    ],
+    "9MOBILE": [
+        {"id": "50",        "label": "50MB - 30 days (SME)",           "amount": 23},
+        {"id": "100",       "label": "100MB - 30 days (SME)",          "amount": 46},
+        {"id": "300",       "label": "300MB - 30 days (SME)",          "amount": 138},
+        {"id": "500",       "label": "500MB - 30 days (SME)",          "amount": 225},
+        {"id": "1000",      "label": "1GB - 30 days (SME)",            "amount": 450},
+        {"id": "2000",      "label": "2GB - 30 days (SME)",            "amount": 900},
+        {"id": "3000",      "label": "3GB - 30 days (SME)",            "amount": 1350},
+        {"id": "4000",      "label": "4GB - 30 days (SME)",            "amount": 1800},
+        {"id": "5000",      "label": "5GB - 30 days (SME)",            "amount": 2250},
+        {"id": "10000",     "label": "10GB - 30 days (SME)",           "amount": 4500},
+        {"id": "15000",     "label": "15GB - 30 days (SME)",           "amount": 6750},
+        {"id": "20000",     "label": "20GB - 30 days (SME)",           "amount": 9000},
+        {"id": "25000",     "label": "25GB - 30 days (SME)",           "amount": 11250},
+        {"id": "100.01",    "label": "100MB - 1 day (Awoof)",          "amount": 100},
+        {"id": "150.01",    "label": "180MB - 1 day (Awoof)",          "amount": 150},
+        {"id": "200.01",    "label": "250MB - 1 day (Awoof)",          "amount": 200},
+        {"id": "350.01",    "label": "450MB - 1 day (Awoof)",          "amount": 350},
+        {"id": "500.01",    "label": "650MB - 3 days (Awoof)",         "amount": 500},
+        {"id": "1500.01",   "label": "1.75GB - 7 days (Direct)",       "amount": 1500},
+        {"id": "600.01",    "label": "650MB - 14 days (Direct)",       "amount": 600},
+        {"id": "1000.01",   "label": "1.1GB - 30 days (Direct)",       "amount": 1000},
+        {"id": "1200.01",   "label": "1.4GB - 30 days (Direct)",       "amount": 1200},
+        {"id": "2000.01",   "label": "2.44GB - 30 days (Direct)",      "amount": 2000},
+        {"id": "2500.01",   "label": "3.17GB - 30 days (Direct)",      "amount": 2500},
+        {"id": "3000.01",   "label": "3.91GB - 30 days (Direct)",      "amount": 3000},
+        {"id": "4000.01",   "label": "5.10GB - 30 days (Direct)",      "amount": 4000},
+        {"id": "5000.01",   "label": "6.5GB - 30 days (Direct)",       "amount": 5000},
+        {"id": "12000.01",  "label": "16GB - 30 days (Direct)",        "amount": 12000},
+        {"id": "18500.01",  "label": "24.3GB - 30 days (Direct)",      "amount": 18500},
+        {"id": "20000.01",  "label": "26.5GB - 30 days (Direct)",      "amount": 20000},
+        {"id": "30000.01",  "label": "39GB - 60 days (Direct)",        "amount": 30000},
+        {"id": "60000.01",  "label": "78GB - 90 days (Direct)",        "amount": 60000},
+        {"id": "150000.01", "label": "190GB - 180 days (Direct)",      "amount": 150000},
+    ],
+}
+
+
+# =========================
 # WEB PAGES
 # =========================
 
@@ -122,6 +280,7 @@ def home(request):
     return render(request, "home.html", context)
 
 
+# ONE payment view — includes data_plans_json
 @login_required
 def payment(request):
     account      = get_or_create_account(request.user)
@@ -130,9 +289,10 @@ def payment(request):
     ).order_by("-created_at")[:10]
     detail, _ = Detail.objects.get_or_create(user=request.user)
     context = {
-        "account":      account,
-        "transactions": transactions,
-        "detail":       detail,
+        "account":         account,
+        "transactions":    transactions,
+        "detail":          detail,
+        "data_plans_json": json.dumps(DATA_PLANS),
     }
     return render(request, "payment.html", context)
 
@@ -209,7 +369,7 @@ def api_login(request):
 
 
 # =========================
-# WALLET API (withdraw via API)
+# WALLET API
 # =========================
 
 @api_view(["POST"])
@@ -313,6 +473,7 @@ def deposit(request):
 # =========================
 # PAYMENT SUCCESS
 # =========================
+
 @login_required
 def payment_success(request):
     status         = request.GET.get("status")
@@ -323,7 +484,6 @@ def payment_success(request):
         messages.error(request, "Payment was cancelled.")
         return redirect("payment")
 
-    # ← FIX: accept both "successful" and "completed"
     if status not in ("successful", "completed") or not transaction_id or not tx_ref:
         messages.error(request, "Payment incomplete. Contact support if money was deducted.")
         return redirect("payment")
@@ -354,7 +514,7 @@ def payment_success(request):
 
     if (
         data.get("status") == "success"
-        and flw_data.get("status") in ("successful", "completed")  # ← FIX here too
+        and flw_data.get("status") in ("successful", "completed")
         and flw_data.get("tx_ref") == tx_ref
     ):
         if credit_account(transaction_obj):
@@ -449,169 +609,12 @@ def transaction(request):
 
 
 # =========================
-# CLUBKONNECT DATA PURCHASE
+# CLUBKONNECT API CALL
 # =========================
-# .env variables needed:
-#   CLUBKONNECT_USER_ID=your_user_id
-#   CLUBKONNECT_API_KEY=your_api_key
-
-NETWORK_CODES = {
-    "MTN":     "01",
-    "GLO":     "02",
-    "AIRTEL":  "04",
-    "9MOBILE": "03",
-}
-
-# Real plan IDs from ClubKonnect API response
-DATA_PLANS = {
-    "MTN": [
-        {"id": "500.0",     "label": "500MB - 7 days (SME)",          "amount": 305},
-        {"id": "1000.0",    "label": "1GB - 7 days (SME)",            "amount": 567},
-        {"id": "2000.0",    "label": "2GB - 7 days (SME)",            "amount": 1134},
-        {"id": "3000.0",    "label": "3GB - 7 days (SME)",            "amount": 1659},
-        {"id": "5000.0",    "label": "5GB - 7 days (SME)",            "amount": 2540},
-        {"id": "100.01",    "label": "110MB - 1 day (Awoof)",         "amount": 100},
-        {"id": "200.01",    "label": "230MB - 1 day (Awoof)",         "amount": 200},
-        {"id": "350.01",    "label": "500MB - 1 day (Awoof)",         "amount": 350},
-        {"id": "500.01",    "label": "1GB Daily + 1.5mins (Awoof)",   "amount": 500},
-        {"id": "750.01",    "label": "2.5GB - 1 day (Awoof)",         "amount": 750},
-        {"id": "900.01",    "label": "2.5GB - 2 days (Awoof)",        "amount": 900},
-        {"id": "1000.01",   "label": "3.2GB - 2 days (Awoof)",        "amount": 1000},
-        {"id": "500.02",    "label": "500MB - 7 days (Direct)",       "amount": 500},
-        {"id": "800.01",    "label": "1GB - 7 days (Direct)",         "amount": 800},
-        {"id": "1000.03",   "label": "1.5GB - 7 days (Direct)",       "amount": 1000},
-        {"id": "1500.03",   "label": "3.5GB - 7 days (Direct)",       "amount": 1500},
-        {"id": "2500.01",   "label": "6GB - 7 days (Direct)",         "amount": 2500},
-        {"id": "3500.01",   "label": "11GB - 7 days (Direct)",        "amount": 3500},
-        {"id": "5000.01",   "label": "20GB - 7 days (Direct)",        "amount": 5000},
-        {"id": "1500.02",   "label": "2GB+2mins - 30 days (Direct)",  "amount": 1500},
-        {"id": "2000.01",   "label": "2.7GB+2mins - 30 days (Direct)","amount": 2000},
-        {"id": "2500.02",   "label": "3.5GB+5mins - 30 days (Direct)","amount": 2500},
-        {"id": "3500.02",   "label": "7GB - 30 days (Direct)",        "amount": 3500},
-        {"id": "4500.01",   "label": "10GB+10mins - 30 days (Direct)","amount": 4500},
-        {"id": "5500.01",   "label": "12.5GB - 30 days (Direct)",     "amount": 5500},
-        {"id": "6500.01",   "label": "16.5GB - 30 days (Direct)",     "amount": 6500},
-        {"id": "7500.01",   "label": "20GB - 30 days (Direct)",       "amount": 7500},
-        {"id": "9000.01",   "label": "25GB - 30 days (Direct)",       "amount": 9000},
-        {"id": "11000.01",  "label": "36GB - 30 days (Direct)",       "amount": 11000},
-        {"id": "18000.01",  "label": "75GB - 30 days (Direct)",       "amount": 18000},
-        {"id": "35000.01",  "label": "165GB - 30 days (Direct)",      "amount": 35000},
-        {"id": "40000.01",  "label": "150GB - 60 days (Direct)",      "amount": 40000},
-        {"id": "90000.03",  "label": "480GB - 90 days (Direct)",      "amount": 90000},
-    ],
-    "GLO": [
-        {"id": "200",       "label": "200MB - 14 days (SME)",         "amount": 94},
-        {"id": "500",       "label": "500MB - 7 days (SME)",          "amount": 235},
-        {"id": "1000.11",   "label": "1GB - 3 days (SME)",            "amount": 282},
-        {"id": "3000.11",   "label": "3GB - 3 days (SME)",            "amount": 846},
-        {"id": "5000.11",   "label": "5GB - 3 days (SME)",            "amount": 1410},
-        {"id": "1000.12",   "label": "1GB - 7 days (SME)",            "amount": 329},
-        {"id": "3000.12",   "label": "3GB - 7 days (SME)",            "amount": 987},
-        {"id": "5000.12",   "label": "5GB - 7 days (SME)",            "amount": 1645},
-        {"id": "1000.21",   "label": "1GB Night - 14 days (SME)",     "amount": 329},
-        {"id": "3000.21",   "label": "3GB Night - 14 days (SME)",     "amount": 987},
-        {"id": "5000.21",   "label": "5GB Night - 14 days (SME)",     "amount": 1645},
-        {"id": "10000.21",  "label": "10GB Night - 14 days (SME)",    "amount": 3290},
-        {"id": "1000",      "label": "1GB - 30 days (SME)",           "amount": 470},
-        {"id": "2000",      "label": "2GB - 30 days (SME)",           "amount": 940},
-        {"id": "3000",      "label": "3GB - 30 days (SME)",           "amount": 1410},
-        {"id": "5000",      "label": "5GB - 30 days (SME)",           "amount": 2350},
-        {"id": "10000",     "label": "10GB - 30 days (SME)",          "amount": 4700},
-        {"id": "100.01",    "label": "125MB - 1 day (Awoof)",         "amount": 100},
-        {"id": "200.01",    "label": "260MB - 2 days (Awoof)",        "amount": 200},
-        {"id": "500.01",    "label": "1.5GB - 14 days (Direct)",      "amount": 500},
-        {"id": "1000.01",   "label": "2.6GB - 30 days (Direct)",      "amount": 1000},
-        {"id": "1500.01",   "label": "5GB - 30 days (Direct)",        "amount": 1500},
-        {"id": "2000.01",   "label": "6.15GB - 30 days (Direct)",     "amount": 2000},
-        {"id": "2500.01",   "label": "7.5GB - 30 days (Direct)",      "amount": 2500},
-        {"id": "3000.01",   "label": "10GB - 30 days (Direct)",       "amount": 3000},
-        {"id": "4000.01",   "label": "12.5GB - 30 days (Direct)",     "amount": 4000},
-        {"id": "5000.01",   "label": "16GB - 30 days (Direct)",       "amount": 5000},
-        {"id": "8000.01",   "label": "28GB - 30 days (Direct)",       "amount": 8000},
-        {"id": "10000.01",  "label": "38GB - 30 days (Direct)",       "amount": 10000},
-        {"id": "15000.01",  "label": "64GB - 30 days (Direct)",       "amount": 15000},
-        {"id": "20000.01",  "label": "107GB - 30 days (Direct)",      "amount": 20000},
-        {"id": "500.02",    "label": "2GB - 1 day (Awoof)",           "amount": 500},
-        {"id": "1500.02",   "label": "6GB - 7 days (Direct)",         "amount": 1500},
-        {"id": "500.03",    "label": "2.5GB Weekend [Sat&Sun] (Awoof)","amount": 500},
-        {"id": "200.02",    "label": "875MB Weekend [Sun] (Awoof)",   "amount": 200},
-        {"id": "30000.01",  "label": "165GB - 30 days (Direct)",      "amount": 30000},
-        {"id": "36000.01",  "label": "220GB - 30 days (Direct)",      "amount": 40000},
-        {"id": "50000.01",  "label": "320GB - 30 days (Direct)",      "amount": 50000},
-        {"id": "60000.01",  "label": "380GB - 30 days (Direct)",      "amount": 60000},
-        {"id": "75000.01",  "label": "475GB - 30 days (Direct)",      "amount": 75000},
-        {"id": "150000.03", "label": "1TB - 365 days (Direct)",       "amount": 150000},
-    ],
-    "AIRTEL": [
-        {"id": "499.91",    "label": "1GB - 1 day (Awoof)",           "amount": 500},
-        {"id": "599.91",    "label": "1.5GB - 2 days (Awoof)",        "amount": 600},
-        {"id": "749.91",    "label": "2GB - 2 days (Awoof)",          "amount": 750},
-        {"id": "999.91",    "label": "3GB - 2 days (Awoof)",          "amount": 1000},
-        {"id": "1499.91",   "label": "5GB - 2 days (Awoof)",          "amount": 1500},
-        {"id": "499.92",    "label": "500MB - 7 days (Direct)",       "amount": 500},
-        {"id": "799.91",    "label": "1GB - 7 days (Direct)",         "amount": 800},
-        {"id": "999.92",    "label": "1.5GB - 7 days (Direct)",       "amount": 1000},
-        {"id": "1499.92",   "label": "3.5GB - 7 days (Direct)",       "amount": 1500},
-        {"id": "2499.91",   "label": "6GB - 7 days (Direct)",         "amount": 2500},
-        {"id": "2999.91",   "label": "10GB - 7 days (Direct)",        "amount": 3000},
-        {"id": "4999.91",   "label": "18GB - 7 days (Direct)",        "amount": 5000},
-        {"id": "1499.93",   "label": "2GB - 30 days (Direct)",        "amount": 1500},
-        {"id": "1999.91",   "label": "3GB - 30 days (Direct)",        "amount": 2000},
-        {"id": "2499.92",   "label": "4GB - 30 days (Direct)",        "amount": 2500},
-        {"id": "2999.92",   "label": "8GB - 30 days (Direct)",        "amount": 3000},
-        {"id": "3999.91",   "label": "10GB - 30 days (Direct)",       "amount": 4000},
-        {"id": "4999.92",   "label": "13GB - 30 days (Direct)",       "amount": 5000},
-        {"id": "5999.91",   "label": "18GB - 30 days (Direct)",       "amount": 6000},
-        {"id": "7999.91",   "label": "25GB - 30 days (Direct)",       "amount": 8000},
-        {"id": "9999.91",   "label": "35GB - 30 days (Direct)",       "amount": 10000},
-        {"id": "14999.91",  "label": "60GB - 30 days (Direct)",       "amount": 15000},
-        {"id": "19999.91",  "label": "100GB - 30 days (Direct)",      "amount": 20000},
-        {"id": "29999.91",  "label": "160GB - 30 days (Direct)",      "amount": 30000},
-        {"id": "39999.91",  "label": "210GB - 30 days (Direct)",      "amount": 40000},
-        {"id": "49999.91",  "label": "300GB - 90 days (Direct)",      "amount": 50000},
-        {"id": "59999.91",  "label": "350GB - 90 days (Direct)",      "amount": 60000},
-    ],
-    "9MOBILE": [
-        {"id": "50",        "label": "50MB - 30 days (SME)",          "amount": 23},
-        {"id": "100",       "label": "100MB - 30 days (SME)",         "amount": 46},
-        {"id": "300",       "label": "300MB - 30 days (SME)",         "amount": 138},
-        {"id": "500",       "label": "500MB - 30 days (SME)",         "amount": 225},
-        {"id": "1000",      "label": "1GB - 30 days (SME)",           "amount": 450},
-        {"id": "2000",      "label": "2GB - 30 days (SME)",           "amount": 900},
-        {"id": "3000",      "label": "3GB - 30 days (SME)",           "amount": 1350},
-        {"id": "4000",      "label": "4GB - 30 days (SME)",           "amount": 1800},
-        {"id": "5000",      "label": "5GB - 30 days (SME)",           "amount": 2250},
-        {"id": "10000",     "label": "10GB - 30 days (SME)",          "amount": 4500},
-        {"id": "15000",     "label": "15GB - 30 days (SME)",          "amount": 6750},
-        {"id": "20000",     "label": "20GB - 30 days (SME)",          "amount": 9000},
-        {"id": "25000",     "label": "25GB - 30 days (SME)",          "amount": 11250},
-        {"id": "100.01",    "label": "100MB - 1 day (Awoof)",         "amount": 100},
-        {"id": "150.01",    "label": "180MB - 1 day (Awoof)",         "amount": 150},
-        {"id": "200.01",    "label": "250MB - 1 day (Awoof)",         "amount": 200},
-        {"id": "350.01",    "label": "450MB - 1 day (Awoof)",         "amount": 350},
-        {"id": "500.01",    "label": "650MB - 3 days (Awoof)",        "amount": 500},
-        {"id": "1500.01",   "label": "1.75GB - 7 days (Direct)",      "amount": 1500},
-        {"id": "600.01",    "label": "650MB - 14 days (Direct)",      "amount": 600},
-        {"id": "1000.01",   "label": "1.1GB - 30 days (Direct)",      "amount": 1000},
-        {"id": "1200.01",   "label": "1.4GB - 30 days (Direct)",      "amount": 1200},
-        {"id": "2000.01",   "label": "2.44GB - 30 days (Direct)",     "amount": 2000},
-        {"id": "2500.01",   "label": "3.17GB - 30 days (Direct)",     "amount": 2500},
-        {"id": "3000.01",   "label": "3.91GB - 30 days (Direct)",     "amount": 3000},
-        {"id": "4000.01",   "label": "5.10GB - 30 days (Direct)",     "amount": 4000},
-        {"id": "5000.01",   "label": "6.5GB - 30 days (Direct)",      "amount": 5000},
-        {"id": "12000.01",  "label": "16GB - 30 days (Direct)",       "amount": 12000},
-        {"id": "18500.01",  "label": "24.3GB - 30 days (Direct)",     "amount": 18500},
-        {"id": "20000.01",  "label": "26.5GB - 30 days (Direct)",     "amount": 20000},
-        {"id": "30000.01",  "label": "39GB - 60 days (Direct)",       "amount": 30000},
-        {"id": "60000.01",  "label": "78GB - 90 days (Direct)",       "amount": 60000},
-        {"id": "150000.01", "label": "190GB - 180 days (Direct)",     "amount": 150000},
-    ],
-}
-
 
 def call_clubkonnect_data_api(network, phone, plan_id, request_id):
     """
-    Call ClubKonnect APIDatabundleV1.asp.
+    Call ClubKonnect APIParaGetDataBundleV1.asp.
     Returns (True, response_text) on success, (False, error_message) on failure.
     """
     user_id      = config("CLUBKONNECT_USER_ID")
@@ -621,7 +624,7 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
     if not network_code:
         return False, f"Unknown network: {network}"
 
-    url = "https://www.clubkonnect.com/APIParaGetDataBundleV1.asp"
+    url    = "https://www.clubkonnect.com/APIParaGetDataBundleV1.asp"
     params = {
         "UserID":        user_id,
         "APIKey":        api_key,
@@ -650,6 +653,10 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
         return False, "Network error contacting ClubKonnect."
 
 
+# =========================
+# BUY DATA (WEB)
+# =========================
+
 @login_required
 def buy_data(request):
     if request.method == "POST":
@@ -665,7 +672,6 @@ def buy_data(request):
             messages.error(request, "Enter a valid 11-digit phone number.")
             return redirect("buy_data")
 
-        # Lookup plan from DATA_PLANS (never trust form price)
         network_plans = DATA_PLANS.get(network, [])
         plan_info     = next((p for p in network_plans if p["id"] == plan_id), None)
 
@@ -690,9 +696,17 @@ def buy_data(request):
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
 
-        success_flag, ck_response = call_clubkonnect_data_api(
-            network, phone, plan_id, request_id
-        )
+        # Wrap API call in try/except — refund immediately if anything crashes
+        try:
+            success_flag, ck_response = call_clubkonnect_data_api(
+                network, phone, plan_id, request_id
+            )
+        except Exception as e:
+            account.balance += amount
+            account.save()
+            logger.error(f"buy_data crashed: {e}")
+            messages.error(request, "Something went wrong. Your balance has been refunded.")
+            return redirect("buy_data")
 
         if success_flag:
             DataPurchase.objects.create(
@@ -709,7 +723,7 @@ def buy_data(request):
             return redirect("succed_data")
 
         else:
-            # Refund on failure
+            # Refund on API failure
             account.balance += amount
             account.save()
 
@@ -733,7 +747,7 @@ def buy_data(request):
             )
             return redirect("buy_data")
 
-    # GET — pass plans as JSON for the JS dropdown
+    # GET
     context = {
         "data_plans_json": json.dumps(DATA_PLANS),
         "networks":        list(DATA_PLANS.keys()),
@@ -774,7 +788,8 @@ def flutterwave_webhook(request):
 
             credited = credit_account(transaction_obj)
             logger.info(
-                f"Webhook: tx_ref={tx_ref} {'credited' if credited else 'already processed'}."
+                f"Webhook: tx_ref={tx_ref} "
+                f"{'credited' if credited else 'already processed'}."
             )
 
     return JsonResponse({"status": "ok"})
@@ -791,20 +806,3 @@ def report_view(request):
         messages.success(request, "Report sent!")
         return redirect("report")
     return render(request, "report.html")
-
-
-
-@login_required
-def payment(request):
-    account      = get_or_create_account(request.user)
-    transactions = Transaction.objects.filter(
-        user=request.user
-    ).order_by("-created_at")[:10]
-    detail, _ = Detail.objects.get_or_create(user=request.user)
-    context = {
-        "account":         account,
-        "transactions":    transactions,
-        "detail":          detail,
-        "data_plans_json": json.dumps(DATA_PLANS),  # ← this was missing
-    }
-    return render(request, "payment.html", context)
