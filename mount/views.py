@@ -98,7 +98,7 @@ def logout_view(request):
 
 # =========================
 # CLUBKONNECT DATA PLANS
-# (defined here so payment view can access DATA_PLANS)
+# (defined early so all views can access DATA_PLANS)
 # =========================
 
 NETWORK_CODES = {
@@ -280,7 +280,6 @@ def home(request):
     return render(request, "home.html", context)
 
 
-# ONE payment view — includes data_plans_json
 @login_required
 def payment(request):
     account      = get_or_create_account(request.user)
@@ -614,7 +613,7 @@ def transaction(request):
 
 def call_clubkonnect_data_api(network, phone, plan_id, request_id):
     """
-    Call ClubKonnect APIParaGetDataBundleV1.asp.
+    Call ClubKonnect/NellobyteSystems APIDatabundleV1.asp.
     Returns (True, response_text) on success, (False, error_message) on failure.
     """
     user_id      = config("CLUBKONNECT_USER_ID")
@@ -624,7 +623,7 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
     if not network_code:
         return False, f"Unknown network: {network}"
 
-    url    = "https://www.clubkonnect.com/APIParaGetDataBundleV1.asp"
+    url    = "https://www.nellobytesystems.com/APIDatabundleV1.asp"
     params = {
         "UserID":        user_id,
         "APIKey":        api_key,
@@ -642,11 +641,34 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
         text     = response.text.strip()
         logger.info(f"ClubKonnect response: {text}")
 
-        if "successful" in text.lower() or "success" in text.lower():
-            return True, text
-        else:
-            logger.error(f"ClubKonnect error: {text}")
-            return False, text
+        # ClubKonnect returns JSON — parse it properly
+        try:
+            json_resp   = json.loads(text)
+            status      = json_resp.get("status", "")
+            status_code = str(json_resp.get("statuscode", ""))
+
+            # ORDER_RECEIVED (statuscode 100) = success
+            if status == "ORDER_RECEIVED" or status_code == "100":
+                return True, text
+
+            # Known failure statuses
+            elif status == "INSUFFICIENT_BALANCE":
+                return False, "insufficient balance in provider wallet"
+            elif status in ("INVALID_APIKEY", "INVALID_USERID"):
+                return False, "invalid api key or user id"
+            elif status == "INVALID_MOBILENUMBER":
+                return False, "invalid number"
+            else:
+                logger.error(f"ClubKonnect error: {text}")
+                return False, text
+
+        except json.JSONDecodeError:
+            # Fallback for plain text responses
+            if "successful" in text.lower() or "success" in text.lower():
+                return True, text
+            else:
+                logger.error(f"ClubKonnect plain text error: {text}")
+                return False, text
 
     except requests.RequestException as e:
         logger.error(f"ClubKonnect request failed: {e}")
@@ -696,7 +718,7 @@ def buy_data(request):
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
 
-        # Wrap API call in try/except — refund immediately if anything crashes
+        # Wrap in try/except — refund immediately if anything crashes
         try:
             success_flag, ck_response = call_clubkonnect_data_api(
                 network, phone, plan_id, request_id
@@ -729,9 +751,9 @@ def buy_data(request):
 
             if "insufficient" in ck_response.lower():
                 error_msg = "Our data provider balance is low. Please try again later."
-            elif "invalid" in ck_response.lower() and "api" in ck_response.lower():
+            elif "invalid api" in ck_response.lower():
                 error_msg = "API configuration error. Please contact support."
-            elif "invalid" in ck_response.lower() and "number" in ck_response.lower():
+            elif "invalid number" in ck_response.lower():
                 error_msg = "Invalid phone number. Please check and try again."
             else:
                 error_msg = f"Purchase failed: {ck_response}. Your balance has been refunded."
