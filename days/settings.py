@@ -13,7 +13,8 @@ FLW_SECRET_KEY     = config("FLW_SECRET_KEY")
 FLW_WEBHOOK_SECRET = config("FLW_WEBHOOK_SECRET", default="")
 CLUBKONNECT_USER_ID = config("CLUBKONNECT_USER_ID")
 CLUBKONNECT_API_KEY = config("CLUBKONNECT_API_KEY")
-
+JAP_API_KEY = config("JAP_API_KEY")
+BEEWAVE_API_KEY = config("BEEWAVE_API_KEY")
 # Debug: True locally, False on Render
 DEBUG = config("DEBUG", default="True") == "True"
 

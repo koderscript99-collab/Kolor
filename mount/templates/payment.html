@@ -346,6 +346,42 @@
                 <button class="btn-send" type="submit">Purchase Data</button>
             </form>
         </div>
+        <div class="card">
+    <div class="card-title">⚡ Special Bundles</div>
+    <div class="card-sub">Cheaper data via Beewave — MTN 1GB from ₦263</div>
+
+    <form method="POST" action="{% url 'buy_special_bundle' %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="field-group">
+                <label>Network</label>
+                <div class="select-wrap">
+                    <select name="network" id="bw_network" onchange="updateBeewave()">
+                        <option value="MTN">MTN</option>
+                        <option value="GLO">Glo</option>
+                        <option value="AIRTEL">Airtel</option>
+                        <option value="9MOBILE">9mobile</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone_number" placeholder="08XXXXXXXXX" maxlength="11" required>
+            </div>
+        </div>
+        <div class="field-group">
+            <label>Data Plan</label>
+            <div class="select-wrap">
+                <select name="qty" id="bw_plan" onchange="updateBeewaveCost()"></select>
+            </div>
+        </div>
+        <div class="field-group">
+            <label>Cost</label>
+            <input type="text" id="bw_cost" class="cost-input" readonly placeholder="Select a plan">
+        </div>
+        <button class="btn-send" type="submit">Buy Special Bundle</button>
+    </form>
+</div>
 
         <!-- TRANSACTION HISTORY -->
         <div class="card">
@@ -425,6 +461,33 @@
         const field = document.getElementById("receiver_field");
         field.style.display = type === "transfer" ? "block" : "none";
     }
+
+    const beewavePlans = {{ beewave_plans_json|safe }};
+
+function updateBeewave() {
+    const network = document.getElementById("bw_network").value;
+    const select  = document.getElementById("bw_plan");
+    select.innerHTML = "";
+    (beewavePlans[network] || []).forEach(p => {
+        const opt       = document.createElement("option");
+        opt.value       = p.qty;
+        opt.textContent = `${p.label} — ₦${p.amount.toLocaleString()}`;
+        opt.dataset.amount = p.amount;
+        select.appendChild(opt);
+    });
+    updateBeewaveCost();
+}
+
+function updateBeewaveCost() {
+    const select   = document.getElementById("bw_plan");
+    const selected = select.options[select.selectedIndex];
+    if (selected) {
+        document.getElementById("bw_cost").value =
+            "₦" + Number(selected.dataset.amount).toLocaleString();
+    }
+}
+
+updateBeewave();
 
     // Initialise on load
     updatePlans();

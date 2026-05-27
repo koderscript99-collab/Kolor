@@ -4,403 +4,390 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kolor - Market</title>
-
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', sans-serif; background: #f9fafb; min-height: 100vh; }
 
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: #ffffff;
-            min-height: 100vh;
-        }
-
-        /* TOP NAV */
         .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 32px;
-            border-bottom: 1.5px solid #e5e7eb;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px; border-bottom: 1.5px solid #e5e7eb;
+            background: #fff; position: sticky; top: 0; z-index: 100;
         }
-
         .brand-name {
-            font-size: 22px;
-            font-weight: 900;
+            font-size: 22px; font-weight: 900;
             background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: 1px;
         }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
         .avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+            width: 38px; height: 38px; border-radius: 50%;
             background: linear-gradient(135deg, #4facfe, #0078ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 900;
-            font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 15px;
+        }
+        .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 28px 32px 90px; }
+
+        .balance-bar {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            border-radius: 14px; padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; color: white;
+        }
+        .balance-bar .label { font-size: 12px; color: #7dd3fc; font-weight: 700; text-transform: uppercase; }
+        .balance-bar .amount { font-size: 28px; font-weight: 900; margin-top: 2px; }
+        .balance-bar a {
+            background: #3b82f6; color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px;
         }
 
-        .user-name {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        /* MAIN LAYOUT */
-        .container {
-            display: flex;
-            gap: 24px;
-            padding: 28px 32px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* LEFT PANEL */
-        .left {
-            width: 280px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        /* RIGHT PANEL */
-        .right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* CARD BASE */
         .card {
-            background: #fff;
-            border-radius: 16px;
+            background: #fff; border-radius: 16px;
             border: 1.5px solid #e5e7eb;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            padding: 28px 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+            padding: 28px 24px; margin-bottom: 24px;
         }
+        .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
+        .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
 
-        .card-title {
-            font-size: 16px;
-            font-weight: 900;
-            color: #1a1a1a;
-            margin-bottom: 4px;
+        /* PLATFORM TABS */
+        .platform-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 10px 20px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+            background: #f9fafb; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 700; cursor: pointer; color: #374151;
+            transition: all .2s; display: flex; align-items: center; gap: 8px;
         }
+        .tab-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .tab-btn:hover:not(.active) { border-color: #3b82f6; background: #eff6ff; }
 
-        .card-sub {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 20px;
+        /* FORM */
+        label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+        input, select {
+            width: 100%; padding: 12px 14px;
+            background: #f9fafb; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; color: #1a1a1a;
+            font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
+            outline: none; transition: border-color .25s, background .2s;
+            margin-bottom: 14px; appearance: none; -webkit-appearance: none;
         }
+        input:focus, select:focus { border-color: #3b82f6; background: #fff; }
+        input::placeholder { color: #b0b8c4; font-weight: 400; }
 
-        /* PROFILE CARD */
-        .profile-card {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            border-radius: 16px;
-            border: none;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-            padding: 28px 24px;
-            color: white;
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '▾'; position: absolute; right: 14px; top: 50%;
+            transform: translateY(-65%); color: #9ca3af; pointer-events: none;
         }
+        .select-wrap select { margin-bottom: 0; padding-right: 36px; cursor: pointer; }
 
-        .profile-card .label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #7dd3fc;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 2px;
-        }
+        .field-group { margin-bottom: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 
-        .profile-card .value {
-            font-size: 13px;
-            font-weight: 600;
-            color: #e2e8f0;
-            margin-bottom: 12px;
-        }
-
-        .profile-username {
-            font-size: 20px;
-            font-weight: 900;
-            color: #ffffff;
+        .cost-box {
+            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            border-radius: 10px; padding: 14px 16px;
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 16px;
         }
+        .cost-box .cost-label { font-size: 13px; font-weight: 700; color: #1e40af; }
+        .cost-box .cost-value { font-size: 20px; font-weight: 900; color: #1e3a5f; }
 
-        .balance-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #7dd3fc;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+        .btn-send {
+            width: 100%; padding: 13px; border: none; border-radius: 10px;
+            background: linear-gradient(90deg, #4facfe, #0078ff);
+            color: white; font-size: 15px; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer;
+            transition: opacity .2s, transform .15s;
         }
+        .btn-send:hover { opacity: .9; transform: translateY(-1px); }
 
-        .balance-amount {
-            font-size: 30px;
-            font-weight: 900;
-            color: #ffffff;
-            margin-top: 4px;
-            letter-spacing: -0.5px;
+        /* ALERTS */
+        .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+        .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+        /* ORDERS TABLE */
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            padding: 0 10px 12px; text-align: left;
+            border-bottom: 1.5px solid #e5e7eb;
         }
-
-        .divider {
-            height: 1px;
-            background: rgba(255,255,255,0.1);
-            margin: 16px 0;
+        tbody td {
+            padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
+            font-size: 13px; font-weight: 600; color: #374151;
         }
+        tbody tr:last-child td { border-bottom: none; }
 
-        /* INFO CARD */
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
+        .platform-tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; text-transform: capitalize;
         }
-        .info-item:last-child { margin-bottom: 0; }
+        .instagram { background: #fce7f3; color: #be185d; }
+        .tiktok    { background: #f3f4f6; color: #111827; }
+        .youtube   { background: #fee2e2; color: #dc2626; }
+        .facebook  { background: #dbeafe; color: #1d4ed8; }
 
-        .info-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-        }
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
+        .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .status-pill.completed::before  { background:#22c55e; }
+        .status-pill.processing::before { background:#f59e0b; }
+        .status-pill.pending::before    { background:#f59e0b; }
+        .status-pill.failed::before     { background:#ef4444; }
+        .status-pill.partial::before    { background:#8b5cf6; }
+        .status-pill.cancelled::before  { background:#6b7280; }
 
-        .info-value {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-top: 2px;
-        }
-
-        /* ── MARKET HERO ── */
-        .market-hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 60px 24px;
-            border-radius: 20px;
-            border: 1.5px solid #e5e7eb;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-            background: #fff;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* subtle background pattern */
-        .market-hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at 15% 20%, rgba(59,130,246,0.06) 0%, transparent 55%),
-                radial-gradient(circle at 85% 80%, rgba(125,211,252,0.07) 0%, transparent 55%);
-            pointer-events: none;
-        }
-
-        .market-icon {
-            font-size: 56px;
-            margin-bottom: 20px;
-            line-height: 1;
-            position: relative;
-        }
-
-        .market-hero h2 {
-            font-size: 26px;
-            font-weight: 900;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .market-hero p {
-            font-size: 14px;
-            color: #9ca3af;
-            max-width: 340px;
-            line-height: 1.7;
-            margin-bottom: 32px;
-            position: relative;
-        }
-
-        /* ── GO TO MARKET BUTTON ── */
-        .btn-market {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px 36px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
-            font-family: 'Nunito', sans-serif;
+        .check-btn {
+            font-size: 11px; padding: 4px 10px; border-radius: 6px;
+            background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
+            text-decoration: none; font-weight: 700; font-family: 'Nunito', sans-serif;
             cursor: pointer;
-            text-decoration: none;
-            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 4px 18px rgba(0,120,255,0.28);
-            position: relative;
-            letter-spacing: 0.3px;
         }
 
-        .btn-market:hover {
-            opacity: 0.92;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(0,120,255,0.36);
+        /* BOTTOM NAV */
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; width: 100%;
+            background: white; border-top: 1.5px solid #e5e7eb;
+            justify-content: space-around; padding: 10px 0 6px; z-index: 100;
         }
-
-        .btn-market:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 18px rgba(0,120,255,0.28);
+        .bottom-nav a {
+            text-decoration: none; color: #9ca3af; font-size: 11px; font-weight: 700;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
         }
-
-        .btn-arrow {
-            font-size: 18px;
-            transition: transform 0.2s;
-        }
-
-        .btn-market:hover .btn-arrow {
-            transform: translateX(4px);
-        }
-
-        /* ── NAV LINKS CARD ── */
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .nav-link-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 13px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            color: #374151;
-            font-size: 14px;
-            font-weight: 700;
-            border: 1.5px solid #e5e7eb;
-            transition: border-color 0.2s, background 0.2s, color 0.2s;
-        }
-
-        .nav-link-item:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-            color: #1d4ed8;
-        }
-
-        .nav-link-item .nav-icon {
-            font-size: 18px;
-        }
+        .bottom-nav a.active { color: #3b82f6; }
+        .bottom-nav .nav-icon { font-size: 20px; }
 
         @media (max-width: 860px) {
-            .container {
-                flex-direction: column;
-                padding: 20px 16px;
-            }
-            .left { width: 100%; }
-            .market-hero { padding: 44px 20px; }
+            .container { padding: 20px 16px 90px; }
+            .form-row { grid-template-columns: 1fr; }
+            .bottom-nav { display: flex; }
+            .topbar { padding: 14px 16px; }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- TOPBAR -->
-    <nav class="topbar">
-        <div class="brand-name">kolor</div>
-        <div class="topbar-right">
-            <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-            <span class="user-name">{{ user.username }}</span>
-        </div>
-    </nav>
+<!-- TOPBAR -->
+<nav class="topbar">
+    <div class="brand-name">kolor</div>
+    <div class="topbar-right">
+        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span class="user-name">{{ user.username }}</span>
+    </div>
+</nav>
 
-    <div class="container">
+<div class="container">
 
-        <!-- LEFT PANEL -->
-        <aside class="left">
-
-            <!-- BALANCE CARD -->
-            <div class="profile-card">
-                <div class="profile-username">{{ user.username }}</div>
-
-                <div class="label">Email</div>
-                <div class="value">{{ user.email }}</div>
-
-                <div class="label">Phone</div>
-                <div class="value">{{ detail.phone_number }}</div>
-
-                <div class="label">Account No.</div>
-                <div class="value">{{ account.account_number }}</div>
-
-                <div class="divider"></div>
-
-                <div class="balance-label">Available Balance</div>
-                <div class="balance-amount">₦ {{ account.balance }}</div>
+    <!-- MESSAGES -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
             </div>
+        {% endfor %}
+    {% endif %}
 
-            <!-- QUICK NAV CARD -->
-            <div class="card">
-                <div class="card-title">Quick Links</div>
-                <div class="card-sub">Navigate your account</div>
+    <!-- BALANCE BAR -->
+    <div class="balance-bar">
+        <div>
+            <div class="label">Available Balance</div>
+            <div class="amount">₦ {{ account.balance }}</div>
+        </div>
+        <a href="{% url 'payment' %}">+ Deposit</a>
+    </div>
 
-                <div class="nav-links">
-                    <a href="{% url 'payment' %}" class="nav-link-item">
-                        <span class="nav-icon">💳</span> Payment
-                    </a>
-                    <a href="{% url 'report' %}" class="nav-link-item">
-                        <span class="nav-icon">📊</span> Reports
-                    </a>
-                    <a href="{% url 'logout' %}" class="nav-link-item" style="color:#dc2626; border-color:#fee2e2;">
-                        <span class="nav-icon">⛔</span> Logout
-                    </a>
+    <!-- ORDER FORM -->
+    <div class="card">
+        <div class="card-title">Social Media Services</div>
+        <div class="card-sub">Buy followers, likes, views and more. Paid from your Kolor wallet.</div>
+
+        <!-- PLATFORM TABS -->
+        <div class="platform-tabs">
+            <button class="tab-btn active" onclick="switchPlatform('instagram', this)">📸 Instagram</button>
+            <button class="tab-btn" onclick="switchPlatform('tiktok', this)">🎵 TikTok</button>
+            <button class="tab-btn" onclick="switchPlatform('youtube', this)">▶️ YouTube</button>
+            <button class="tab-btn" onclick="switchPlatform('facebook', this)">📘 Facebook</button>
+        </div>
+
+        <form method="POST" action="{% url 'buy_smm' %}">
+            {% csrf_token %}
+
+            <input type="hidden" name="platform" id="platform_input" value="instagram">
+
+            <div class="field-group">
+                <label>Service</label>
+                <div class="select-wrap">
+                    <select name="service_id" id="service_select" onchange="updateServiceInfo()">
+                    </select>
                 </div>
             </div>
 
-        </aside>
-
-        <!-- RIGHT PANEL -->
-        <main class="right">
-
-            <!-- MARKET HERO -->
-            <div class="market-hero">
-                <div class="market-icon">🛍️</div>
-                <h2>Kolor Market</h2>
-                <p>Browse and shop products from our marketplace. Tap the button below to visit the market and start exploring.</p>
-
-                <!--
-                    ✏️  REPLACE THE href BELOW WITH YOUR MARKET URL
-                    e.g. href="http://flutterwave.com/store/kolor1"
-                         href="{% url 'market' %}"
-                         href="https://wa.me/2347039190183"
-                -->
-                <a href='http://flutterwave.com/store/kolor1' class="btn-market" target="_blank" rel="noopener">
-                    Go to Market <span class="btn-arrow">→</span>
-                </a>
+            <div class="field-group">
+                <label>Profile / Post URL</label>
+                <input type="url" name="link" id="link_input"
+                       placeholder="https://www.instagram.com/yourprofile" required>
             </div>
 
-        </main>
+            <div class="form-row">
+                <div class="field-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" id="quantity_input"
+                           placeholder="e.g. 1000" min="1" required onchange="updateCost()">
+                </div>
+                <div class="field-group">
+                    <label>Min / Max</label>
+                    <input type="text" id="min_max" readonly
+                           style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;">
+                </div>
+            </div>
+
+            <div class="cost-box">
+                <span class="cost-label">Total Cost</span>
+                <span class="cost-value" id="total_cost">₦0.00</span>
+            </div>
+
+            <button class="btn-send" type="submit">Place Order</button>
+        </form>
     </div>
+
+    <!-- RECENT ORDERS -->
+    <div class="card">
+        <div class="card-title">My SMM Orders</div>
+        <div class="card-sub">Track your recent social media service orders.</div>
+
+        {% if recent_orders %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Platform</th>
+                    <th>Service</th>
+                    <th>Qty</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><span class="platform-tag {{ order.platform }}">{{ order.platform|title }}</span></td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        {{ order.service_name }}
+                    </td>
+                    <td>{{ order.quantity|floatformat:0 }}</td>
+                    <td>₦{{ order.amount }}</td>
+                    <td><span class="status-pill {{ order.status }}">{{ order.status|title }}</span></td>
+                    <td>
+                        {% if order.jap_order_id and order.status == "processing" %}
+                        <a href="{% url 'check_smm_order' order.id %}" class="check-btn">Check</a>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align:center;color:#9ca3af;font-size:13px;padding:24px 0;">
+            No orders yet. Place your first SMM order above!
+        </p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
+    <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
+    <a href="{% url 'market' %}" class="active"><span class="nav-icon">🛍️</span>Market</a>
+    <a href="{% url 'report' %}"><span class="nav-icon">📊</span>Reports</a>
+</div>
+
+<script>
+    // Plans injected from Django
+    const services = {{ smm_services_json|safe }};
+
+    let currentPlatform = 'instagram';
+
+    function switchPlatform(platform, btn) {
+        currentPlatform = platform;
+        document.getElementById('platform_input').value = platform;
+
+        // Update active tab
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update placeholder
+        const placeholders = {
+            instagram: 'https://www.instagram.com/yourprofile',
+            tiktok:    'https://www.tiktok.com/@yourprofile',
+            youtube:   'https://www.youtube.com/channel/yourchannelid',
+            facebook:  'https://www.facebook.com/yourpage',
+        };
+        document.getElementById('link_input').placeholder = placeholders[platform] || '';
+
+        // Rebuild service dropdown
+        buildServiceDropdown(platform);
+    }
+
+    function buildServiceDropdown(platform) {
+        const select = document.getElementById('service_select');
+        select.innerHTML = '';
+
+        (services[platform] || []).forEach(s => {
+            const opt       = document.createElement('option');
+            opt.value       = s.id;
+            opt.textContent = s.label;
+            opt.dataset.amount = s.amount;
+            opt.dataset.min    = s.min;
+            opt.dataset.max    = s.max;
+            select.appendChild(opt);
+        });
+
+        updateServiceInfo();
+    }
+
+    function updateServiceInfo() {
+        const select   = document.getElementById('service_select');
+        const selected = select.options[select.selectedIndex];
+        if (!selected) return;
+
+        document.getElementById('min_max').value =
+            `Min: ${Number(selected.dataset.min).toLocaleString()} / Max: ${Number(selected.dataset.max).toLocaleString()}`;
+
+        document.getElementById('quantity_input').min = selected.dataset.min;
+        document.getElementById('quantity_input').max = selected.dataset.max;
+
+        updateCost();
+    }
+
+    function updateCost() {
+        const select   = document.getElementById('service_select');
+        const selected = select.options[select.selectedIndex];
+        const qty      = parseInt(document.getElementById('quantity_input').value) || 0;
+
+        if (!selected || qty <= 0) {
+            document.getElementById('total_cost').textContent = '₦0.00';
+            return;
+        }
+
+        const pricePerThousand = parseFloat(selected.dataset.amount);
+        const total = (qty / 1000) * pricePerThousand;
+        document.getElementById('total_cost').textContent =
+            '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    // Init on load
+    buildServiceDropdown('instagram');
+</script>
 
 </body>
 </html>

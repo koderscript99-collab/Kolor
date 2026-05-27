@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Market</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* TOP NAV */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 32px;
+            border-bottom: 1.5px solid #e5e7eb;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* MAIN LAYOUT */
+        .container {
+            display: flex;
+            gap: 24px;
+            padding: 28px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* LEFT PANEL */
+        .left {
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* RIGHT PANEL */
+        .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* CARD BASE */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 28px 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 20px;
+        }
+
+        /* PROFILE CARD */
+        .profile-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            padding: 28px 24px;
+            color: white;
+        }
+
+        .profile-card .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7dd3fc;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+        }
+
+        .profile-card .value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+
+        .profile-username {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        .balance-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #7dd3fc;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .balance-amount {
+            font-size: 30px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-top: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 16px 0;
+        }
+
+        /* INFO CARD */
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .info-item:last-child { margin-bottom: 0; }
+
+        .info-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 2px;
+        }
+
+        /* ── MARKET HERO ── */
+        .market-hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 24px;
+            border-radius: 20px;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* subtle background pattern */
+        .market-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(59,130,246,0.06) 0%, transparent 55%),
+                radial-gradient(circle at 85% 80%, rgba(125,211,252,0.07) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .market-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            line-height: 1;
+            position: relative;
+        }
+
+        .market-hero h2 {
+            font-size: 26px;
+            font-weight: 900;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .market-hero p {
+            font-size: 14px;
+            color: #9ca3af;
+            max-width: 340px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        /* ── GO TO MARKET BUTTON ── */
+        .btn-market {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 36px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 18px rgba(0,120,255,0.28);
+            position: relative;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-market:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,120,255,0.36);
+        }
+
+        .btn-market:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 18px rgba(0,120,255,0.28);
+        }
+
+        .btn-arrow {
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+
+        .btn-market:hover .btn-arrow {
+            transform: translateX(4px);
+        }
+
+        /* ── NAV LINKS CARD ── */
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1.5px solid #e5e7eb;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+
+        .nav-link-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .nav-link-item .nav-icon {
+            font-size: 18px;
+        }
+
+        @media (max-width: 860px) {
+            .container {
+                flex-direction: column;
+                padding: 20px 16px;
+            }
+            .left { width: 100%; }
+            .market-hero { padding: 44px 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOPBAR -->
+    <nav class="topbar">
+        <div class="brand-name">kolor</div>
+        <div class="topbar-right">
+            <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+            <span class="user-name">{{ user.username }}</span>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- LEFT PANEL -->
+        <aside class="left">
+
+            <!-- BALANCE CARD -->
+            <div class="profile-card">
+                <div class="profile-username">{{ user.username }}</div>
+
+                <div class="label">Email</div>
+                <div class="value">{{ user.email }}</div>
+
+                <div class="label">Phone</div>
+                <div class="value">{{ detail.phone_number }}</div>
+
+                <div class="label">Account No.</div>
+                <div class="value">{{ account.account_number }}</div>
+
+                <div class="divider"></div>
+
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount">₦ {{ account.balance }}</div>
+            </div>
+
+            <!-- QUICK NAV CARD -->
+            <div class="card">
+                <div class="card-title">Quick Links</div>
+                <div class="card-sub">Navigate your account</div>
+
+                <div class="nav-links">
+                    <a href="{% url 'payment' %}" class="nav-link-item">
+                        <span class="nav-icon">💳</span> Payment
+                    </a>
+                    <a href="{% url 'report' %}" class="nav-link-item">
+                        <span class="nav-icon">📊</span> Reports
+                    </a>
+                    <a href="{% url 'logout' %}" class="nav-link-item" style="color:#dc2626; border-color:#fee2e2;">
+                        <span class="nav-icon">⛔</span> Logout
+                    </a>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- RIGHT PANEL -->
+        <main class="right">
+
+            <!-- MARKET HERO -->
+            <div class="market-hero">
+                <div class="market-icon">🛍️</div>
+                <h2>Kolor Market</h2>
+                <p>Browse and shop products from our marketplace. Tap the button below to visit the market and start exploring.</p>
+
+                <!--
+                    ✏️  REPLACE THE href BELOW WITH YOUR MARKET URL
+                    e.g. href="http://flutterwave.com/store/kolor1"
+                         href="{% url 'market' %}"
+                         href="https://wa.me/2347039190183"
+                -->
+                <a href='http://flutterwave.com/store/kolor1' class="btn-market" target="_blank" rel="noopener">
+                    Go to Market <span class="btn-arrow">→</span>
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>
