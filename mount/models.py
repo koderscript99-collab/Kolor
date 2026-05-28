@@ -143,3 +143,62 @@ class Report(models.Model):
 
     def __str__(self):
         return self.message[:50]
+    
+
+
+
+class ForeignNumber(models.Model):
+
+    STATUS_CHOICES = (
+        ("PENDING", "PENDING"),
+        ("RECEIVED", "RECEIVED"),
+        ("CANCELLED", "CANCELLED"),
+        ("FINISHED", "FINISHED"),
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    order_id = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    country = models.CharField(
+        max_length=100
+    )
+
+    service = models.CharField(
+        max_length=100
+    )
+
+    phone_number = models.CharField(
+        max_length=100
+    )
+
+    price = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+
+    sms_code = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.phone_number

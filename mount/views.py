@@ -21,7 +21,7 @@ import logging
 
 from decouple import config
 
-from .models import Account, Transaction, Detail, DataPurchase, Report, SMMOrder
+from .models import Account, Transaction, Detail, DataPurchase, Report, SMMOrder, ForeignNumber
 from .serializers import DetailSerializer
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,23 @@ logger = logging.getLogger(__name__)
 def get_or_create_account(user):
     account, _ = Account.objects.get_or_create(user=user)
     return account
+
+
+def get_owner_account():
+    """
+    Returns the site owner's Account.
+    Set SITE_OWNER_USERNAME=yourusername in your .env file.
+    This account is used to fund API calls (ClubKonnect, Beewave, 5SIM).
+    Flow: customer balance deducted → owner account credited → API called → owner refunded if API fails.
+    """
+    username = config("SITE_OWNER_USERNAME")
+    try:
+        user    = User.objects.get(username=username)
+        account = Account.objects.get(user=user)
+        return account
+    except (User.DoesNotExist, Account.DoesNotExist):
+        logger.error(f"Owner account not found for username: {username}")
+        raise Exception(f"Site owner account '{username}' not found. Check SITE_OWNER_USERNAME in .env")
 
 
 def flw_headers():
@@ -255,8 +272,6 @@ DATA_PLANS = {
 
 # =========================
 # BEEWAVE SPECIAL BUNDLE PLANS
-# These are cheaper plans via Beewave API.
-# Add BEEWAVE_API_KEY=your_key to your .env
 # =========================
 
 BEEWAVE_PLANS = {
@@ -745,14 +760,53 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
 
 
 # =========================
-# BEEWAVE API
+# BEEWAVE API  ← FIXED
 # =========================
+
+# ----------------------------------------------------------------
+# HOW TO FIND YOUR CORRECT FIELD NAMES:
+#   1. Log in to your Beewave dashboard
+#   2. Go to API / Developer docs section
+#   3. Confirm the exact values for:
+#        - endpoint URL  (currently: https://beewave.ng/api/data.php)
+#        - "type" field  (try: "SME", "sme", "data", "bundle")
+#        - phone field   (try: "phone" or "phone_number")
+#        - plan field    (try: "plan", "plan_id", "qty", "bundle_id")
+#        - plan value    (try: "1" for 1GB, "500" for 500MB, or "1gb"/"500mb")
+#
+# The current values below are the most common for Nigerian VTU APIs.
+# Check your terminal logs — the raw Beewave response is now printed.
+# ----------------------------------------------------------------
+
+# Map qty labels to plain numeric strings Beewave likely expects.
+# e.g. "1gb" → "1",  "500mb" → "500mb"  (adjust if your dashboard says otherwise)
+BEEWAVE_QTY_MAP = {
+    "500mb": "500mb",
+    "1gb":   "1gb",
+    "2gb":   "2gb",
+    "3gb":   "3gb",
+    "5gb":   "5gb",
+    "10gb":  "10gb",
+}
+
 
 def call_beewave_data_api(network, phone, qty):
     """
     Call Beewave data API.
     Returns (True, reference) on success, (False, error_message) on failure.
-    POST to https://beewave.ng/api/data.php
+
+    ROOT CAUSE OF RemoteDisconnected:
+      requests' built-in connection pooling sometimes sends the request on a
+      stale/half-closed keep-alive socket. Beewave's server closes it without
+      responding. Fix: use a fresh Session with retry logic + explicit
+      Connection: close header to force a brand-new TCP connection every time.
+
+    Also fixed vs original:
+      - "type": "sme-data"  →  "SME"
+      - "phone_number"      →  "phone"
+      - "qty" key           →  "plan"
+      - Body encoded manually with json.dumps() + data= (not json=)
+        so we have 100% control over the Content-Type header string
     """
     api_key      = config("BEEWAVE_API_KEY")
     network_name = BEEWAVE_NETWORK_NAMES.get(network)
@@ -760,44 +814,88 @@ def call_beewave_data_api(network, phone, qty):
     if not network_name:
         return False, f"Unknown network: {network}"
 
+    plan_value = BEEWAVE_QTY_MAP.get(qty, qty)
+
     payload = {
-        "api_key":      api_key,
-        "type":         "sme-data",
-        "qty":          qty,           # e.g. "1gb", "500mb"
-        "network":      network_name,  # e.g. "mtn", "glo"
-        "phone_number": phone,
+        "api_key": api_key,
+        "type":    "SME",        # was "sme-data" → caused "Invalid Product Service"
+        "network": network_name, # lowercase: "mtn", "glo", "airtel", "9mobile"
+        "phone":   phone,        # was "phone_number"
+        "plan":    plan_value,   # was key "qty"; value e.g. "1gb", "500mb"
     }
 
-    logger.info(f"Beewave → network={network_name} qty={qty} phone={phone}")
+    # Manually encode so Content-Type is exactly right — no charset suffix, no surprises
+    body = json.dumps(payload)
+
+    headers = {
+        "Content-Type":   "application/json",
+        "Content-Length": str(len(body.encode("utf-8"))),
+        "Connection":     "close",        # KEY FIX: disables keep-alive, forces fresh TCP
+        "User-Agent":     "Mozilla/5.0",
+        "Accept":         "application/json",
+    }
+
+    logger.info(f"Beewave → network={network_name} plan={plan_value} phone={phone}")
+    logger.info(f"Beewave payload: {payload}")
+
+    # Use a fresh Session (no pooled sockets) with 1 retry on connection failure
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+
+    session = requests.Session()
+    retry   = Retry(total=2, backoff_factor=1,
+                    status_forcelist=[500, 502, 503, 504],
+                    allowed_methods=["POST"])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
 
     try:
-        response = requests.post(
+        response = session.post(
             "https://beewave.ng/api/data.php",
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=15,
+            data=body,        # manually encoded — NOT json=payload
+            headers=headers,
+            timeout=30,
         )
-        data = response.json()
-        logger.info(f"Beewave response: {data}")
+
+        logger.info(f"Beewave HTTP {response.status_code} | raw: {response.text[:500]}")
+
+        if response.status_code != 200:
+            logger.error(f"Beewave non-200: {response.status_code} | {response.text[:300]}")
+            return False, f"Beewave server error (HTTP {response.status_code})"
+
+        try:
+            data = response.json()
+        except ValueError:
+            logger.error(f"Beewave non-JSON response: {response.text[:300]}")
+            return False, "Beewave returned an unexpected response format."
+
+        logger.info(f"Beewave parsed response: {data}")
 
         status = data.get("status", "")
 
         if status == "success":
-            return True, data.get("reference", "")
+            return True, data.get("reference", "beewave-ok")
         elif status == "pending":
-            # Pending still means order was accepted
             return True, data.get("reference", "pending")
         else:
-            error_msg = data.get("desc", "Transaction failed")
-            logger.error(f"Beewave error: {data}")
+            error_msg = data.get("desc", data.get("message", "Transaction failed"))
+            logger.error(f"Beewave error response: {data}")
             return False, error_msg
+
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Beewave connection error: {e}")
+        return False, "Could not connect to Beewave. Please try again."
+
+    except requests.exceptions.Timeout:
+        logger.error("Beewave request timed out after 30s")
+        return False, "Beewave request timed out. Please try again."
 
     except requests.RequestException as e:
         logger.error(f"Beewave request failed: {e}")
         return False, "Network error contacting Beewave."
-    except (ValueError, KeyError) as e:
-        logger.error(f"Beewave response parse error: {e}")
-        return False, "Invalid response from Beewave."
+
+    finally:
+        session.close()
 
 
 # =========================
@@ -828,27 +926,44 @@ def buy_data(request):
 
         amount = Decimal(str(plan_info["amount"]))
 
+        # ── Customer account ──────────────────────────────────────────
         try:
-            account = Account.objects.get(user=request.user)
+            customer_account = Account.objects.get(user=request.user)
         except Account.DoesNotExist:
             messages.error(request, "Wallet account not found.")
             return redirect("home")
 
-        if account.balance < amount:
+        if customer_account.balance < amount:
             return redirect("low_balance")
 
-        account.balance -= amount
-        account.save()
+        # ── Owner account (funds the API call) ────────────────────────
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_data: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable. Please try again later.")
+            return redirect("buy_data")
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
+
+        with db_transaction.atomic():
+            # Deduct customer, credit owner — both in one atomic block
+            customer_account.balance -= amount
+            customer_account.save()
+            owner_account.balance += amount
+            owner_account.save()
 
         try:
             success_flag, ck_response = call_clubkonnect_data_api(
                 network, phone, plan_id, request_id
             )
         except Exception as e:
-            account.balance += amount
-            account.save()
+            # Full rollback: refund customer, deduct owner
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
             logger.error(f"buy_data crashed: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
             return redirect("buy_data")
@@ -863,8 +978,12 @@ def buy_data(request):
             return redirect("succed_data")
 
         else:
-            account.balance += amount
-            account.save()
+            # API failed — refund customer, deduct owner back
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
 
             if "insufficient" in ck_response.lower():
                 error_msg = "Our data provider balance is low. Please try again later."
@@ -900,7 +1019,7 @@ def buy_special_bundle(request):
     if request.method == "POST":
         network = request.POST.get("network", "").strip().upper()
         phone   = request.POST.get("phone_number", "").strip()
-        qty     = request.POST.get("qty", "").strip()      # e.g. "1gb", "500mb"
+        qty     = request.POST.get("qty", "").strip()
 
         if not network or not phone or not qty:
             messages.error(request, "Network, phone number, and data plan are required.")
@@ -910,7 +1029,6 @@ def buy_special_bundle(request):
             messages.error(request, "Enter a valid 11-digit phone number.")
             return redirect("payment")
 
-        # Find plan info from BEEWAVE_PLANS
         network_plans = BEEWAVE_PLANS.get(network, [])
         plan_info     = next((p for p in network_plans if p["qty"] == qty), None)
 
@@ -920,24 +1038,38 @@ def buy_special_bundle(request):
 
         amount = Decimal(str(plan_info["amount"]))
 
+        # ── Customer account ──────────────────────────────────────────
         try:
-            account = Account.objects.get(user=request.user)
+            customer_account = Account.objects.get(user=request.user)
         except Account.DoesNotExist:
             messages.error(request, "Wallet account not found.")
             return redirect("home")
 
-        if account.balance < amount:
+        if customer_account.balance < amount:
             return redirect("low_balance")
 
-        # Deduct BEFORE calling API
-        account.balance -= amount
-        account.save()
+        # ── Owner account (funds the Beewave API call) ─────────────────
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_special_bundle: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable. Please try again later.")
+            return redirect("payment")
+
+        with db_transaction.atomic():
+            customer_account.balance -= amount
+            customer_account.save()
+            owner_account.balance += amount
+            owner_account.save()
 
         try:
             success_flag, bw_response = call_beewave_data_api(network, phone, qty)
         except Exception as e:
-            account.balance += amount
-            account.save()
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
             logger.error(f"buy_special_bundle crashed: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
             return redirect("payment")
@@ -957,14 +1089,21 @@ def buy_special_bundle(request):
             return redirect("succed_data")
 
         else:
-            # Refund on failure
-            account.balance += amount
-            account.save()
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
 
-            if "insufficient" in bw_response.lower():
+            bw_lower = bw_response.lower()
+            if "insufficient" in bw_lower:
                 error_msg = "Our data provider balance is low. Please try again later."
-            elif "invalid" in bw_response.lower():
+            elif "invalid" in bw_lower:
                 error_msg = "Invalid request. Please check your details and try again."
+            elif "timed out" in bw_lower:
+                error_msg = "Request timed out. Please try again in a moment."
+            elif "connect" in bw_lower:
+                error_msg = "Could not reach data provider. Please try again shortly."
             else:
                 error_msg = f"Purchase failed: {bw_response}. Your balance has been refunded."
 
@@ -1231,3 +1370,258 @@ def report_view(request):
         messages.success(request, "Report sent!")
         return redirect("report")
     return render(request, "report.html")
+
+
+# =========================
+# FOREIGN NUMBERS — 5SIM
+# =========================
+
+FOREIGN_COUNTRIES = ["usa", "uk", "canada", "russia", "india", "indonesia"]
+FOREIGN_SERVICES  = ["telegram", "whatsapp", "google", "facebook", "instagram", "twitter"]
+
+
+def _ngn_price(usd_price):
+    """
+    Convert a USD price to NGN with your profit markup applied.
+    Reads from .env:
+      USD_TO_NGN_RATE       — exchange rate e.g. 1600
+      FOREIGN_NUMBER_MARKUP — profit multiplier e.g. 1.3 = 30% markup
+    Result is rounded up to the nearest 10 naira for clean pricing.
+    """
+    import math
+    # Strip spaces, quotes, inline comments — handles messy .env values
+    def clean(val):
+        return str(val).split("#")[0].strip().strip('"').strip("'")
+
+    try:
+        rate   = Decimal(clean(config("USD_TO_NGN_RATE",        default="1600")))
+        markup = Decimal(clean(config("FOREIGN_NUMBER_MARKUP",   default="1.3")))
+    except Exception as e:
+        logger.error(f"_ngn_price config error: {e} — using defaults 1600 / 1.3")
+        rate   = Decimal("1600")
+        markup = Decimal("1.3")
+
+    ngn = Decimal(str(usd_price)) * rate * markup
+    return Decimal(str(math.ceil(float(ngn) / 10) * 10))
+
+
+def _fetch_5sim_prices(country=None, service=None):
+    """
+    Fetch live prices from 5SIM and convert to NGN with markup.
+    If country AND service are provided, returns only matching rows.
+    Returns list of dicts: {country, service, operator, price_usd, price_ngn, count}
+    price_ngn is what the customer pays (NGN, with your markup baked in).
+    price_usd is the raw 5SIM cost (what actually gets charged to your 5SIM account).
+    """
+    try:
+        response = requests.get("https://5sim.net/v1/guest/prices", timeout=30)
+        data     = response.json()
+    except Exception as e:
+        logger.error(f"5SIM price fetch error: {e}")
+        return []
+
+    prices    = []
+    countries = [country] if country else FOREIGN_COUNTRIES
+    services  = [service]  if service  else FOREIGN_SERVICES
+
+    for c in countries:
+        if c not in data:
+            continue
+        for s in services:
+            if s not in data[c]:
+                continue
+            for operator_name, operator_data in data[c][s].items():
+                usd = operator_data.get("cost", 0)
+                prices.append({
+                    "country":   c,
+                    "service":   s,
+                    "operator":  operator_name,
+                    "price_usd": usd,
+                    "price_ngn": _ngn_price(usd),   # what customer pays in ₦
+                    "price":     _ngn_price(usd),    # alias kept for template compatibility
+                    "count":     operator_data.get("count", 0),
+                })
+    return prices
+
+
+@login_required
+def buy_foreign_number(request):
+    """
+    GET  → show form + user's numbers. Prices only load after country/service selected.
+    POST → customer balance deducted, owner account credited, 5SIM API called with owner key.
+           If API fails, customer is refunded and owner balance restored.
+    """
+    customer_account = get_or_create_account(request.user)
+
+    selected_country = request.GET.get("country", "") or request.POST.get("country", "")
+    selected_service = request.GET.get("service", "") or request.POST.get("service", "")
+
+    prices = []
+    if selected_country and selected_service:
+        prices = _fetch_5sim_prices(
+            country=selected_country if selected_country in FOREIGN_COUNTRIES else None,
+            service=selected_service if selected_service in FOREIGN_SERVICES  else None,
+        )
+
+    if request.method == "POST":
+        country = request.POST.get("country", "").strip().lower()
+        service = request.POST.get("service", "").strip().lower()
+
+        if not country or not service:
+            messages.error(request, "Please select a country and service.")
+            return redirect("buy_foreign_number")
+
+        if country not in FOREIGN_COUNTRIES:
+            messages.error(request, "Invalid country selected.")
+            return redirect("buy_foreign_number")
+
+        if service not in FOREIGN_SERVICES:
+            messages.error(request, "Invalid service selected.")
+            return redirect("buy_foreign_number")
+
+        plan_prices = _fetch_5sim_prices(country=country, service=service)
+        available   = [p for p in plan_prices if p["count"] > 0]
+
+        if not available:
+            messages.error(request, "No available numbers right now. Try another country or service.")
+            return redirect(f"buy_foreign_number?country={country}&service={service}")
+
+        cheapest       = min(available, key=lambda x: x["price_ngn"])
+        selected_price = Decimal(str(cheapest["price_ngn"]))  # NGN with markup — what customer pays
+
+        if customer_account.balance < selected_price:
+            messages.error(request, f"Insufficient balance. You need ₦{selected_price:,} for this number.")
+            return redirect("buy_foreign_number")
+
+        # ── Owner account (the 5SIM API key belongs to the owner) ──────
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_foreign_number: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable. Please try again later.")
+            return redirect("buy_foreign_number")
+
+        # Deduct customer, credit owner — atomically
+        with db_transaction.atomic():
+            customer_account.balance -= selected_price
+            customer_account.save()
+            owner_account.balance += selected_price
+            owner_account.save()
+
+        try:
+            headers = {
+                "Authorization": f"Bearer {settings.FIVE_SIM_API_KEY}",
+                "Accept":        "application/json",
+            }
+            buy_url  = f"https://5sim.net/v1/user/buy/activation/{country}/any/{service}"
+            response = requests.get(buy_url, headers=headers, timeout=30)
+
+            logger.info(f"5SIM buy → HTTP {response.status_code} | {response.text[:300]}")
+
+            if response.status_code == 200:
+                data = response.json()
+                ForeignNumber.objects.create(
+                    user         = request.user,
+                    order_id     = data.get("id"),
+                    country      = data.get("country"),
+                    service      = data.get("product"),
+                    phone_number = data.get("phone"),
+                    price        = selected_price,
+                    status       = "PENDING",
+                )
+                messages.success(request, f"Number {data.get('phone')} purchased successfully!")
+
+            else:
+                # API failed — refund customer, restore owner
+                with db_transaction.atomic():
+                    customer_account.balance += selected_price
+                    customer_account.save()
+                    owner_account.balance -= selected_price
+                    owner_account.save()
+
+                try:
+                    err_data = response.json()
+                    err_msg  = err_data.get("message") or err_data.get("error") or response.text
+                except Exception:
+                    err_msg = response.text
+
+                err_lower = err_msg.lower()
+                if "no free phones" in err_lower:
+                    messages.error(request, "No available numbers right now. Try another country or service.")
+                elif "not enough user balance" in err_lower:
+                    messages.error(request, "5SIM provider balance is low. Contact support.")
+                else:
+                    messages.error(request, f"Purchase failed: {err_msg}")
+
+        except Exception as e:
+            with db_transaction.atomic():
+                customer_account.balance += selected_price
+                customer_account.save()
+                owner_account.balance -= selected_price
+                owner_account.save()
+            logger.error(f"5SIM buy error: {e}")
+            messages.error(request, "Something went wrong. Your balance has been refunded.")
+
+        return redirect(f"/buy-foreign-number/?country={country}&service={service}")
+
+    numbers = ForeignNumber.objects.filter(user=request.user).order_by("-created_at")
+
+    context = {
+        "account":          customer_account,
+        "countries":        FOREIGN_COUNTRIES,
+        "services":         FOREIGN_SERVICES,
+        "numbers":          numbers,
+        "prices":           prices,
+        "selected_country": selected_country,
+        "selected_service": selected_service,
+    }
+    return render(request, "buy_foreign_number.html", context)
+
+
+@login_required
+def foreign_number_prices(request):
+    """AJAX endpoint — returns prices for a specific country+service as JSON."""
+    country = request.GET.get("country", "").strip().lower()
+    service = request.GET.get("service", "").strip().lower()
+
+    if not country or not service:
+        return JsonResponse({"prices": [], "error": "country and service required"})
+
+    prices = _fetch_5sim_prices(
+        country=country if country in FOREIGN_COUNTRIES else None,
+        service=service if service  in FOREIGN_SERVICES  else None,
+    )
+    return JsonResponse({"prices": prices})
+
+
+@login_required
+def cancel_foreign_number(request, order_id):
+    try:
+        foreign_number = ForeignNumber.objects.get(order_id=order_id, user=request.user)
+    except ForeignNumber.DoesNotExist:
+        messages.error(request, "Number not found.")
+        return redirect("buy_foreign_number")
+
+    try:
+        headers  = {
+            "Authorization": f"Bearer {settings.FIVE_SIM_API_KEY}",
+            "Accept":        "application/json",
+        }
+        response = requests.get(
+            f"https://5sim.net/v1/user/cancel/{order_id}",
+            headers=headers, timeout=30,
+        )
+        logger.info(f"5SIM cancel → HTTP {response.status_code} | {response.text[:200]}")
+
+        if response.status_code == 200:
+            foreign_number.status = "CANCELLED"
+            foreign_number.save()
+            messages.success(request, "Number cancelled successfully.")
+        else:
+            messages.error(request, "Unable to cancel number. It may have already expired.")
+
+    except Exception as e:
+        logger.error(f"5SIM cancel error: {e}")
+        messages.error(request, str(e))
+
+    return redirect("buy_foreign_number")

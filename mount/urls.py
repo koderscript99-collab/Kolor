@@ -44,4 +44,17 @@ urlpatterns = [
 
     # WEBHOOK
     path('webhook/flutterwave/', views.flutterwave_webhook, name='webhook'),
+    # FIVE_SIM
+    path('foreign-number/', views.buy_foreign_number, name="buy_foreign_number"),
+    path(
+    "foreign-prices/",
+    views.foreign_number_prices,
+    name="foreign_prices"
+),
+    path(
+    "cancel-foreign-number/<str:order_id>/",
+    views.cancel_foreign_number,
+    name="cancel_foreign_number"
+),
+    
 ]
