@@ -274,31 +274,58 @@ DATA_PLANS = {
 # BEEWAVE SPECIAL BUNDLE PLANS
 # =========================
 
+# ── BEEWAVE PLANS ────────────────────────────────────────────────────────────
+# qty values must match Beewave's exact product codes from your pricing table.
+# type field per network:
+#   MTN       → "sme-data"
+#   GLO       → "cg-data"  (SME plans) or "sme-data" for weekly
+#   9MOBILE   → "cg-data"
+#   AIRTEL    → "direct-gifting-data"
+# Prices below are your selling price (add your margin on top of API Earner cost).
+# API Earner costs shown in comments so you know your profit per plan.
+
 BEEWAVE_PLANS = {
     "MTN": [
-        {"qty": "500mb",  "label": "MTN 500MB (Special)",  "amount": 150},
-        {"qty": "1gb",    "label": "MTN 1GB (Special)",    "amount": 263},
-        {"qty": "2gb",    "label": "MTN 2GB (Special)",    "amount": 500},
-        {"qty": "3gb",    "label": "MTN 3GB (Special)",    "amount": 720},
-        {"qty": "5gb",    "label": "MTN 5GB (Special)",    "amount": 1150},
-        {"qty": "10gb",   "label": "MTN 10GB (Special)",   "amount": 2200},
+        # sme-data plans
+        {"qty": "500mb_weekly",  "type": "sme-data", "label": "MTN 500MB - 7 days",   "amount": 390},   # cost ₦325
+        {"qty": "1gb_weekly",    "type": "sme-data", "label": "MTN 1GB - 7 days",     "amount": 530},   # cost ₦440
+        {"qty": "2gb_weekly",    "type": "sme-data", "label": "MTN 2GB - 7 days",     "amount": 980},   # cost ₦820
+        {"qty": "3gb_weekly",    "type": "sme-data", "label": "MTN 3GB - 7 days",     "amount": 1350},  # cost ₦1170
+        {"qty": "1gb_monthly",   "type": "sme-data", "label": "MTN 1GB - 30 days",    "amount": 650},   # cost ₦550
+        {"qty": "2gb_monthly",   "type": "sme-data", "label": "MTN 2GB - 30 days",    "amount": 1150},  # cost ₦990
+        {"qty": "3gb_monthly",   "type": "sme-data", "label": "MTN 3GB - 30 days",    "amount": 1700},  # cost ₦1450
+        {"qty": "5gb_monthly",   "type": "sme-data", "label": "MTN 5GB - 30 days",    "amount": 2050},  # cost ₦1750
     ],
     "GLO": [
-        {"qty": "500mb",  "label": "GLO 500MB (Special)",  "amount": 120},
-        {"qty": "1gb",    "label": "GLO 1GB (Special)",    "amount": 230},
-        {"qty": "2gb",    "label": "GLO 2GB (Special)",    "amount": 450},
-        {"qty": "5gb",    "label": "GLO 5GB (Special)",    "amount": 1000},
+        # cg-data plans
+        {"qty": "200mb_weekly",  "type": "cg-data",  "label": "GLO 200MB - 7 days",   "amount": 140},   # cost ₦109
+        {"qty": "1gb_3days",     "type": "cg-data",  "label": "GLO 1GB - 3 days",     "amount": 330},   # cost ₦277
+        {"qty": "1gb_7days",     "type": "cg-data",  "label": "GLO 1GB - 7 days",     "amount": 380},   # cost ₦317
+        {"qty": "3gb_3days",     "type": "cg-data",  "label": "GLO 3GB - 3 days",     "amount": 950},   # cost ₦801
+        {"qty": "3gb_7days",     "type": "cg-data",  "label": "GLO 3GB - 7 days",     "amount": 1100},  # cost ₦920
+        {"qty": "500mb_monthly", "type": "cg-data",  "label": "GLO 500MB - 30 days",  "amount": 280},   # cost ₦228
+        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "GLO 1GB - 30 days",    "amount": 520},   # cost ₦430
+        {"qty": "2gb_monthly",   "type": "cg-data",  "label": "GLO 2GB - 30 days",    "amount": 990},   # cost ₦840
+        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "GLO 5GB - 30 days",    "amount": 2400},  # cost ₦2075
     ],
     "AIRTEL": [
-        {"qty": "500mb",  "label": "Airtel 500MB (Special)", "amount": 140},
-        {"qty": "1gb",    "label": "Airtel 1GB (Special)",   "amount": 260},
-        {"qty": "2gb",    "label": "Airtel 2GB (Special)",   "amount": 500},
-        {"qty": "5gb",    "label": "Airtel 5GB (Special)",   "amount": 1100},
+        # direct-gifting-data plans
+        {"qty": "150mb_daily",   "type": "direct-gifting-data", "label": "Airtel 150MB - 1 day",   "amount": 100},  # cost ₦70
+        {"qty": "300mb_2days",   "type": "direct-gifting-data", "label": "Airtel 300MB - 2 days",  "amount": 150},  # cost ₦115
+        {"qty": "600mb_2days",   "type": "direct-gifting-data", "label": "Airtel 600MB - 2 days",  "amount": 270},  # cost ₦220
+        {"qty": "1.5gb_1days",   "type": "direct-gifting-data", "label": "Airtel 1.5GB - 1 day",   "amount": 550},  # cost ₦460
+        {"qty": "2gb_2days",     "type": "direct-gifting-data", "label": "Airtel 2GB - 2 days",    "amount": 650},  # cost ₦560
+        {"qty": "3gb_2days",     "type": "direct-gifting-data", "label": "Airtel 3GB - 2 days",    "amount": 900},  # cost ₦800
+        {"qty": "10gb_monthly",  "type": "direct-gifting-data", "label": "Airtel 10GB - 30 days",  "amount": 3500}, # cost ₦3100
     ],
     "9MOBILE": [
-        {"qty": "500mb",  "label": "9Mobile 500MB (Special)", "amount": 130},
-        {"qty": "1gb",    "label": "9Mobile 1GB (Special)",   "amount": 240},
-        {"qty": "2gb",    "label": "9Mobile 2GB (Special)",   "amount": 460},
+        # cg-data plans
+        {"qty": "500mb_weekly",  "type": "cg-data",  "label": "9Mobile 500MB - 7 days",  "amount": 360},  # cost ₦300
+        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "9Mobile 1GB - 30 days",   "amount": 650},  # cost ₦550
+        {"qty": "1.5gb_monthly", "type": "cg-data",  "label": "9Mobile 1.5GB - 30 days", "amount": 950},  # cost ₦800
+        {"qty": "3gb_monthly",   "type": "cg-data",  "label": "9Mobile 3GB - 30 days",   "amount": 1800}, # cost ₦1550
+        {"qty": "4gb_monthly",   "type": "cg-data",  "label": "9Mobile 4GB - 30 days",   "amount": 2350}, # cost ₦2050
+        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "9Mobile 5GB - 30 days",   "amount": 2800}, # cost ₦2500
     ],
 }
 
@@ -790,23 +817,81 @@ BEEWAVE_QTY_MAP = {
 }
 
 
-def call_beewave_data_api(network, phone, qty):
+import platform as _platform
+import subprocess as _subprocess
+
+# Windows dev: curl uses Schannel TLS which Beewave accepts.
+# Linux prod:  httpx works fine — no WAF block on Linux OpenSSL.
+_IS_WINDOWS = _platform.system() == "Windows"
+logger.info(f"Beewave backend: {'curl (Windows)' if _IS_WINDOWS else 'httpx (Linux)'}")
+
+
+def _beewave_via_curl(payload):
+    """Windows only — call Beewave using system curl (Schannel TLS, bypasses WAF block)."""
+    try:
+        result = _subprocess.run(
+            [
+                "curl", "-s", "-X", "POST",
+                "https://beewave.ng/api/data.php",
+                "-H", "Content-Type: application/json",
+                "-d", json.dumps(payload),
+                "--max-time", "30",
+            ],
+            capture_output=True, text=True, timeout=35,
+        )
+        raw = result.stdout.strip()
+        if not raw:
+            logger.error(f"Beewave curl no output. stderr: {result.stderr.strip()}")
+            return None, "No response from Beewave."
+        logger.info(f"Beewave curl raw: {raw}")
+        return json.loads(raw), None
+    except _subprocess.TimeoutExpired:
+        return None, "Beewave request timed out."
+    except json.JSONDecodeError as e:
+        logger.error(f"Beewave curl JSON error: {e}")
+        return None, "Beewave returned unexpected response."
+    except FileNotFoundError:
+        return None, "curl not found on this system."
+    except Exception as e:
+        logger.error(f"Beewave curl error: {e}")
+        return None, "Network error contacting Beewave."
+
+
+def _beewave_via_httpx(payload):
+    """Linux/production — call Beewave using httpx HTTP/1.1."""
+    import httpx
+    try:
+        with httpx.Client(http2=False, timeout=30) as client:
+            response = client.post(
+                "https://beewave.ng/api/data.php",
+                json=payload,
+            )
+        logger.info(f"Beewave HTTP {response.status_code} | raw: {response.text[:500]}")
+        if response.status_code != 200:
+            return None, f"Beewave server error (HTTP {response.status_code})"
+        try:
+            return response.json(), None
+        except ValueError:
+            logger.error(f"Beewave non-JSON: {response.text[:300]}")
+            return None, "Beewave returned unexpected response format."
+    except httpx.ConnectError as e:
+        logger.error(f"Beewave connect error: {e}")
+        return None, "Could not connect to Beewave. Please try again."
+    except httpx.TimeoutException:
+        return None, "Beewave request timed out. Please try again."
+    except Exception as e:
+        logger.error(f"Beewave unexpected error: {e}")
+        return None, "Network error contacting Beewave."
+
+
+def call_beewave_data_api(network, phone, qty, plan_type="sme-data"):
     """
     Call Beewave data API.
     Returns (True, reference) on success, (False, error_message) on failure.
-
-    ROOT CAUSE OF RemoteDisconnected:
-      requests' built-in connection pooling sometimes sends the request on a
-      stale/half-closed keep-alive socket. Beewave's server closes it without
-      responding. Fix: use a fresh Session with retry logic + explicit
-      Connection: close header to force a brand-new TCP connection every time.
-
-    Also fixed vs original:
-      - "type": "sme-data"  →  "SME"
-      - "phone_number"      →  "phone"
-      - "qty" key           →  "plan"
-      - Body encoded manually with json.dumps() + data= (not json=)
-        so we have 100% control over the Content-Type header string
+    Windows → curl subprocess (Schannel TLS, bypasses WAF).
+    Linux   → httpx (no WAF issue on Linux OpenSSL).
+    plan_type varies per network: sme-data (MTN), cg-data (GLO/9Mobile),
+    direct-gifting-data (Airtel).
     """
     api_key      = config("BEEWAVE_API_KEY")
     network_name = BEEWAVE_NETWORK_NAMES.get(network)
@@ -814,88 +899,35 @@ def call_beewave_data_api(network, phone, qty):
     if not network_name:
         return False, f"Unknown network: {network}"
 
-    plan_value = BEEWAVE_QTY_MAP.get(qty, qty)
-
     payload = {
-        "api_key": api_key,
-        "type":    "SME",        # was "sme-data" → caused "Invalid Product Service"
-        "network": network_name, # lowercase: "mtn", "glo", "airtel", "9mobile"
-        "phone":   phone,        # was "phone_number"
-        "plan":    plan_value,   # was key "qty"; value e.g. "1gb", "500mb"
+        "api_key":      api_key,
+        "type":         plan_type,    # sme-data / cg-data / direct-gifting-data
+        "qty":          qty,          # exact code e.g. "1gb_weekly", "500mb_monthly"
+        "network":      network_name, # lowercase: "mtn", "glo", "airtel", "9mobile"
+        "phone_number": phone,        # exact field name per Beewave docs
     }
 
-    # Manually encode so Content-Type is exactly right — no charset suffix, no surprises
-    body = json.dumps(payload)
+    logger.info(f"Beewave → network={network_name} plan={plan_value} phone={phone} via={'curl' if _IS_WINDOWS else 'httpx'}")
 
-    headers = {
-        "Content-Type":   "application/json",
-        "Content-Length": str(len(body.encode("utf-8"))),
-        "Connection":     "close",        # KEY FIX: disables keep-alive, forces fresh TCP
-        "User-Agent":     "Mozilla/5.0",
-        "Accept":         "application/json",
-    }
+    if _IS_WINDOWS:
+        data, err = _beewave_via_curl(payload)
+    else:
+        data, err = _beewave_via_httpx(payload)
 
-    logger.info(f"Beewave → network={network_name} plan={plan_value} phone={phone}")
-    logger.info(f"Beewave payload: {payload}")
+    if err:
+        return False, err
 
-    # Use a fresh Session (no pooled sockets) with 1 retry on connection failure
-    from requests.adapters import HTTPAdapter
-    from urllib3.util.retry import Retry
+    logger.info(f"Beewave parsed: {data}")
+    status = data.get("status", "")
 
-    session = requests.Session()
-    retry   = Retry(total=2, backoff_factor=1,
-                    status_forcelist=[500, 502, 503, 504],
-                    allowed_methods=["POST"])
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("https://", adapter)
-
-    try:
-        response = session.post(
-            "https://beewave.ng/api/data.php",
-            data=body,        # manually encoded — NOT json=payload
-            headers=headers,
-            timeout=30,
-        )
-
-        logger.info(f"Beewave HTTP {response.status_code} | raw: {response.text[:500]}")
-
-        if response.status_code != 200:
-            logger.error(f"Beewave non-200: {response.status_code} | {response.text[:300]}")
-            return False, f"Beewave server error (HTTP {response.status_code})"
-
-        try:
-            data = response.json()
-        except ValueError:
-            logger.error(f"Beewave non-JSON response: {response.text[:300]}")
-            return False, "Beewave returned an unexpected response format."
-
-        logger.info(f"Beewave parsed response: {data}")
-
-        status = data.get("status", "")
-
-        if status == "success":
-            return True, data.get("reference", "beewave-ok")
-        elif status == "pending":
-            return True, data.get("reference", "pending")
-        else:
-            error_msg = data.get("desc", data.get("message", "Transaction failed"))
-            logger.error(f"Beewave error response: {data}")
-            return False, error_msg
-
-    except requests.exceptions.ConnectionError as e:
-        logger.error(f"Beewave connection error: {e}")
-        return False, "Could not connect to Beewave. Please try again."
-
-    except requests.exceptions.Timeout:
-        logger.error("Beewave request timed out after 30s")
-        return False, "Beewave request timed out. Please try again."
-
-    except requests.RequestException as e:
-        logger.error(f"Beewave request failed: {e}")
-        return False, "Network error contacting Beewave."
-
-    finally:
-        session.close()
+    if status == "success":
+        return True, data.get("reference", "beewave-ok")
+    elif status == "pending":
+        return True, data.get("reference", "pending")
+    else:
+        error_msg = data.get("desc", data.get("message", "Transaction failed"))
+        logger.error(f"Beewave error response: {data}")
+        return False, error_msg
 
 
 # =========================
@@ -1036,7 +1068,8 @@ def buy_special_bundle(request):
             messages.error(request, "Invalid data plan selected.")
             return redirect("payment")
 
-        amount = Decimal(str(plan_info["amount"]))
+        amount     = Decimal(str(plan_info["amount"]))
+        plan_type  = plan_info.get("type", "sme-data")  # type per plan e.g. sme-data, cg-data
 
         # ── Customer account ──────────────────────────────────────────
         try:
@@ -1063,7 +1096,7 @@ def buy_special_bundle(request):
             owner_account.save()
 
         try:
-            success_flag, bw_response = call_beewave_data_api(network, phone, qty)
+            success_flag, bw_response = call_beewave_data_api(network, phone, qty, plan_type)
         except Exception as e:
             with db_transaction.atomic():
                 customer_account.balance += amount

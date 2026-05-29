@@ -1,21 +1,249 @@
-
-<html>
+```html
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Sub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Insufficient Balance</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:'Nunito', sans-serif;
+            background:#f9fafb;
+            min-height:100vh;
+        }
+
+        /* TOPBAR */
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:18px 32px;
+            border-bottom:1.5px solid #e5e7eb;
+            background:#fff;
+            position:sticky;
+            top:0;
+            z-index:100;
+        }
+
+        .brand-name{
+            font-size:22px;
+            font-weight:900;
+            background:linear-gradient(90deg,#7dd3fc,#3b82f6,#1d4ed8);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+            letter-spacing:1px;
+        }
+
+        .topbar-right{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .avatar{
+            width:38px;
+            height:38px;
+            border-radius:50%;
+            background:linear-gradient(135deg,#4facfe,#0078ff);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:white;
+            font-weight:900;
+            font-size:15px;
+        }
+
+        .user-name{
+            font-size:14px;
+            font-weight:700;
+            color:#1a1a1a;
+        }
+
+        /* CONTAINER */
+
+        .container{
+            max-width:500px;
+            margin:60px auto;
+            padding:0 24px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+        }
+
+        /* CARD */
+
+        .error-card{
+            background:#fff;
+            border-radius:20px;
+            border:1.5px solid #e5e7eb;
+            box-shadow:0 8px 40px rgba(0,0,0,.08);
+            padding:48px 36px;
+            text-align:center;
+            width:100%;
+        }
+
+        /* ICON */
+
+        .icon-wrap{
+            width:80px;
+            height:80px;
+            border-radius:50%;
+            background:linear-gradient(135deg,#fee2e2,#fecaca);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:38px;
+            margin:0 auto 24px;
+            box-shadow:0 4px 20px rgba(239,68,68,.2);
+        }
+
+        h1{
+            font-size:24px;
+            font-weight:900;
+            color:#dc2626;
+            margin-bottom:10px;
+        }
+
+        p{
+            font-size:14px;
+            color:#6b7280;
+            font-weight:600;
+            line-height:1.6;
+            margin-bottom:32px;
+        }
+
+        /* BUTTONS */
+
+        .btn-group{
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+
+        .btn-primary{
+            display:block;
+            padding:14px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#4facfe,#0078ff);
+            color:white;
+            font-size:15px;
+            font-weight:700;
+            text-decoration:none;
+            text-align:center;
+            transition:opacity .2s, transform .15s;
+        }
+
+        .btn-primary:hover{
+            opacity:.9;
+            transform:translateY(-1px);
+        }
+
+        .btn-secondary{
+            display:block;
+            padding:14px;
+            border-radius:12px;
+            background:#f3f4f6;
+            color:#374151;
+            font-size:15px;
+            font-weight:700;
+            text-decoration:none;
+            text-align:center;
+            transition:background .2s;
+        }
+
+        .btn-secondary:hover{
+            background:#e5e7eb;
+        }
+
+        @media (max-width:480px){
+
+            .container{
+                margin:32px auto;
+            }
+
+            .error-card{
+                padding:36px 24px;
+            }
+
+            .topbar{
+                padding:14px 16px;
+            }
+        }
+
+    </style>
+
 </head>
 <body>
-    <h1>❌ Insufficient Balance!</h1>
-    <p>You do not have enough funds for this transaction.</p>
 
-    <a href="/payment/">Go back</a>
-     
+<!-- TOPBAR -->
+
+<nav class="topbar">
+
+    <div class="brand-name">
+        kolor
+    </div>
+
+    <div class="topbar-right">
+
+        <div class="avatar">
+            {{ user.username|slice:":1"|upper }}
+        </div>
+
+        <span class="user-name">
+            {{ user.username }}
+        </span>
+
+    </div>
+
+</nav>
+
+<!-- MAIN -->
+
+<div class="container">
+
+    <div class="error-card">
+
+        <div class="icon-wrap">
+            ❌
+        </div>
+
+        <h1>
+            Insufficient Balance
+        </h1>
+
+        <p>
+            You do not have enough funds in your wallet to complete this transaction.<br>
+            Please fund your account and try again.
+        </p>
+
+        <div class="btn-group">
+
+            <a href="{% url 'payment' %}" class="btn-primary">
+                💳 Fund Wallet
+            </a>
+
+            <a href="{% url 'home' %}" class="btn-secondary">
+                🏠 Go to Home
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
 </body>
-<style>
-    body{
-        font-family: 'Courier New', Courier, monospace;
-        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-        text-align: center;
-        text-shadow: 2px 2px 4px #000000;
-    }
-</style>
 </html>
+```
