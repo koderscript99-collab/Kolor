@@ -3,7 +3,8 @@ from . import views
 
 urlpatterns = [
     # AUTH
-    path('',              views.signup,      name='signup'),
+    path('',       views.landing_page, name='landing'),
+ 
     path('signup/',       views.signup,      name='signup'),
     path('login/',        views.login_view,  name='login'),
     path('logout/',       views.logout_view, name='logout'),
@@ -12,8 +13,8 @@ urlpatterns = [
     path('home/',         views.home,        name='home'),
     path('success/',      views.success,     name='success'),
 
+
     # API
-    path('api/login/',          views.api_login,      name='api_login'),
     path('api/profile/',        views.get_profile,    name='profile'),
     path('api/profile/update/', views.update_profile, name='update_profile'),
 
@@ -56,5 +57,12 @@ urlpatterns = [
     views.cancel_foreign_number,
     name="cancel_foreign_number"
 ),
-    
+
+
+    path("electricity/", views.buy_electricity, name="buy_electricity"),
+    path("cable/", views.buy_cable_tv, name="cable"),
+    path('cable/', views.buy_cable_tv, name='buy_cable_tv'),
+  
+  
+
 ]

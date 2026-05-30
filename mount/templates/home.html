@@ -225,6 +225,8 @@
     <a href="/payment/"><span class="s-icon">💳</span> Payment</a>
     <a href="/market/"><span class="s-icon">🛍️</span> Market</a>
     <a href="/foreign-number/"><span class="s-icon">🌍</span> Foreign Numbers</a>
+    <a href="/electricity/"><span class="s-icon">💡</span> Buy Electricity</a>
+    <a href="/cable/"><span class="s-icon">📺</span> Buy Cable</a>
     <div class="sidebar-section">Account</div>
     <a href="/report/"><span class="s-icon">📊</span> Reports</a>
     <div class="sidebar-logout">
@@ -282,6 +284,21 @@
                 <span class="stat-value">{{ total_smm|default:"0" }}</span>
                 <span class="stat-sub">completed</span>
             </div>
+            <div class="stat-box">
+                <span class="stat-label">Foreign Numbers</span>
+                <span class="stat-value">{{ total_foreign|default:"0" }}</span>
+                <span class="stat-sub">rented</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Electricity</span>
+                <span class="stat-value">{{ total_electricity|default:"0" }}</span>
+                <span class="stat-sub">purchases</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Cable TV</span>
+                <span class="stat-value ">{{ total_cable|default:"0" }}</span>
+                <span class="stat-sub">purchases</span> 
+            </div>
         </div>
 
         <div class="card">
@@ -289,22 +306,28 @@
             <div class="card-sub">What would you like to do?</div>
             <div class="actions-grid">
                 <a href="/payment/" class="action-btn deposit">
-                    <div class="a-icon">💵</div>Deposit
+                    <div class="a-icon">💵</div>DESPOSIT
                 </a>
                 <a href="/payment/" class="action-btn data">
-                    <div class="a-icon">📶</div>Buy Data
+                    <div class="a-icon">📶</div>BUY DATA
                 </a>
                 <a href="/payment/" class="action-btn special">
-                    <div class="a-icon">⚡</div>Special Bundle
+                    <div class="a-icon">⚡</div>SPECIAL BUNDLE
                 </a>
                 <a href="/market/" class="action-btn market">
-                    <div class="a-icon">🛍️</div>Market
+                    <div class="a-icon">🛍️</div>SMM
                 </a>
                 <a href="/foreign-number/" class="action-btn foreign">
-                    <div class="a-icon">🌍</div>Foreign Numbers
+                    <div class="a-icon">🌍</div>RENT NUMBER
                 </a>
                 <a href="/report/" class="action-btn report">
-                    <div class="a-icon">📊</div>Reports
+                    <div class="a-icon">📊</div>BUY LOGS
+                </a>
+                <a href="/electricity/" class="action-btn electricity">
+                    <div class="a-icon">💡</div>BUY ELECTRICITY
+                </a>
+                <a href="/cable/" class="action-btn cable">
+                    <div class="a-icon">📺</div>BUY CABLE
                 </a>
             </div>
         </div>

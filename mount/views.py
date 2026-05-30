@@ -21,7 +21,7 @@ import logging
 
 from decouple import config
 
-from .models import Account, Transaction, Detail, DataPurchase, Report, SMMOrder, ForeignNumber
+from .models import Account, Transaction, Detail, DataPurchase, Report, SMMOrder, ForeignNumber, ElectricityPurchase, CableTVPurchase
 from .serializers import DetailSerializer
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,9 @@ def credit_account(transaction_obj):
         transaction_obj.status = "successful"
         transaction_obj.save()
     return True
-
+#landing*********
+def landing_page(request):
+    return render(request, "landing.html")
 
 # =========================
 # AUTH (WEB)
@@ -1658,3 +1660,452 @@ def cancel_foreign_number(request, order_id):
         messages.error(request, str(e))
 
     return redirect("buy_foreign_number")
+
+
+# =========================
+# ELECTRICITY — CLUBKONNECT
+# =========================
+
+ELECTRIC_COMPANIES = {
+    "01": "Eko Electric (EKEDC)",
+    "02": "Ikeja Electric (IKEDC)",
+    "03": "Abuja Electric (AEDC)",
+    "04": "Kano Electric (KEDC)",
+    "05": "Portharcourt Electric (PHEDC)",
+    "06": "Jos Electric (JEDC)",
+    "07": "Ibadan Electric (IBEDC)",
+    "08": "Kaduna Electric (KAEDC)",
+    "09": "Enugu Electric (EEDC)",
+    "10": "Benin Electric (BEDC)",
+    "11": "Yola Electric (YEDC)",
+    "12": "Aba Electric (APLE)",
+}
+
+METER_TYPES = {
+    "01": "Prepaid",
+    "02": "Postpaid",
+}
+
+
+def verify_meter(electric_company, meter_no, meter_type):
+    """Verify a meter number via ClubKonnect before purchase."""
+    user_id = config("CLUBKONNECT_USER_ID")
+    api_key = config("CLUBKONNECT_API_KEY")
+    url = (
+        f"https://www.nellobytesystems.com/APIVerifyElectricityV1.asp"
+        f"?UserID={user_id}&APIKey={api_key}"
+        f"&ElectricCompany={electric_company}&MeterNo={meter_no}&MeterType={meter_type}"
+    )
+    try:
+        resp = requests.get(url, timeout=15)
+        data = resp.json()
+        name = data.get("customer_name", "")
+        if name and name != "INVALID_METERNO":
+            return True, name
+        return False, "Invalid meter number"
+    except Exception as e:
+        logger.error(f"Meter verify error: {e}")
+        return False, "Could not verify meter number"
+
+
+def call_clubkonnect_electricity_api(electric_company, meter_type, meter_no, amount, phone, request_id):
+    user_id  = config("CLUBKONNECT_USER_ID")
+    api_key  = config("CLUBKONNECT_API_KEY")
+    site_url = config("SITE_URL", default="http://127.0.0.1:8000").rstrip("/")
+    url = (
+        f"https://www.nellobytesystems.com/APIElectricityV1.asp"
+        f"?UserID={user_id}&APIKey={api_key}"
+        f"&ElectricCompany={electric_company}&MeterType={meter_type}"
+        f"&MeterNo={meter_no}&Amount={amount}&PhoneNo={phone}"
+        f"&RequestID={request_id}&CallBackURL={site_url}/webhook/clubkonnect/"
+    )
+    logger.info(f"ClubKonnect Electricity → company={electric_company} meter={meter_no} amount={amount}")
+    try:
+        resp = requests.get(url, timeout=15)
+        text = resp.text.strip()
+        logger.info(f"ClubKonnect Electricity response: {text}")
+        try:
+            data        = json.loads(text)
+            status      = data.get("status", "")
+            status_code = str(data.get("statuscode", ""))
+            if status == "ORDER_RECEIVED" or status_code == "100":
+                return True, data.get("metertoken", ""), data.get("orderid", "")
+            elif status == "INSUFFICIENT_BALANCE":
+                return False, "insufficient balance in provider wallet", ""
+            elif status in ("INVALID_CREDENTIALS", "INVALID_APIKEY"):
+                return False, "invalid api credentials", ""
+            elif status == "INVALID_MeterNo":
+                return False, "invalid meter number", ""
+            else:
+                logger.error(f"ClubKonnect Electricity error: {text}")
+                return False, text, ""
+        except json.JSONDecodeError:
+            logger.error(f"ClubKonnect Electricity non-JSON: {text}")
+            return False, text, ""
+    except requests.RequestException as e:
+        logger.error(f"ClubKonnect Electricity request failed: {e}")
+        return False, "Network error contacting ClubKonnect.", ""
+
+
+@login_required
+def buy_electricity(request):
+    account = get_or_create_account(request.user)
+
+    # AJAX meter verification
+    if request.method == "GET" and request.GET.get("verify_meter"):
+        company    = request.GET.get("company", "")
+        meter_no   = request.GET.get("meter_no", "")
+        meter_type = request.GET.get("meter_type", "01")
+        ok, result = verify_meter(company, meter_no, meter_type)
+        return JsonResponse({"success": ok, "customer_name": result if ok else "", "error": result if not ok else ""})
+
+    if request.method == "POST":
+        company    = request.POST.get("electric_company", "").strip()
+        meter_type = request.POST.get("meter_type", "01").strip()
+        meter_no   = request.POST.get("meter_no", "").strip()
+        phone      = request.POST.get("phone", "").strip()
+        amount_raw = request.POST.get("amount", "").strip()
+
+        if not all([company, meter_type, meter_no, phone, amount_raw]):
+            messages.error(request, "All fields are required.")
+            return redirect("buy_electricity")
+
+        try:
+            amount = Decimal(amount_raw)
+        except InvalidOperation:
+            messages.error(request, "Invalid amount.")
+            return redirect("buy_electricity")
+
+        if amount < 1000:
+            messages.error(request, "Minimum electricity purchase is ₦1,000.")
+            return redirect("buy_electricity")
+
+        if company not in ELECTRIC_COMPANIES:
+            messages.error(request, "Invalid electricity company selected.")
+            return redirect("buy_electricity")
+
+        if len(phone) < 11:
+            messages.error(request, "Enter a valid 11-digit phone number.")
+            return redirect("buy_electricity")
+
+        try:
+            customer_account = Account.objects.get(user=request.user)
+        except Account.DoesNotExist:
+            messages.error(request, "Wallet account not found.")
+            return redirect("home")
+
+        if customer_account.balance < amount:
+            return redirect("low_balance")
+
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_electricity: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable.")
+            return redirect("buy_electricity")
+
+        request_id = str(uuid.uuid4()).replace("-", "")[:20]
+
+        with db_transaction.atomic():
+            customer_account.balance -= amount
+            customer_account.save()
+            owner_account.balance += amount
+            owner_account.save()
+
+        try:
+            success_flag, token, order_id = call_clubkonnect_electricity_api(
+                company, meter_type, meter_no, int(amount), phone, request_id
+            )
+        except Exception as e:
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
+            logger.error(f"buy_electricity crashed: {e}")
+            messages.error(request, "Something went wrong. Your balance has been refunded.")
+            return redirect("buy_electricity")
+
+        company_name = ELECTRIC_COMPANIES.get(company, company)
+        meter_label  = METER_TYPES.get(meter_type, meter_type)
+
+        if success_flag:
+            ElectricityPurchase.objects.create(
+                user             = request.user,
+                electric_provider = company_name,   # existing column
+                meter_type       = meter_label,
+                meter_number     = meter_no,        # existing column name
+                amount           = amount,
+                token            = token,
+                reference        = request_id,
+                status           = "successful",
+            )
+            messages.success(request, f"₦{amount:,} electricity purchased! Token: {token}")
+            return redirect("buy_electricity")
+        else:
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
+
+            if "insufficient" in success_flag if isinstance(success_flag, str) else "insufficient" in str(token).lower():
+                error_msg = "Provider balance is low. Please try again later."
+            else:
+                error_msg = f"Purchase failed: {token}. Your balance has been refunded."
+
+            messages.error(request, error_msg)
+            return redirect("buy_electricity")
+
+    purchases = ElectricityPurchase.objects.filter(user=request.user).order_by("-created_at")[:10]
+    context = {
+        "account":     account,
+        "companies":   ELECTRIC_COMPANIES,
+        "meter_types": METER_TYPES,
+        "purchases":   purchases,
+    }
+    return render(request, "buy_electricity.html", context)
+
+
+# =========================
+# CABLE TV — CLUBKONNECT
+# =========================
+
+CABLE_TV_PROVIDERS = {
+    "dstv":      "DStv",
+    "gotv":      "GOtv",
+    "startimes": "StarTimes",
+    "showmax":   "Showmax",
+}
+
+CABLE_TV_PACKAGES = {
+    "dstv": [
+        {"code": "dstv-padi",              "label": "DStv Padi",                    "amount": 4600},
+        {"code": "dstv-yanga",             "label": "DStv Yanga",                   "amount": 6200},
+        {"code": "dstv-confam",            "label": "DStv Confam",                  "amount": 11400},
+        {"code": "dstv79",                 "label": "DStv Compact",                 "amount": 19500},
+        {"code": "dstv7",                  "label": "DStv Compact Plus",            "amount": 30500},
+        {"code": "dstv3",                  "label": "DStv Premium",                 "amount": 45000},
+        {"code": "confam-extra",           "label": "DStv Confam + ExtraView",      "amount": 17000},
+        {"code": "yanga-extra",            "label": "DStv Yanga + ExtraView",       "amount": 12000},
+        {"code": "padi-extra",             "label": "DStv Padi + ExtraView",        "amount": 10400},
+        {"code": "dstv30",                 "label": "DStv Compact + ExtraView",     "amount": 25000},
+        {"code": "dstv33",                 "label": "DStv Premium + ExtraView",     "amount": 50500},
+        {"code": "dstv45",                 "label": "DStv Compact Plus + ExtraView","amount": 36000},
+    ],
+    "gotv": [
+        {"code": "gotv-smallie",  "label": "GOtv Smallie",  "amount": 2200},
+        {"code": "gotv-jinja",    "label": "GOtv Jinja",    "amount": 4200},
+        {"code": "gotv-jolli",    "label": "GOtv Jolli",    "amount": 6100},
+        {"code": "gotv-max",      "label": "GOtv Max",      "amount": 8700},
+        {"code": "gotv-super",    "label": "GOtv Super",    "amount": 11700},
+    ],
+    "startimes": [
+        {"code": "nova_weekly",    "label": "StarTimes Nova Weekly",    "amount": 900},
+        {"code": "basic_weekly",   "label": "StarTimes Basic Weekly",   "amount": 1600},
+        {"code": "classic_weekly", "label": "StarTimes Classic Weekly", "amount": 2200},
+        {"code": "smart_weekly",   "label": "StarTimes Smart Weekly",   "amount": 1900},
+        {"code": "super_weekly",   "label": "StarTimes Super Weekly",   "amount": 3400},
+        {"code": "nova",           "label": "StarTimes Nova Monthly",   "amount": 2300},
+        {"code": "basic",          "label": "StarTimes Basic Monthly",  "amount": 4200},
+        {"code": "classic",        "label": "StarTimes Classic Monthly","amount": 6200},
+        {"code": "smart",          "label": "StarTimes Smart Monthly",  "amount": 5300},
+        {"code": "super",          "label": "StarTimes Super Monthly",  "amount": 9700},
+    ],
+    "showmax": [
+        {"code": "showmax",        "label": "Showmax Mobile",           "amount": 2900},
+        {"code": "showmax-premier-league", "label": "Showmax Premier League", "amount": 3600},
+    ],
+}
+
+
+def verify_smartcard(cable_tv, smartcard_no):
+    """Verify a smartcard/IUC number before purchase."""
+    user_id = config("CLUBKONNECT_USER_ID")
+    api_key = config("CLUBKONNECT_API_KEY")
+    url = (
+        f"https://www.nellobytesystems.com/APIVerifyCableTVV1.asp"
+        f"?UserID={user_id}&APIKey={api_key}"
+        f"&CableTV={cable_tv}&SmartCardNo={smartcard_no}"
+    )
+    try:
+        resp = requests.get(url, timeout=15)
+        data = resp.json()
+        name = data.get("customer_name", "")
+        if name and name != "INVALID_SMARTCARDNO":
+            return True, name
+        return False, "Invalid smartcard number"
+    except Exception as e:
+        logger.error(f"Smartcard verify error: {e}")
+        return False, "Could not verify smartcard"
+
+
+def call_clubkonnect_cabletv_api(cable_tv, package, smartcard_no, phone, request_id):
+    user_id  = config("CLUBKONNECT_USER_ID")
+    api_key  = config("CLUBKONNECT_API_KEY")
+    site_url = config("SITE_URL", default="http://127.0.0.1:8000").rstrip("/")
+    url = (
+        f"https://www.nellobytesystems.com/APICableTVV1.asp"
+        f"?UserID={user_id}&APIKey={api_key}"
+        f"&CableTV={cable_tv}&Package={package}"
+        f"&SmartCardNo={smartcard_no}&PhoneNo={phone}"
+        f"&RequestID={request_id}&CallBackURL={site_url}/webhook/clubkonnect/"
+    )
+    logger.info(f"ClubKonnect CableTV → tv={cable_tv} pkg={package} card={smartcard_no}")
+    try:
+        resp = requests.get(url, timeout=15)
+        text = resp.text.strip()
+        logger.info(f"ClubKonnect CableTV response: {text}")
+        try:
+            data        = json.loads(text)
+            status      = data.get("status", "")
+            status_code = str(data.get("statuscode", ""))
+            if status == "ORDER_RECEIVED" or status_code == "100":
+                return True, data.get("orderid", request_id)
+            elif status == "INSUFFICIENT_BALANCE":
+                return False, "insufficient balance in provider wallet"
+            elif status in ("INVALID_CREDENTIALS", "INVALID_APIKEY"):
+                return False, "invalid api credentials"
+            elif status == "INVALID_SMARTCARDNO":
+                return False, "invalid smartcard number"
+            elif status == "PACKAGE_NOT_AVAILABLE":
+                return False, "selected package is not available"
+            else:
+                logger.error(f"ClubKonnect CableTV error: {text}")
+                return False, text
+        except json.JSONDecodeError:
+            logger.error(f"ClubKonnect CableTV non-JSON: {text}")
+            return False, text
+    except requests.RequestException as e:
+        logger.error(f"ClubKonnect CableTV request failed: {e}")
+        return False, "Network error contacting ClubKonnect."
+
+
+@login_required
+def buy_cable_tv(request):
+    account = get_or_create_account(request.user)
+
+    # AJAX smartcard verification
+    if request.method == "GET" and request.GET.get("verify_card"):
+        cable_tv     = request.GET.get("cable_tv", "")
+        smartcard_no = request.GET.get("smartcard_no", "")
+        ok, result   = verify_smartcard(cable_tv, smartcard_no)
+        return JsonResponse({"success": ok, "customer_name": result if ok else "", "error": result if not ok else ""})
+
+    # AJAX package list for selected provider
+    if request.method == "GET" and request.GET.get("get_packages"):
+        cable_tv = request.GET.get("cable_tv", "")
+        packages = CABLE_TV_PACKAGES.get(cable_tv, [])
+        return JsonResponse({"packages": packages})
+
+    if request.method == "POST":
+        cable_tv     = request.POST.get("cable_tv", "").strip().lower()
+        package_code = request.POST.get("package", "").strip()
+        smartcard_no = request.POST.get("smartcard_no", "").strip()
+        phone        = request.POST.get("phone", "").strip()
+
+        if not all([cable_tv, package_code, smartcard_no, phone]):
+            messages.error(request, "All fields are required.")
+            return redirect("buy_cable_tv")
+
+        if cable_tv not in CABLE_TV_PROVIDERS:
+            messages.error(request, "Invalid cable TV provider.")
+            return redirect("buy_cable_tv")
+
+        if len(phone) < 11:
+            messages.error(request, "Enter a valid 11-digit phone number.")
+            return redirect("buy_cable_tv")
+
+        packages    = CABLE_TV_PACKAGES.get(cable_tv, [])
+        package_info = next((p for p in packages if p["code"] == package_code), None)
+
+        if not package_info:
+            messages.error(request, "Invalid package selected.")
+            return redirect("buy_cable_tv")
+
+        amount = Decimal(str(package_info["amount"]))
+
+        try:
+            customer_account = Account.objects.get(user=request.user)
+        except Account.DoesNotExist:
+            messages.error(request, "Wallet account not found.")
+            return redirect("home")
+
+        if customer_account.balance < amount:
+            return redirect("low_balance")
+
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_cable_tv: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable.")
+            return redirect("buy_cable_tv")
+
+        request_id = str(uuid.uuid4()).replace("-", "")[:20]
+
+        with db_transaction.atomic():
+            customer_account.balance -= amount
+            customer_account.save()
+            owner_account.balance += amount
+            owner_account.save()
+
+        try:
+            success_flag, ck_response = call_clubkonnect_cabletv_api(
+                cable_tv, package_code, smartcard_no, phone, request_id
+            )
+        except Exception as e:
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
+            logger.error(f"buy_cable_tv crashed: {e}")
+            messages.error(request, "Something went wrong. Your balance has been refunded.")
+            return redirect("buy_cable_tv")
+
+        provider_name = CABLE_TV_PROVIDERS.get(cable_tv, cable_tv)
+
+        if success_flag:
+            CableTVPurchase.objects.create(
+                user          = request.user,
+                provider      = cable_tv,
+                provider_name = provider_name,
+                package_code  = package_code,
+                package_name  = package_info["label"],
+                smartcard_no  = smartcard_no,
+                phone         = phone,
+                amount        = amount,
+                order_id      = ck_response,
+                reference     = request_id,
+                status        = "successful",
+            )
+            messages.success(request, f"{package_info['label']} subscription successful for {smartcard_no}!")
+            return redirect("buy_cable_tv")
+        else:
+            with db_transaction.atomic():
+                customer_account.balance += amount
+                customer_account.save()
+                owner_account.balance -= amount
+                owner_account.save()
+
+            ck_lower = ck_response.lower()
+            if "insufficient" in ck_lower:
+                error_msg = "Provider balance is low. Please try again later."
+            elif "invalid smartcard" in ck_lower:
+                error_msg = "Invalid smartcard number. Please check and try again."
+            elif "not available" in ck_lower:
+                error_msg = "Selected package is currently unavailable."
+            else:
+                error_msg = f"Subscription failed: {ck_response}. Your balance has been refunded."
+
+            messages.error(request, error_msg)
+            return redirect("buy_cable_tv")
+
+    purchases = CableTVPurchase.objects.filter(user=request.user).order_by("-created_at")[:10]
+    context = {
+        "account":   account,
+        "providers": CABLE_TV_PROVIDERS,
+        "packages":  json.dumps(CABLE_TV_PACKAGES),
+        "purchases": purchases,
+    }
+    return render(request, "buy_cable_tv.html", context)

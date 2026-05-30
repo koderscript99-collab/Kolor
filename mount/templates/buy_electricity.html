@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Buy Electricity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', sans-serif; background: #f9fafb; min-height: 100vh; }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px; border-bottom: 1.5px solid #e5e7eb;
+            background: #fff; position: sticky; top: 0; z-index: 100;
+        }
+        .brand-name {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: 1px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 15px;
+        }
+        .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+        .container { max-width: 700px; margin: 0 auto; padding: 28px 32px 90px; }
+
+        .balance-bar {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            border-radius: 14px; padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; color: white;
+        }
+        .balance-bar .label { font-size: 12px; color: #7dd3fc; font-weight: 700; text-transform: uppercase; }
+        .balance-bar .amount { font-size: 28px; font-weight: 900; margin-top: 2px; }
+        .balance-bar a {
+            background: #3b82f6; color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px;
+        }
+
+        .card {
+            background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06); padding: 28px 24px; margin-bottom: 24px;
+        }
+        .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
+        .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+
+        .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+        .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+        label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+        select, input[type=text], input[type=number], input[type=tel] {
+            width: 100%; padding: 12px 14px;
+            background: #f9fafb; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; color: #1a1a1a;
+            font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
+            outline: none; transition: border-color .25s;
+            appearance: none; -webkit-appearance: none;
+        }
+        select:focus, input:focus { border-color: #3b82f6; background: #fff; }
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '▾'; position: absolute; right: 14px; top: 50%;
+            transform: translateY(-65%); color: #9ca3af; pointer-events: none;
+        }
+        .select-wrap select { padding-right: 36px; cursor: pointer; }
+        .field-group { margin-bottom: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+        /* Meter verification box */
+        .verify-box {
+            background: #f0fdf4; border: 1.5px solid #86efac;
+            border-radius: 10px; padding: 12px 14px;
+            font-size: 13px; font-weight: 700; color: #15803d;
+            margin-top: 6px; display: none;
+        }
+        .verify-box.error { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+        .verify-box.visible { display: block; }
+
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+        .amount-btn {
+            padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+            background: #f9fafb; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+        }
+        .amount-btn:hover, .amount-btn.selected {
+            border-color: #3b82f6; background: #eff6ff; color: #1d4ed8;
+        }
+
+        .btn-send {
+            width: 100%; padding: 13px; border: none; border-radius: 10px;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: white; font-size: 15px; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer;
+            margin-top: 6px; transition: opacity .2s, transform .15s;
+        }
+        .btn-send:hover  { opacity: .9; transform: translateY(-1px); }
+        .btn-send:active { transform: translateY(0); }
+
+        /* Token display */
+        .token-box {
+            background: #fffbeb; border: 2px solid #f59e0b;
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 12px;
+        }
+        .token-box .token-label { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; }
+        .token-box .token-val {
+            font-family: monospace; font-size: 22px; font-weight: 900;
+            color: #78350f; letter-spacing: 2px; margin-top: 4px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            padding: 0 10px 12px; text-align: left; border-bottom: 1.5px solid #e5e7eb;
+        }
+        tbody td {
+            padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
+            font-size: 13px; font-weight: 600; color: #374151;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
+        .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .status-pill.successful::before { background:#22c55e; }
+        .status-pill.failed::before     { background:#ef4444; }
+        .status-pill.pending::before    { background:#f59e0b; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+        .empty-state .e-icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-state p { font-size: 13px; font-weight: 600; }
+
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #d1fae5; border-top-color: #15803d; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 4px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; width: 100%;
+            background: white; border-top: 1.5px solid #e5e7eb;
+            justify-content: space-around; padding: 10px 0 6px; z-index: 100;
+        }
+        .bottom-nav a {
+            text-decoration: none; color: #9ca3af; font-size: 11px; font-weight: 700;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+        }
+        .bottom-nav a.active { color: #f59e0b; }
+        .bottom-nav .nav-icon { font-size: 20px; }
+
+        @media (max-width: 700px) {
+            .container { padding: 20px 16px 90px; }
+            .form-row { grid-template-columns: 1fr; }
+            .bottom-nav { display: flex; }
+            .topbar { padding: 14px 16px; }
+            .balance-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .amount-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="brand-name">kolor</div>
+    <div class="topbar-right">
+        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span class="user-name">{{ user.username }}</span>
+    </div>
+</nav>
+
+<div class="container">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="balance-bar">
+        <div>
+            <div class="label">Wallet Balance</div>
+            <div class="amount">₦{{ account.balance|floatformat:2 }}</div>
+        </div>
+        <a href="{% url 'payment' %}">+ Fund Wallet</a>
+    </div>
+
+    <div class="card">
+        <div class="card-title">⚡ Buy Electricity</div>
+        <div class="card-sub">Pay your prepaid or postpaid electricity bill instantly.</div>
+
+        <form method="POST" action="{% url 'buy_electricity' %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="field-group">
+                    <label>Electricity Company</label>
+                    <div class="select-wrap">
+                        <select name="electric_company" id="company-select">
+                            <option value="">— Select Company —</option>
+                            {% for code, name in companies.items %}
+                                <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Meter Type</label>
+                    <div class="select-wrap">
+                        <select name="meter_type" id="meter-type-select">
+                            {% for code, label in meter_types.items %}
+                                <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Meter Number</label>
+                <input type="text" name="meter_no" id="meter-no" placeholder="Enter meter number" autocomplete="off">
+                <div class="verify-box" id="verify-box"></div>
+            </div>
+
+            <div class="field-group">
+                <label>Phone Number (for token delivery)</label>
+                <input type="tel" name="phone" placeholder="08012345678" maxlength="11">
+            </div>
+
+            <div class="field-group">
+                <label>Amount (₦)</label>
+                <div class="amount-grid">
+                    <button type="button" class="amount-btn" onclick="setAmount('1000')">₦1,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount('2000')">₦2,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount('3000')">₦3,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount('5000')">₦5,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount('10000')">₦10,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount('20000')">₦20,000</button>
+                </div>
+                <input type="number" name="amount" id="amount-input" placeholder="Or enter custom amount (min ₦1,000)" min="1000" max="200000">
+            </div>
+
+            <button class="btn-send" type="submit">⚡ Pay Electricity Bill</button>
+        </form>
+    </div>
+
+    <!-- RECENT PURCHASES -->
+    <div class="card">
+        <div class="card-title">Recent Electricity Payments</div>
+        <div class="card-sub">Your last 10 transactions.</div>
+
+        {% if purchases %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Meter No</th>
+                    <th>Amount</th>
+                    <th>Token</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in purchases %}
+                <tr>
+                    <td>{{ p.electric_provider }}</td>
+                    <td style="font-family:monospace;">{{ p.meter_number }}</td>
+                    <td>₦{{ p.amount|floatformat:0 }}</td>
+                    <td>
+                        {% if p.token %}
+                            <span style="font-family:monospace;background:#fffbeb;padding:3px 8px;border-radius:6px;font-weight:900;color:#92400e;">{{ p.token }}</span>
+                        {% else %}
+                            <span style="color:#9ca3af;">—</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="status-pill {{ p.status }}">{{ p.status|title }}</span></td>
+                    <td>{{ p.created_at|date:"d M, H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="e-icon">⚡</div>
+            <p>No electricity payments yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
+    <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
+    <a href="{% url 'market' %}"><span class="nav-icon">🛍️</span>Market</a>
+    <a href="{% url 'report' %}"><span class="nav-icon">📊</span>Reports</a>
+</div>
+
+<script>
+// ── Amount quick-select ──────────────────────────────────────────────────────
+function setAmount(val) {
+    document.getElementById('amount-input').value = val;
+    document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+    event.target.classList.add('selected');
+}
+
+// ── Meter number verification ────────────────────────────────────────────────
+let verifyTimer = null;
+const meterInput   = document.getElementById('meter-no');
+const companySelect = document.getElementById('company-select');
+const meterType    = document.getElementById('meter-type-select');
+const verifyBox    = document.getElementById('verify-box');
+
+function triggerVerify() {
+    const company = companySelect.value;
+    const meter   = meterInput.value.trim();
+    const type    = meterType.value;
+
+    if (!company || meter.length < 6) {
+        verifyBox.className = 'verify-box';
+        verifyBox.textContent = '';
+        return;
+    }
+
+    clearTimeout(verifyTimer);
+    verifyTimer = setTimeout(() => {
+        verifyBox.className = 'verify-box visible';
+        verifyBox.innerHTML = '<span class="spinner"></span> Verifying meter…';
+
+        fetch(`{% url 'buy_electricity' %}?verify_meter=1&company=${company}&meter_no=${meter}&meter_type=${type}`, {
+            credentials: 'include',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                verifyBox.className = 'verify-box visible';
+                verifyBox.textContent = '✅ ' + data.customer_name;
+            } else {
+                verifyBox.className = 'verify-box error visible';
+                verifyBox.textContent = '❌ ' + data.error;
+            }
+        })
+        .catch(() => {
+            verifyBox.className = 'verify-box error visible';
+            verifyBox.textContent = '⚠️ Could not verify meter. Proceed carefully.';
+        });
+    }, 800);
+}
+
+meterInput.addEventListener('input', triggerVerify);
+companySelect.addEventListener('change', triggerVerify);
+meterType.addEventListener('change', triggerVerify);
+</script>
+
+</body>
+</html>

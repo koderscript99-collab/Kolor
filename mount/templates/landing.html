@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor — Your Digital Services Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --blue:   #3b82f6;
+            --dark:   #0f172a;
+            --darker: #1e3a5f;
+            --light:  #7dd3fc;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 64px;
+            transition: box-shadow .3s;
+        }
+        nav.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+
+        .nav-brand {
+            font-size: 26px; font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: 1px;
+        }
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+        .btn-outline {
+            padding: 9px 22px; border-radius: 10px;
+            border: 1.5px solid var(--blue); color: var(--blue);
+            font-weight: 700; font-size: 14px; text-decoration: none;
+            transition: background .2s, color .2s;
+        }
+        .btn-outline:hover { background: var(--blue); color: #fff; }
+        .btn-fill {
+            padding: 9px 22px; border-radius: 10px;
+            background: linear-gradient(90deg, #4facfe, #0078ff);
+            color: #fff; font-weight: 700; font-size: 14px;
+            text-decoration: none; transition: opacity .2s, transform .15s;
+            box-shadow: 0 4px 16px rgba(59,130,246,.3);
+        }
+        .btn-fill:hover { opacity: .9; transform: translateY(-1px); }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 100px 24px 60px;
+            position: relative; overflow: hidden;
+        }
+
+        /* floating blobs */
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: .15; pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: #3b82f6; top: -100px; right: -100px; animation: drift 8s ease-in-out infinite; }
+        .blob-2 { width: 400px; height: 400px; background: #7dd3fc; bottom: -100px; left: -100px; animation: drift 10s ease-in-out infinite reverse; }
+        .blob-3 { width: 300px; height: 300px; background: #1d4ed8; top: 40%; left: 40%; animation: drift 12s ease-in-out infinite; }
+
+        @keyframes drift {
+            0%,100% { transform: translate(0,0) scale(1); }
+            50%      { transform: translate(30px, -30px) scale(1.05); }
+        }
+
+        /* floating icons */
+        .float-icon {
+            position: absolute; font-size: 28px; opacity: .18;
+            animation: floatUp linear infinite;
+            pointer-events: none;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(0) rotate(0deg); opacity: .18; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .hero-content { text-align: center; z-index: 2; max-width: 720px; }
+
+        .hero-badge {
+            display: inline-block; background: rgba(125,211,252,.15);
+            border: 1px solid rgba(125,211,252,.3);
+            color: #7dd3fc; font-size: 12px; font-weight: 700;
+            padding: 6px 16px; border-radius: 20px; margin-bottom: 24px;
+            letter-spacing: 0.8px; text-transform: uppercase;
+            animation: fadeDown .8s ease both;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 7vw, 72px);
+            font-weight: 900; color: #fff; line-height: 1.1;
+            margin-bottom: 20px;
+            animation: fadeDown .9s ease both .1s;
+        }
+        .hero h1 span {
+            background: linear-gradient(90deg, #7dd3fc, #4facfe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: clamp(15px, 2.5vw, 20px); color: #94a3b8;
+            font-weight: 600; line-height: 1.7; margin-bottom: 36px;
+            animation: fadeDown 1s ease both .2s;
+        }
+        .hero-btns {
+            display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+            animation: fadeDown 1s ease both .3s;
+        }
+        .hero-btn-main {
+            padding: 14px 36px; border-radius: 12px;
+            background: linear-gradient(90deg, #4facfe, #0078ff);
+            color: #fff; font-size: 16px; font-weight: 700;
+            text-decoration: none; box-shadow: 0 8px 32px rgba(59,130,246,.4);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .hero-btn-main:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(59,130,246,.5); }
+        .hero-btn-ghost {
+            padding: 14px 36px; border-radius: 12px;
+            border: 1.5px solid rgba(255,255,255,.2); color: #fff;
+            font-size: 16px; font-weight: 700; text-decoration: none;
+            transition: background .2s, border-color .2s;
+        }
+        .hero-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.4); }
+
+        /* stats bar */
+        .stats-bar {
+            display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+            margin-top: 60px; padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,.08);
+            animation: fadeDown 1s ease both .4s;
+        }
+        .stat-item { text-align: center; }
+        .stat-num  { font-size: 28px; font-weight: 900; color: #7dd3fc; display: block; }
+        .stat-lbl  { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── SERVICES ── */
+        .section { padding: 90px 24px; }
+        .section-center { text-align: center; max-width: 600px; margin: 0 auto 56px; }
+        .section-label {
+            font-size: 12px; font-weight: 700; color: var(--blue);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+        }
+        .section-title { font-size: clamp(26px, 4vw, 40px); font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 14px; }
+        .section-sub   { font-size: 15px; color: #6b7280; font-weight: 600; line-height: 1.7; }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px; max-width: 1100px; margin: 0 auto;
+        }
+
+        .service-card {
+            background: #fff; border-radius: 20px;
+            border: 1.5px solid #e5e7eb;
+            padding: 32px 28px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.05);
+            transition: transform .25s, box-shadow .25s, border-color .25s;
+            position: relative; overflow: hidden;
+        }
+        .service-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, #4facfe, #0078ff);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform .3s ease;
+        }
+        .service-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(59,130,246,.12); border-color: #bfdbfe; }
+        .service-card:hover::before { transform: scaleX(1); }
+
+        .service-icon {
+            width: 60px; height: 60px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin-bottom: 20px;
+        }
+        .ic-data     { background: #fef9c3; }
+        .ic-tv       { background: #f3e8ff; }
+        .ic-electric { background: #dcfce7; }
+        .ic-foreign  { background: #dbeafe; }
+        .ic-smm      { background: #fce7f3; }
+        .ic-wallet   { background: #fff7ed; }
+
+        .service-card h3 { font-size: 18px; font-weight: 900; color: #0f172a; margin-bottom: 10px; }
+        .service-card p  { font-size: 14px; color: #6b7280; font-weight: 600; line-height: 1.7; margin-bottom: 16px; }
+        .service-tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .service-tag {
+            font-size: 11px; font-weight: 700; padding: 3px 10px;
+            border-radius: 20px; background: #f1f5f9; color: #475569;
+        }
+
+        /* ── HOW IT WORKS ── */
+        .how-section { background: linear-gradient(135deg, #f8faff, #eff6ff); }
+        .steps-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 32px; max-width: 900px; margin: 0 auto;
+        }
+        .step {
+            text-align: center; padding: 32px 20px;
+        }
+        .step-num {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            color: #fff; font-size: 20px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+            box-shadow: 0 8px 24px rgba(59,130,246,.3);
+        }
+        .step h4 { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+        .step p  { font-size: 13px; color: #6b7280; font-weight: 600; line-height: 1.6; }
+
+        /* ── WHY KOLOR ── */
+        .why-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; max-width: 900px; margin: 0 auto;
+        }
+        .why-card {
+            background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
+            padding: 24px 20px; text-align: center;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .why-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
+        .why-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+        .why-card h4 { font-size: 15px; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+        .why-card p  { font-size: 12px; color: #9ca3af; font-weight: 600; line-height: 1.5; }
+
+        /* ── CTA ── */
+        .cta-section {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            padding: 90px 24px; text-align: center;
+        }
+        .cta-section h2 { font-size: clamp(26px, 4vw, 42px); font-weight: 900; color: #fff; margin-bottom: 14px; }
+        .cta-section p  { font-size: 16px; color: #94a3b8; font-weight: 600; margin-bottom: 36px; }
+        .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: #0f172a; padding: 40px 32px 24px;
+            color: #64748b; font-size: 13px; font-weight: 600;
+        }
+        .footer-inner {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+        }
+        .footer-brand {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #4facfe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { color: #64748b; text-decoration: none; transition: color .2s; }
+        .footer-links a:hover { color: #7dd3fc; }
+
+        /* ── SCROLL ANIMATIONS ── */
+        .reveal {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            nav { padding: 0 16px; }
+            .stats-bar { gap: 28px; }
+            .hero-btns { flex-direction: column; align-items: center; }
+            .hero-btn-main, .hero-btn-ghost { width: 100%; text-align: center; }
+            .cta-btns { flex-direction: column; align-items: center; }
+            .footer-inner { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+    <div class="nav-brand">kolor</div>
+    <div class="nav-links">
+        <a href="/login/"  class="btn-outline">Log In</a>
+        <a href="/signup/" class="btn-fill">Sign Up Free</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <!-- Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Floating icons -->
+    <span class="float-icon" style="left:8%;animation-duration:12s;animation-delay:0s;">📶</span>
+    <span class="float-icon" style="left:18%;animation-duration:9s;animation-delay:3s;">📡</span>
+    <span class="float-icon" style="left:30%;animation-duration:15s;animation-delay:1s;">⚡</span>
+    <span class="float-icon" style="left:55%;animation-duration:11s;animation-delay:4s;">🌍</span>
+    <span class="float-icon" style="left:72%;animation-duration:8s;animation-delay:2s;">📱</span>
+    <span class="float-icon" style="left:85%;animation-duration:13s;animation-delay:5s;">💳</span>
+    <span class="float-icon" style="left:92%;animation-duration:10s;animation-delay:1.5s;">🎬</span>
+
+    <div class="hero-content">
+        <div class="hero-badge">🚀 Nigeria's All-in-One Digital Services Platform</div>
+        <h1>Everything You Need,<br><span>One Platform</span></h1>
+        <p>Buy cheap data, pay cable TV bills, recharge electricity, get foreign virtual numbers and boost your social media — all from your Kolor wallet.</p>
+        <div class="hero-btns">
+            <a href="/signup/" class="hero-btn-main">🚀 Create Free Account</a>
+            <a href="/login/"  class="hero-btn-ghost">Log In to Dashboard</a>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-num">₦263</span>
+                <span class="stat-lbl">MTN 1GB Price</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num">4</span>
+                <span class="stat-lbl">Networks Supported</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num">24/7</span>
+                <span class="stat-lbl">Instant Delivery</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num">100%</span>
+                <span class="stat-lbl">Secure Wallet</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+    <div class="section-center reveal">
+        <div class="section-label">What We Offer</div>
+        <div class="section-title">All Your Digital Services<br>Under One Roof</div>
+        <div class="section-sub">From cheap data to foreign numbers — Kolor handles everything instantly from your wallet balance.</div>
+    </div>
+
+    <div class="services-grid">
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-data">📶</div>
+            <h3>Cheap Data Purchase</h3>
+            <p>Buy the cheapest data bundles for MTN, Glo, Airtel and 9mobile. Special bundles start from as low as ₦263 for 1GB via Beewave.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">MTN</span>
+                <span class="service-tag">Glo</span>
+                <span class="service-tag">Airtel</span>
+                <span class="service-tag">9mobile</span>
+                <span class="service-tag">From ₦263/1GB</span>
+            </div>
+        </div>
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-tv">📡</div>
+            <h3>Cable TV Subscription</h3>
+            <p>Renew your DStv, GOtv, StarTimes or Showmax subscription instantly. No long queues — done in seconds from your dashboard.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">DStv</span>
+                <span class="service-tag">GOtv</span>
+                <span class="service-tag">StarTimes</span>
+                <span class="service-tag">Showmax</span>
+            </div>
+        </div>
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-electric">⚡</div>
+            <h3>Electricity Recharge</h3>
+            <p>Buy prepaid electricity tokens for any PHCN disco nationwide. Get your token delivered instantly to your phone or email.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">Ikeja Electric</span>
+                <span class="service-tag">Eko Disco</span>
+                <span class="service-tag">EEDC</span>
+                <span class="service-tag">All Discos</span>
+            </div>
+        </div>
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-foreign">🌍</div>
+            <h3>Foreign Virtual Numbers</h3>
+            <p>Get temporary virtual phone numbers from USA, UK, Canada, Russia and more. Perfect for verifying WhatsApp, Telegram, Google accounts.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">USA</span>
+                <span class="service-tag">UK</span>
+                <span class="service-tag">Canada</span>
+                <span class="service-tag">WhatsApp</span>
+                <span class="service-tag">Telegram</span>
+            </div>
+        </div>
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-smm">📈</div>
+            <h3>Social Media Services</h3>
+            <p>Grow your TikTok, Instagram, YouTube and Facebook presence with real engagement. Buy views, followers and likes at the cheapest rates.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">TikTok Views</span>
+                <span class="service-tag">Instagram</span>
+                <span class="service-tag">YouTube</span>
+                <span class="service-tag">Facebook</span>
+            </div>
+        </div>
+
+        <div class="service-card reveal">
+            <div class="service-icon ic-wallet">💰</div>
+            <h3>Secure Wallet System</h3>
+            <p>Fund your Kolor wallet once and use it for all services. Transfer to other users, withdraw anytime — all powered by Flutterwave.</p>
+            <div class="service-tag-list">
+                <span class="service-tag">Instant Deposit</span>
+                <span class="service-tag">Transfer</span>
+                <span class="service-tag">Withdraw</span>
+                <span class="service-tag">Flutterwave</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section" id="how">
+    <div class="section-center reveal">
+        <div class="section-label">How It Works</div>
+        <div class="section-title">Get Started in 3 Simple Steps</div>
+        <div class="section-sub">No complicated setup. Create your account, fund your wallet, and start buying services immediately.</div>
+    </div>
+
+    <div class="steps-grid">
+        <div class="step reveal">
+            <div class="step-num">1</div>
+            <h4>Create Your Account</h4>
+            <p>Sign up in seconds with just your username and password. No documents required.</p>
+        </div>
+        <div class="step reveal">
+            <div class="step-num">2</div>
+            <h4>Fund Your Wallet</h4>
+            <p>Deposit money into your Kolor wallet securely via Flutterwave using any Nigerian bank card or transfer.</p>
+        </div>
+        <div class="step reveal">
+            <div class="step-num">3</div>
+            <h4>Buy Any Service</h4>
+            <p>Choose data, cable TV, electricity, foreign numbers or social media services — delivered instantly.</p>
+        </div>
+    </div>
+</section>
+
+<!-- WHY KOLOR -->
+<section class="section" id="why">
+    <div class="section-center reveal">
+        <div class="section-label">Why Choose Kolor</div>
+        <div class="section-title">Built for Nigerians,<br>Trusted by Many</div>
+    </div>
+
+    <div class="why-grid">
+        <div class="why-card reveal">
+            <span class="why-icon">⚡</span>
+            <h4>Instant Delivery</h4>
+            <p>Data, cable and electricity delivered in seconds, not minutes.</p>
+        </div>
+        <div class="why-card reveal">
+            <span class="why-icon">💰</span>
+            <h4>Cheapest Prices</h4>
+            <p>MTN 1GB from ₦263 — we always offer below-market rates.</p>
+        </div>
+        <div class="why-card reveal">
+            <span class="why-icon">🔒</span>
+            <h4>100% Secure</h4>
+            <p>Your wallet and payments are protected by Flutterwave encryption.</p>
+        </div>
+        <div class="why-card reveal">
+            <span class="why-icon">🌍</span>
+            <h4>Foreign Numbers</h4>
+            <p>The only Nigerian platform offering instant virtual numbers from 10+ countries.</p>
+        </div>
+        <div class="why-card reveal">
+            <span class="why-icon">📱</span>
+            <h4>Mobile Friendly</h4>
+            <p>Fully optimised for your phone — buy anything on the go.</p>
+        </div>
+        <div class="why-card reveal">
+            <span class="why-icon">🎯</span>
+            <h4>All-in-One</h4>
+            <p>Data, TV, electricity, SMM, foreign numbers — one platform, one wallet.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2 class="reveal">Ready to Get Started?</h2>
+    <p class="reveal">Join thousands of Nigerians already saving money on digital services.</p>
+    <div class="cta-btns reveal">
+        <a href="/signup/" class="hero-btn-main" style="font-size:16px;padding:14px 40px;">🚀 Create Free Account</a>
+        <a href="/login/"  class="hero-btn-ghost" style="font-size:16px;padding:14px 40px;">Log In</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">kolor</div>
+        <div style="color:#475569;">© 2026 Kolor. All rights reserved.</div>
+        <div class="footer-links">
+            <a href="/signup/">Sign Up</a>
+            <a href="/login/">Log In</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Stagger service cards
+    document.querySelectorAll('.service-card').forEach((card, i) => {
+        card.style.transitionDelay = `${i * 0.08}s`;
+    });
+</script>
+
+</body>
+</html>

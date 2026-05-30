@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Cable TV Subscription</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Nunito', sans-serif; background: #f9fafb; min-height: 100vh; }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px; border-bottom: 1.5px solid #e5e7eb;
+            background: #fff; position: sticky; top: 0; z-index: 100;
+        }
+        .brand-name {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: 1px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 15px;
+        }
+        .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+        .container { max-width: 700px; margin: 0 auto; padding: 28px 32px 90px; }
+
+        .balance-bar {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            border-radius: 14px; padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; color: white;
+        }
+        .balance-bar .label { font-size: 12px; color: #7dd3fc; font-weight: 700; text-transform: uppercase; }
+        .balance-bar .amount { font-size: 28px; font-weight: 900; margin-top: 2px; }
+        .balance-bar a {
+            background: #3b82f6; color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px;
+        }
+
+        .card {
+            background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06); padding: 28px 24px; margin-bottom: 24px;
+        }
+        .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
+        .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+
+        .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+        .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+        label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+        select, input[type=text], input[type=tel] {
+            width: 100%; padding: 12px 14px;
+            background: #f9fafb; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; color: #1a1a1a;
+            font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
+            outline: none; transition: border-color .25s;
+            appearance: none; -webkit-appearance: none;
+        }
+        select:focus, input:focus { border-color: #3b82f6; background: #fff; }
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '▾'; position: absolute; right: 14px; top: 50%;
+            transform: translateY(-65%); color: #9ca3af; pointer-events: none;
+        }
+        .select-wrap select { padding-right: 36px; cursor: pointer; }
+        .field-group { margin-bottom: 14px; }
+
+        /* Provider selector tabs */
+        .provider-tabs { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+        .provider-tab {
+            padding: 10px 20px; border: 2px solid #e5e7eb; border-radius: 10px;
+            background: #f9fafb; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+        }
+        .provider-tab:hover  { border-color: #3b82f6; }
+        .provider-tab.active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+        .provider-tab.dstv.active      { border-color: #0078ff; background: #eff6ff; color: #0078ff; }
+        .provider-tab.gotv.active      { border-color: #e63b2e; background: #fef2f2; color: #e63b2e; }
+        .provider-tab.startimes.active { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+        .provider-tab.showmax.active   { border-color: #7c3aed; background: #f5f3ff; color: #7c3aed; }
+
+        /* Package cards */
+        .package-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .package-card {
+            padding: 14px; border: 2px solid #e5e7eb; border-radius: 12px;
+            background: #f9fafb; cursor: pointer; transition: all .2s;
+        }
+        .package-card:hover { border-color: #3b82f6; background: #eff6ff; }
+        .package-card.selected { border-color: #3b82f6; background: #eff6ff; }
+        .package-card .pkg-name { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+        .package-card .pkg-price { font-size: 16px; font-weight: 900; color: #1d4ed8; margin-top: 4px; }
+        #package-select { display: none; }
+
+        /* Verify box */
+        .verify-box {
+            background: #f0fdf4; border: 1.5px solid #86efac;
+            border-radius: 10px; padding: 12px 14px;
+            font-size: 13px; font-weight: 700; color: #15803d;
+            margin-top: 6px; display: none;
+        }
+        .verify-box.error   { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+        .verify-box.visible { display: block; }
+
+        /* Summary box */
+        .summary-box {
+            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+            display: none;
+        }
+        .summary-box.visible { display: block; }
+        .summary-box .sum-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e40af; padding: 3px 0; }
+        .summary-box .sum-row.total { font-size: 16px; color: #1e3a5f; border-top: 1px solid #bfdbfe; padding-top: 8px; margin-top: 4px; }
+
+        .btn-send {
+            width: 100%; padding: 13px; border: none; border-radius: 10px;
+            background: linear-gradient(90deg, #4facfe, #0078ff);
+            color: white; font-size: 15px; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer;
+            margin-top: 6px; transition: opacity .2s, transform .15s;
+        }
+        .btn-send:hover  { opacity: .9; transform: translateY(-1px); }
+        .btn-send:active { transform: translateY(0); }
+        .btn-send:disabled { opacity: .5; cursor: not-allowed; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            padding: 0 10px 12px; text-align: left; border-bottom: 1.5px solid #e5e7eb;
+        }
+        tbody td {
+            padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
+            font-size: 13px; font-weight: 600; color: #374151;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
+        .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .status-pill.successful::before { background:#22c55e; }
+        .status-pill.failed::before     { background:#ef4444; }
+        .status-pill.pending::before    { background:#f59e0b; }
+
+        .provider-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700;
+        }
+        .provider-badge.dstv      { background: #dbeafe; color: #1d4ed8; }
+        .provider-badge.gotv      { background: #fee2e2; color: #dc2626; }
+        .provider-badge.startimes { background: #dcfce7; color: #15803d; }
+        .provider-badge.showmax   { background: #f3e8ff; color: #7c3aed; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+        .empty-state .e-icon { font-size: 36px; margin-bottom: 10px; }
+
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #d1fae5; border-top-color: #15803d; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 4px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; width: 100%;
+            background: white; border-top: 1.5px solid #e5e7eb;
+            justify-content: space-around; padding: 10px 0 6px; z-index: 100;
+        }
+        .bottom-nav a {
+            text-decoration: none; color: #9ca3af; font-size: 11px; font-weight: 700;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+        }
+        .bottom-nav a.active { color: #3b82f6; }
+        .bottom-nav .nav-icon { font-size: 20px; }
+
+        @media (max-width: 700px) {
+            .container { padding: 20px 16px 90px; }
+            .bottom-nav { display: flex; }
+            .topbar { padding: 14px 16px; }
+            .balance-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .package-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="brand-name">kolor</div>
+    <div class="topbar-right">
+        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span class="user-name">{{ user.username }}</span>
+    </div>
+</nav>
+
+<div class="container">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="balance-bar">
+        <div>
+            <div class="label">Wallet Balance</div>
+            <div class="amount">₦{{ account.balance|floatformat:2 }}</div>
+        </div>
+        <a href="{% url 'payment' %}">+ Fund Wallet</a>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📺 Cable TV Subscription</div>
+        <div class="card-sub">Renew your DStv, GOtv, StarTimes or Showmax subscription instantly.</div>
+
+        <!-- Provider tabs -->
+        <div class="provider-tabs">
+            <button type="button" class="provider-tab dstv active" onclick="selectProvider('dstv', this)">📡 DStv</button>
+            <button type="button" class="provider-tab gotv"        onclick="selectProvider('gotv', this)">📺 GOtv</button>
+            <button type="button" class="provider-tab startimes"   onclick="selectProvider('startimes', this)">🌟 StarTimes</button>
+            <button type="button" class="provider-tab showmax"     onclick="selectProvider('showmax', this)">🎬 Showmax</button>
+        </div>
+
+        <form method="POST" action="{% url 'buy_cable_tv' %}" id="cable-form">
+            {% csrf_token %}
+            <input type="hidden" name="cable_tv"  id="cable-tv-input" value="dstv">
+            <input type="hidden" name="package"   id="package-input"  value="">
+            <select id="package-select" name="_package_hidden"></select>
+
+            <!-- Package cards -->
+            <div class="field-group">
+                <label>Select Package</label>
+                <div class="package-grid" id="package-grid">
+                    <!-- Loaded by JS -->
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Smartcard / IUC Number</label>
+                <input type="text" name="smartcard_no" id="smartcard-input"
+                       placeholder="Enter smartcard or IUC number" autocomplete="off">
+                <div class="verify-box" id="verify-box"></div>
+            </div>
+
+            <div class="field-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" placeholder="08012345678" maxlength="11">
+            </div>
+
+            <!-- Summary -->
+            <div class="summary-box" id="summary-box">
+                <div class="sum-row"><span>Provider</span><span id="sum-provider">—</span></div>
+                <div class="sum-row"><span>Package</span><span id="sum-package">—</span></div>
+                <div class="sum-row total"><span>Total</span><span id="sum-amount">—</span></div>
+            </div>
+
+            <button class="btn-send" type="submit" id="pay-btn" disabled>
+                Select a package to continue
+            </button>
+        </form>
+    </div>
+
+    <!-- RECENT SUBSCRIPTIONS -->
+    <div class="card">
+        <div class="card-title">Recent Cable TV Subscriptions</div>
+        <div class="card-sub">Your subscription history.</div>
+
+        {% if purchases %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Provider</th>
+                    <th>Package</th>
+                    <th>Smartcard</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in purchases %}
+                <tr>
+                    <td><span class="provider-badge {{ p.provider }}">{{ p.provider_name }}</span></td>
+                    <td>{{ p.package_name }}</td>
+                    <td style="font-family:monospace;">{{ p.smartcard_no }}</td>
+                    <td>₦{{ p.amount|floatformat:0 }}</td>
+                    <td><span class="status-pill {{ p.status }}">{{ p.status|title }}</span></td>
+                    <td>{{ p.created_at|date:"d M, H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="e-icon">📺</div>
+            <p>No subscriptions yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
+    <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
+    <a href="{% url 'market' %}"><span class="nav-icon">🛍️</span>Market</a>
+    <a href="{% url 'report' %}"><span class="nav-icon">📊</span>Reports</a>
+</div>
+
+<script>
+const PACKAGES = {{ packages|safe }};
+
+let selectedProvider = 'dstv';
+let selectedPackage  = null;
+
+function selectProvider(provider, el) {
+    selectedProvider = provider;
+    selectedPackage  = null;
+
+    document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+
+    document.getElementById('cable-tv-input').value = provider;
+    document.getElementById('package-input').value  = '';
+    document.getElementById('verify-box').className = 'verify-box';
+    document.getElementById('verify-box').textContent = '';
+    hideSummary();
+    renderPackages(provider);
+}
+
+function renderPackages(provider) {
+    const grid = document.getElementById('package-grid');
+    const pkgs = PACKAGES[provider] || [];
+    grid.innerHTML = pkgs.map(p => `
+        <div class="package-card" onclick="selectPackage('${p.code}','${p.label}',${p.amount})">
+            <div class="pkg-name">${p.label}</div>
+            <div class="pkg-price">₦${p.amount.toLocaleString()}</div>
+        </div>
+    `).join('');
+}
+
+function selectPackage(code, label, amount) {
+    selectedPackage = { code, label, amount };
+    document.getElementById('package-input').value = code;
+    document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    showSummary(label, amount);
+}
+
+function showSummary(label, amount) {
+    const providerNames = {dstv:'DStv', gotv:'GOtv', startimes:'StarTimes', showmax:'Showmax'};
+    document.getElementById('sum-provider').textContent = providerNames[selectedProvider] || selectedProvider;
+    document.getElementById('sum-package').textContent  = label;
+    document.getElementById('sum-amount').textContent   = '₦' + amount.toLocaleString();
+    document.getElementById('summary-box').className    = 'summary-box visible';
+    const btn = document.getElementById('pay-btn');
+    btn.disabled    = false;
+    btn.textContent = `📺 Subscribe — ₦${amount.toLocaleString()}`;
+}
+
+function hideSummary() {
+    document.getElementById('summary-box').className = 'summary-box';
+    const btn = document.getElementById('pay-btn');
+    btn.disabled    = true;
+    btn.textContent = 'Select a package to continue';
+}
+
+// ── Smartcard verification ────────────────────────────────────────────────────
+let verifyTimer = null;
+document.getElementById('smartcard-input').addEventListener('input', function() {
+    const card    = this.value.trim();
+    const verifyBox = document.getElementById('verify-box');
+
+    if (card.length < 6) {
+        verifyBox.className = 'verify-box';
+        return;
+    }
+
+    clearTimeout(verifyTimer);
+    verifyTimer = setTimeout(() => {
+        verifyBox.className = 'verify-box visible';
+        verifyBox.innerHTML = '<span class="spinner"></span> Verifying smartcard…';
+
+        fetch(`{% url 'buy_cable_tv' %}?verify_card=1&cable_tv=${selectedProvider}&smartcard_no=${card}`, {
+            credentials: 'include',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                verifyBox.className = 'verify-box visible';
+                verifyBox.textContent = '✅ ' + data.customer_name;
+            } else {
+                verifyBox.className = 'verify-box error visible';
+                verifyBox.textContent = '❌ ' + data.error;
+            }
+        })
+        .catch(() => {
+            verifyBox.className = 'verify-box error visible';
+            verifyBox.textContent = '⚠️ Could not verify smartcard.';
+        });
+    }, 800);
+});
+
+// Load default provider packages on page load
+renderPackages('dstv');
+</script>
+
+</body>
+</html>

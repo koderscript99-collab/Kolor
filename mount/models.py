@@ -202,3 +202,57 @@ class ForeignNumber(models.Model):
 
     def __str__(self):
         return self.phone_number
+
+# Add these two models to your existing models.py
+# Place them at the bottom, after the ForeignNumber model
+# Add these two models to your existing models.py
+# Place them at the bottom, after the ForeignNumber model
+
+class ElectricityPurchase(models.Model):
+    # Column names match your existing database table exactly
+    STATUS_TYPES = (
+        ('pending',    'Pending'),
+        ('successful', 'Successful'),
+        ('failed',     'Failed'),
+    )
+    user              = models.ForeignKey(User, on_delete=models.CASCADE)
+    electric_provider = models.CharField(max_length=100)     # company name
+    meter_type        = models.CharField(max_length=20)      # "Prepaid" or "Postpaid"
+    meter_number      = models.CharField(max_length=50)      # meter number
+    amount            = models.DecimalField(max_digits=12, decimal_places=2)
+    token             = models.CharField(max_length=100, blank=True, null=True)
+    reference         = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    status            = models.CharField(max_length=20, choices=STATUS_TYPES, default='pending')
+    created_at        = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.electric_provider} - ₦{self.amount}"
+
+
+class CableTVPurchase(models.Model):
+    STATUS_TYPES = (
+        ('pending',    'Pending'),
+        ('successful', 'Successful'),
+        ('failed',     'Failed'),
+    )
+    user          = models.ForeignKey(User, on_delete=models.CASCADE)
+    provider      = models.CharField(max_length=20)          # e.g. "dstv"
+    provider_name = models.CharField(max_length=50)          # e.g. "DStv"
+    package_code  = models.CharField(max_length=50)          # e.g. "dstv-padi"
+    package_name  = models.CharField(max_length=100)         # e.g. "DStv Padi"
+    smartcard_no  = models.CharField(max_length=50)
+    phone         = models.CharField(max_length=15)
+    amount        = models.DecimalField(max_digits=12, decimal_places=2)
+    order_id      = models.CharField(max_length=100, blank=True, null=True)
+    reference     = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    status        = models.CharField(max_length=20, choices=STATUS_TYPES, default='pending')
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.provider_name} {self.package_name}"
