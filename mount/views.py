@@ -68,9 +68,7 @@ def credit_account(transaction_obj):
         transaction_obj.status = "successful"
         transaction_obj.save()
     return True
-#landing*********
-def landing_page(request):
-    return render(request, "landing.html")
+
 
 # =========================
 # AUTH (WEB)
@@ -344,36 +342,61 @@ BEEWAVE_NETWORK_NAMES = {
 # SMM SERVICES
 # =========================
 
+# =========================
+# JAP SMM SERVICES
+# These are website traffic services available on your JAP account.
+# Rate is your selling price in Naira per 1000 visits.
+# JAP cost is ~$0.175/1000 = ~₦280 at ₦1600/USD, so ₦600+ gives good margin.
+# =========================
+
 SMM_SERVICES = {
-    "instagram": [
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Instagram Followers", "min": 100,  "max": 100000, "amount": 2000},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Instagram Likes",     "min": 50,   "max": 50000,  "amount": 500},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Instagram Views",     "min": 100,  "max": 500000, "amount": 300},
+    "usa_traffic": [
+        {"id": "1416", "label": "🇺🇸 USA Traffic from Google",    "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1417", "label": "🇺🇸 USA Traffic from Facebook",  "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1418", "label": "🇺🇸 USA Traffic from Instagram", "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1424", "label": "🇺🇸 USA Traffic from YouTube",   "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1422", "label": "🇺🇸 USA Traffic from Twitter",   "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1423", "label": "🇺🇸 USA Traffic from Reddit",    "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1419", "label": "🇺🇸 USA Traffic from Quora",     "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1421", "label": "🇺🇸 USA Traffic from Pinterest", "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1434", "label": "🇺🇸 USA Traffic from Fiverr",    "min": 88, "max": 88888888, "amount": 600},
+        {"id": "1428", "label": "🇺🇸 USA Traffic from Wikipedia", "min": 88, "max": 88888888, "amount": 600},
     ],
-    "tiktok": [
-        {"id": "10019", "label": "TikTok Views [Fast - 5M/Day]",         "min": 50,  "max": 2147483647, "amount": 300},
-        {"id": "2260",  "label": "TikTok Views [Faster - 10M/Day]",      "min": 50,  "max": 2147483647, "amount": 350},
-        {"id": "10168", "label": "TikTok Views [10M/Day - No Refill]",   "min": 100, "max": 2147483647, "amount": 370},
-        {"id": "10169", "label": "TikTok Views [30 Day Refill - 10M/D]", "min": 100, "max": 2147483647, "amount": 400},
-        {"id": "10170", "label": "TikTok Views [90 Day Refill - 10M/D]", "min": 100, "max": 2147483647, "amount": 450},
-        {"id": "10120", "label": "TikTok Views [5M/Day - No Refill]",    "min": 50,  "max": 2147483647, "amount": 320},
-        {"id": "10020", "label": "TikTok Views [30D Refill - 5M/Day]",   "min": 50,  "max": 2147483647, "amount": 380},
-        {"id": "8526",  "label": "TikTok Views [30D Refill - Fast]",     "min": 100, "max": 10000000,   "amount": 420},
+    "uk_traffic": [
+        {"id": "1441", "label": "🇬🇧 UK Traffic from Google",    "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1450", "label": "🇬🇧 UK Traffic from Facebook",  "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1451", "label": "🇬🇧 UK Traffic from Instagram", "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1449", "label": "🇬🇧 UK Traffic from YouTube",   "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1448", "label": "🇬🇧 UK Traffic from Reddit",    "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1460", "label": "🇬🇧 UK Traffic from Fiverr",    "min": 88, "max": 88888888, "amount": 650},
+        {"id": "1461", "label": "🇬🇧 UK Traffic from Wikipedia", "min": 88, "max": 88888888, "amount": 650},
     ],
-    "youtube": [
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "YouTube Views",       "min": 500, "max": 500000, "amount": 200},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "YouTube Subscribers", "min": 50,  "max": 10000,  "amount": 600},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "YouTube Likes",       "min": 50,  "max": 50000,  "amount": 250},
+    "india_traffic": [
+        {"id": "1463", "label": "🇮🇳 India Traffic from Google",    "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1471", "label": "🇮🇳 India Traffic from Facebook",  "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1472", "label": "🇮🇳 India Traffic from Instagram", "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1469", "label": "🇮🇳 India Traffic from YouTube",   "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1467", "label": "🇮🇳 India Traffic from Twitter",   "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1468", "label": "🇮🇳 India Traffic from Reddit",    "min": 88, "max": 88888888, "amount": 500},
+        {"id": "1464", "label": "🇮🇳 India Traffic from Quora",     "min": 88, "max": 88888888, "amount": 500},
     ],
-    "facebook": [
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Facebook Page Likes",  "min": 100, "max": 50000,  "amount": 400},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Facebook Post Likes",  "min": 100, "max": 50000,  "amount": 200},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Facebook Followers",   "min": 100, "max": 50000,  "amount": 350},
-        {"id": "REPLACE_WITH_REAL_JAP_ID", "label": "Facebook Video Views", "min": 500, "max": 500000, "amount": 150},
+    "global_traffic": [
+        {"id": "1498", "label": "🇩🇪 Germany Traffic from Google",  "min": 88,  "max": 88888888, "amount": 650},
+        {"id": "1509", "label": "🇫🇷 France Traffic from Google",   "min": 100, "max": 1000000,  "amount": 650},
+        {"id": "1521", "label": "🇨🇦 Canada Traffic from Google",   "min": 500, "max": 1000000,  "amount": 800},
+        {"id": "1604", "label": "🇮🇹 Italy Traffic from Google",    "min": 500, "max": 1000000,  "amount": 800},
+        {"id": "1607", "label": "🇪🇸 Spain Traffic from Google",    "min": 500, "max": 1000000,  "amount": 700},
+        {"id": "1544", "label": "🇷🇺 Russia Traffic from Google",   "min": 500, "max": 1000000,  "amount": 700},
+        {"id": "1474", "label": "🇧🇷 Brazil Traffic from Google",   "min": 88,  "max": 88888888, "amount": 600},
+        {"id": "1624", "label": "🇯🇵 Japan Traffic from Google",    "min": 500, "max": 1000000,  "amount": 800},
+        {"id": "1616", "label": "🇸🇬 Singapore Traffic from Google","min": 500, "max": 1000000,  "amount": 800},
+        {"id": "1608", "label": "🇹🇷 Turkey Traffic from Google",   "min": 500, "max": 1000000,  "amount": 600},
     ],
 }
 
-
+#landing ######
+def landing_page(request):
+    return render(request, "landing.html")  
 # =========================
 # WEB PAGES
 # =========================
@@ -978,26 +1001,28 @@ def buy_data(request):
             messages.error(request, "Service temporarily unavailable. Please try again later.")
             return redirect("buy_data")
 
-        request_id = str(uuid.uuid4()).replace("-", "")[:20]
+        request_id   = str(uuid.uuid4()).replace("-", "")[:20]
+        is_owner_buying = (customer_account.pk == owner_account.pk)
 
+        # Only transfer to owner if buyer is a different user (real customer)
         with db_transaction.atomic():
-            # Deduct customer, credit owner — both in one atomic block
             customer_account.balance -= amount
             customer_account.save()
-            owner_account.balance += amount
-            owner_account.save()
+            if not is_owner_buying:
+                owner_account.balance += amount
+                owner_account.save()
 
         try:
             success_flag, ck_response = call_clubkonnect_data_api(
                 network, phone, plan_id, request_id
             )
         except Exception as e:
-            # Full rollback: refund customer, deduct owner
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
             logger.error(f"buy_data crashed: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
             return redirect("buy_data")
@@ -1012,12 +1037,12 @@ def buy_data(request):
             return redirect("succed_data")
 
         else:
-            # API failed — refund customer, deduct owner back
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
 
             if "insufficient" in ck_response.lower():
                 error_msg = "Our data provider balance is low. Please try again later."
@@ -1091,11 +1116,14 @@ def buy_special_bundle(request):
             messages.error(request, "Service temporarily unavailable. Please try again later.")
             return redirect("payment")
 
+        is_owner_buying = (customer_account.pk == owner_account.pk)
+
         with db_transaction.atomic():
             customer_account.balance -= amount
             customer_account.save()
-            owner_account.balance += amount
-            owner_account.save()
+            if not is_owner_buying:
+                owner_account.balance += amount
+                owner_account.save()
 
         try:
             success_flag, bw_response = call_beewave_data_api(network, phone, qty, plan_type)
@@ -1103,8 +1131,9 @@ def buy_special_bundle(request):
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
             logger.error(f"buy_special_bundle crashed: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
             return redirect("payment")
@@ -1127,8 +1156,9 @@ def buy_special_bundle(request):
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
 
             bw_lower = bw_response.lower()
             if "insufficient" in bw_lower:
@@ -1193,6 +1223,12 @@ def market(request):
         "smm_services_json": json.dumps(SMM_SERVICES),
         "platforms":         list(SMM_SERVICES.keys()),
         "recent_orders":     recent_smm_orders,
+        "platform_labels": {
+            "usa_traffic":    "🇺🇸 USA Traffic",
+            "uk_traffic":     "🇬🇧 UK Traffic",
+            "india_traffic":  "🇮🇳 India Traffic",
+            "global_traffic": "🌍 Global Traffic",
+        },
     }
     return render(request, "market.html", context)
 
@@ -1248,6 +1284,7 @@ def buy_smm(request):
         if account.balance < amount:
             return redirect("low_balance")
 
+        # SMM uses account directly — no owner transfer needed for traffic services
         account.balance -= amount
         account.save()
 
@@ -1537,11 +1574,14 @@ def buy_foreign_number(request):
             return redirect("buy_foreign_number")
 
         # Deduct customer, credit owner — atomically
+        is_owner_buying = (customer_account.pk == owner_account.pk)
+
         with db_transaction.atomic():
             customer_account.balance -= selected_price
             customer_account.save()
-            owner_account.balance += selected_price
-            owner_account.save()
+            if not is_owner_buying:
+                owner_account.balance += selected_price
+                owner_account.save()
 
         try:
             headers = {
@@ -1571,8 +1611,9 @@ def buy_foreign_number(request):
                 with db_transaction.atomic():
                     customer_account.balance += selected_price
                     customer_account.save()
-                    owner_account.balance -= selected_price
-                    owner_account.save()
+                    if not is_owner_buying:
+                        owner_account.balance -= selected_price
+                        owner_account.save()
 
                 try:
                     err_data = response.json()
@@ -1592,8 +1633,9 @@ def buy_foreign_number(request):
             with db_transaction.atomic():
                 customer_account.balance += selected_price
                 customer_account.save()
-                owner_account.balance -= selected_price
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= selected_price
+                    owner_account.save()
             logger.error(f"5SIM buy error: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
 
@@ -1806,11 +1848,14 @@ def buy_electricity(request):
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
 
+        is_owner_buying = (customer_account.pk == owner_account.pk)
+
         with db_transaction.atomic():
             customer_account.balance -= amount
             customer_account.save()
-            owner_account.balance += amount
-            owner_account.save()
+            if not is_owner_buying:
+                owner_account.balance += amount
+                owner_account.save()
 
         try:
             success_flag, token, order_id = call_clubkonnect_electricity_api(
@@ -1846,8 +1891,9 @@ def buy_electricity(request):
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
 
             if "insufficient" in success_flag if isinstance(success_flag, str) else "insufficient" in str(token).lower():
                 error_msg = "Provider balance is low. Please try again later."
@@ -2043,11 +2089,14 @@ def buy_cable_tv(request):
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
 
+        is_owner_buying = (customer_account.pk == owner_account.pk)
+
         with db_transaction.atomic():
             customer_account.balance -= amount
             customer_account.save()
-            owner_account.balance += amount
-            owner_account.save()
+            if not is_owner_buying:
+                owner_account.balance += amount
+                owner_account.save()
 
         try:
             success_flag, ck_response = call_clubkonnect_cabletv_api(
@@ -2085,8 +2134,9 @@ def buy_cable_tv(request):
             with db_transaction.atomic():
                 customer_account.balance += amount
                 customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= amount
+                    owner_account.save()
 
             ck_lower = ck_response.lower()
             if "insufficient" in ck_lower:

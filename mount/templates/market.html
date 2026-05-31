@@ -28,7 +28,6 @@
             color: white; font-weight: 900; font-size: 15px;
         }
         .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-
         .container { max-width: 1100px; margin: 0 auto; padding: 28px 32px 90px; }
 
         .balance-bar {
@@ -45,45 +44,48 @@
         }
 
         .card {
-            background: #fff; border-radius: 16px;
-            border: 1.5px solid #e5e7eb;
-            box-shadow: 0 4px 24px rgba(0,0,0,.06);
-            padding: 28px 24px; margin-bottom: 24px;
+            background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06); padding: 28px 24px; margin-bottom: 24px;
         }
         .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
         .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
 
+        /* INFO BOX */
+        .info-box {
+            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+            font-size: 13px; color: #1e40af; font-weight: 600;
+        }
+        .info-box strong { display: block; margin-bottom: 4px; color: #1e3a5f; }
+
         /* PLATFORM TABS */
         .platform-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn {
-            padding: 10px 20px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+            padding: 10px 18px; border-radius: 10px; border: 1.5px solid #e5e7eb;
             background: #f9fafb; font-family: 'Nunito', sans-serif;
             font-size: 13px; font-weight: 700; cursor: pointer; color: #374151;
-            transition: all .2s; display: flex; align-items: center; gap: 8px;
+            transition: all .2s;
         }
         .tab-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
         .tab-btn:hover:not(.active) { border-color: #3b82f6; background: #eff6ff; }
 
-        /* FORM */
         label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
         input, select {
             width: 100%; padding: 12px 14px;
             background: #f9fafb; border: 1.5px solid #e5e7eb;
             border-radius: 10px; color: #1a1a1a;
             font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
-            outline: none; transition: border-color .25s, background .2s;
+            outline: none; transition: border-color .25s;
             margin-bottom: 14px; appearance: none; -webkit-appearance: none;
         }
         input:focus, select:focus { border-color: #3b82f6; background: #fff; }
         input::placeholder { color: #b0b8c4; font-weight: 400; }
-
         .select-wrap { position: relative; }
         .select-wrap::after {
             content: '▾'; position: absolute; right: 14px; top: 50%;
             transform: translateY(-65%); color: #9ca3af; pointer-events: none;
         }
         .select-wrap select { margin-bottom: 0; padding-right: 36px; cursor: pointer; }
-
         .field-group { margin-bottom: 14px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 
@@ -105,18 +107,15 @@
         }
         .btn-send:hover { opacity: .9; transform: translateY(-1px); }
 
-        /* ALERTS */
         .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
         .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
         .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 
-        /* ORDERS TABLE */
         table { width: 100%; border-collapse: collapse; }
         thead th {
             font-size: 11px; font-weight: 700; color: #9ca3af;
             text-transform: uppercase; letter-spacing: 0.7px;
-            padding: 0 10px 12px; text-align: left;
-            border-bottom: 1.5px solid #e5e7eb;
+            padding: 0 10px 12px; text-align: left; border-bottom: 1.5px solid #e5e7eb;
         }
         tbody td {
             padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
@@ -127,12 +126,9 @@
         .platform-tag {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 3px 10px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; text-transform: capitalize;
+            font-size: 11px; font-weight: 700;
+            background: #dbeafe; color: #1d4ed8;
         }
-        .instagram { background: #fce7f3; color: #be185d; }
-        .tiktok    { background: #f3f4f6; color: #111827; }
-        .youtube   { background: #fee2e2; color: #dc2626; }
-        .facebook  { background: #dbeafe; color: #1d4ed8; }
 
         .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
         .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
@@ -146,11 +142,9 @@
         .check-btn {
             font-size: 11px; padding: 4px 10px; border-radius: 6px;
             background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe;
-            text-decoration: none; font-weight: 700; font-family: 'Nunito', sans-serif;
-            cursor: pointer;
+            text-decoration: none; font-weight: 700;
         }
 
-        /* BOTTOM NAV */
         .bottom-nav {
             display: none; position: fixed; bottom: 0; width: 100%;
             background: white; border-top: 1.5px solid #e5e7eb;
@@ -168,12 +162,12 @@
             .form-row { grid-template-columns: 1fr; }
             .bottom-nav { display: flex; }
             .topbar { padding: 14px 16px; }
+            .balance-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <nav class="topbar">
     <div class="brand-name">kolor</div>
     <div class="topbar-right">
@@ -184,7 +178,6 @@
 
 <div class="container">
 
-    <!-- MESSAGES -->
     {% if messages %}
         {% for message in messages %}
             <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
@@ -193,57 +186,57 @@
         {% endfor %}
     {% endif %}
 
-    <!-- BALANCE BAR -->
     <div class="balance-bar">
         <div>
             <div class="label">Available Balance</div>
-            <div class="amount">₦ {{ account.balance }}</div>
+            <div class="amount">₦{{ account.balance }}</div>
         </div>
         <a href="{% url 'payment' %}">+ Deposit</a>
     </div>
 
-    <!-- ORDER FORM -->
-    <div class="card">
-        <div class="card-title">Social Media Services</div>
-        <div class="card-sub">Buy followers, likes, views and more. Paid from your Kolor wallet.</div>
+    <div class="info-box">
+        <strong>🌍 Website Traffic Services</strong>
+        Drive real targeted visitors to any website from specific countries. Traffic starts within 12 hours and runs at 10K–100K visits per day depending on the service. Perfect for boosting website stats, SEO signals, and social proof.
+    </div>
 
-        <!-- PLATFORM TABS -->
+    <div class="card">
+        <div class="card-title">Buy Website Traffic</div>
+        <div class="card-sub">Select a country, choose your traffic source, enter your URL and quantity.</div>
+
         <div class="platform-tabs">
-            <button class="tab-btn active" onclick="switchPlatform('instagram', this)">📸 Instagram</button>
-            <button class="tab-btn" onclick="switchPlatform('tiktok', this)">🎵 TikTok</button>
-            <button class="tab-btn" onclick="switchPlatform('youtube', this)">▶️ YouTube</button>
-            <button class="tab-btn" onclick="switchPlatform('facebook', this)">📘 Facebook</button>
+            <button class="tab-btn active" onclick="switchPlatform('usa_traffic', this)">🇺🇸 USA</button>
+            <button class="tab-btn"        onclick="switchPlatform('uk_traffic', this)">🇬🇧 UK</button>
+            <button class="tab-btn"        onclick="switchPlatform('india_traffic', this)">🇮🇳 India</button>
+            <button class="tab-btn"        onclick="switchPlatform('global_traffic', this)">🌍 Global</button>
         </div>
 
         <form method="POST" action="{% url 'buy_smm' %}">
             {% csrf_token %}
-
-            <input type="hidden" name="platform" id="platform_input" value="instagram">
+            <input type="hidden" name="platform" id="platform_input" value="usa_traffic">
 
             <div class="field-group">
-                <label>Service</label>
+                <label>Traffic Source</label>
                 <div class="select-wrap">
-                    <select name="service_id" id="service_select" onchange="updateServiceInfo()">
-                    </select>
+                    <select name="service_id" id="service_select" onchange="updateServiceInfo()"></select>
                 </div>
             </div>
 
             <div class="field-group">
-                <label>Profile / Post URL</label>
+                <label>Your Website URL</label>
                 <input type="url" name="link" id="link_input"
-                       placeholder="https://www.instagram.com/yourprofile" required>
+                       placeholder="https://yourwebsite.com/page" required>
             </div>
 
             <div class="form-row">
                 <div class="field-group">
-                    <label>Quantity</label>
+                    <label>Number of Visits</label>
                     <input type="number" name="quantity" id="quantity_input"
-                           placeholder="e.g. 1000" min="1" required onchange="updateCost()">
+                           placeholder="e.g. 1000" min="1" required onchange="updateCost()" oninput="updateCost()">
                 </div>
                 <div class="field-group">
                     <label>Min / Max</label>
                     <input type="text" id="min_max" readonly
-                           style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;">
+                           style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;margin-bottom:0;">
                 </div>
             </div>
 
@@ -252,22 +245,22 @@
                 <span class="cost-value" id="total_cost">₦0.00</span>
             </div>
 
-            <button class="btn-send" type="submit">Place Order</button>
+            <button class="btn-send" type="submit">🚀 Place Order</button>
         </form>
     </div>
 
     <!-- RECENT ORDERS -->
     <div class="card">
-        <div class="card-title">My SMM Orders</div>
-        <div class="card-sub">Track your recent social media service orders.</div>
+        <div class="card-title">My Traffic Orders</div>
+        <div class="card-sub">Track your recent website traffic orders.</div>
 
         {% if recent_orders %}
         <table>
             <thead>
                 <tr>
-                    <th>Platform</th>
                     <th>Service</th>
-                    <th>Qty</th>
+                    <th>URL</th>
+                    <th>Visits</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -276,9 +269,13 @@
             <tbody>
                 {% for order in recent_orders %}
                 <tr>
-                    <td><span class="platform-tag {{ order.platform }}">{{ order.platform|title }}</span></td>
-                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                         {{ order.service_name }}
+                    </td>
+                    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <a href="{{ order.link }}" target="_blank" style="color:#3b82f6;text-decoration:none;">
+                            {{ order.link|truncatechars:30 }}
+                        </a>
                     </td>
                     <td>{{ order.quantity|floatformat:0 }}</td>
                     <td>₦{{ order.amount }}</td>
@@ -286,9 +283,7 @@
                     <td>
                         {% if order.jap_order_id and order.status == "processing" %}
                         <a href="{% url 'check_smm_order' order.id %}" class="check-btn">Check</a>
-                        {% else %}
-                        —
-                        {% endif %}
+                        {% else %}—{% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -296,14 +291,13 @@
         </table>
         {% else %}
         <p style="text-align:center;color:#9ca3af;font-size:13px;padding:24px 0;">
-            No orders yet. Place your first SMM order above!
+            No orders yet. Place your first traffic order above!
         </p>
         {% endif %}
     </div>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
     <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
     <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
@@ -312,81 +306,60 @@
 </div>
 
 <script>
-    // Plans injected from Django
-    const services = {{ smm_services_json|safe }};
+const services = {{ smm_services_json|safe }};
+let currentPlatform = 'usa_traffic';
 
-    let currentPlatform = 'instagram';
+function switchPlatform(platform, btn) {
+    currentPlatform = platform;
+    document.getElementById('platform_input').value = platform;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildServiceDropdown(platform);
+    document.getElementById('total_cost').textContent = '₦0.00';
+    document.getElementById('quantity_input').value = '';
+}
 
-    function switchPlatform(platform, btn) {
-        currentPlatform = platform;
-        document.getElementById('platform_input').value = platform;
+function buildServiceDropdown(platform) {
+    const select = document.getElementById('service_select');
+    select.innerHTML = '';
+    (services[platform] || []).forEach(s => {
+        const opt         = document.createElement('option');
+        opt.value         = s.id;
+        opt.textContent   = s.label;
+        opt.dataset.amount = s.amount;
+        opt.dataset.min    = s.min;
+        opt.dataset.max    = s.max;
+        select.appendChild(opt);
+    });
+    updateServiceInfo();
+}
 
-        // Update active tab
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+function updateServiceInfo() {
+    const select   = document.getElementById('service_select');
+    const selected = select.options[select.selectedIndex];
+    if (!selected) return;
+    document.getElementById('min_max').value =
+        `Min: ${Number(selected.dataset.min).toLocaleString()} / Max: ${Number(selected.dataset.max).toLocaleString()}`;
+    document.getElementById('quantity_input').min = selected.dataset.min;
+    document.getElementById('quantity_input').max = selected.dataset.max;
+    updateCost();
+}
 
-        // Update placeholder
-        const placeholders = {
-            instagram: 'https://www.instagram.com/yourprofile',
-            tiktok:    'https://www.tiktok.com/@yourprofile',
-            youtube:   'https://www.youtube.com/channel/yourchannelid',
-            facebook:  'https://www.facebook.com/yourpage',
-        };
-        document.getElementById('link_input').placeholder = placeholders[platform] || '';
-
-        // Rebuild service dropdown
-        buildServiceDropdown(platform);
+function updateCost() {
+    const select   = document.getElementById('service_select');
+    const selected = select.options[select.selectedIndex];
+    const qty      = parseInt(document.getElementById('quantity_input').value) || 0;
+    if (!selected || qty <= 0) {
+        document.getElementById('total_cost').textContent = '₦0.00';
+        return;
     }
+    const pricePerThousand = parseFloat(selected.dataset.amount);
+    const total = (qty / 1000) * pricePerThousand;
+    document.getElementById('total_cost').textContent =
+        '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
 
-    function buildServiceDropdown(platform) {
-        const select = document.getElementById('service_select');
-        select.innerHTML = '';
-
-        (services[platform] || []).forEach(s => {
-            const opt       = document.createElement('option');
-            opt.value       = s.id;
-            opt.textContent = s.label;
-            opt.dataset.amount = s.amount;
-            opt.dataset.min    = s.min;
-            opt.dataset.max    = s.max;
-            select.appendChild(opt);
-        });
-
-        updateServiceInfo();
-    }
-
-    function updateServiceInfo() {
-        const select   = document.getElementById('service_select');
-        const selected = select.options[select.selectedIndex];
-        if (!selected) return;
-
-        document.getElementById('min_max').value =
-            `Min: ${Number(selected.dataset.min).toLocaleString()} / Max: ${Number(selected.dataset.max).toLocaleString()}`;
-
-        document.getElementById('quantity_input').min = selected.dataset.min;
-        document.getElementById('quantity_input').max = selected.dataset.max;
-
-        updateCost();
-    }
-
-    function updateCost() {
-        const select   = document.getElementById('service_select');
-        const selected = select.options[select.selectedIndex];
-        const qty      = parseInt(document.getElementById('quantity_input').value) || 0;
-
-        if (!selected || qty <= 0) {
-            document.getElementById('total_cost').textContent = '₦0.00';
-            return;
-        }
-
-        const pricePerThousand = parseFloat(selected.dataset.amount);
-        const total = (qty / 1000) * pricePerThousand;
-        document.getElementById('total_cost').textContent =
-            '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
-
-    // Init on load
-    buildServiceDropdown('instagram');
+buildServiceDropdown('usa_traffic');
 </script>
 
 </body>
