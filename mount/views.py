@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -37,12 +38,6 @@ def get_or_create_account(user):
 
 
 def get_owner_account():
-    """
-    Returns the site owner's Account.
-    Set SITE_OWNER_USERNAME=yourusername in your .env file.
-    This account is used to fund API calls (ClubKonnect, Beewave, 5SIM).
-    Flow: customer balance deducted → owner account credited → API called → owner refunded if API fails.
-    """
     username = config("SITE_OWNER_USERNAME")
     try:
         user    = User.objects.get(username=username)
@@ -274,62 +269,47 @@ DATA_PLANS = {
 # BEEWAVE SPECIAL BUNDLE PLANS
 # =========================
 
-# ── BEEWAVE PLANS ────────────────────────────────────────────────────────────
-# qty values must match Beewave's exact product codes from your pricing table.
-# type field per network:
-#   MTN       → "sme-data"
-#   GLO       → "cg-data"  (SME plans) or "sme-data" for weekly
-#   9MOBILE   → "cg-data"
-#   AIRTEL    → "direct-gifting-data"
-# Prices below are your selling price (add your margin on top of API Earner cost).
-# API Earner costs shown in comments so you know your profit per plan.
-
 BEEWAVE_PLANS = {
     "MTN": [
-        # sme-data plans
-        {"qty": "500mb_weekly",  "type": "sme-data", "label": "MTN 500MB - 7 days",   "amount": 390},   # cost ₦325
-        {"qty": "1gb_weekly",    "type": "sme-data", "label": "MTN 1GB - 7 days",     "amount": 530},   # cost ₦440
-        {"qty": "2gb_weekly",    "type": "sme-data", "label": "MTN 2GB - 7 days",     "amount": 980},   # cost ₦820
-        {"qty": "3gb_weekly",    "type": "sme-data", "label": "MTN 3GB - 7 days",     "amount": 1350},  # cost ₦1170
-        {"qty": "1gb_monthly",   "type": "sme-data", "label": "MTN 1GB - 30 days",    "amount": 650},   # cost ₦550
-        {"qty": "2gb_monthly",   "type": "sme-data", "label": "MTN 2GB - 30 days",    "amount": 1150},  # cost ₦990
-        {"qty": "3gb_monthly",   "type": "sme-data", "label": "MTN 3GB - 30 days",    "amount": 1700},  # cost ₦1450
-        {"qty": "5gb_monthly",   "type": "sme-data", "label": "MTN 5GB - 30 days",    "amount": 2050},  # cost ₦1750
+        {"qty": "500mb_weekly",  "type": "sme-data", "label": "MTN 500MB - 7 days",   "amount": 390},
+        {"qty": "1gb_weekly",    "type": "sme-data", "label": "MTN 1GB - 7 days",     "amount": 530},
+        {"qty": "2gb_weekly",    "type": "sme-data", "label": "MTN 2GB - 7 days",     "amount": 980},
+        {"qty": "3gb_weekly",    "type": "sme-data", "label": "MTN 3GB - 7 days",     "amount": 1350},
+        {"qty": "1gb_monthly",   "type": "sme-data", "label": "MTN 1GB - 30 days",    "amount": 650},
+        {"qty": "2gb_monthly",   "type": "sme-data", "label": "MTN 2GB - 30 days",    "amount": 1150},
+        {"qty": "3gb_monthly",   "type": "sme-data", "label": "MTN 3GB - 30 days",    "amount": 1700},
+        {"qty": "5gb_monthly",   "type": "sme-data", "label": "MTN 5GB - 30 days",    "amount": 2050},
     ],
     "GLO": [
-        # cg-data plans
-        {"qty": "200mb_weekly",  "type": "cg-data",  "label": "GLO 200MB - 7 days",   "amount": 140},   # cost ₦109
-        {"qty": "1gb_3days",     "type": "cg-data",  "label": "GLO 1GB - 3 days",     "amount": 330},   # cost ₦277
-        {"qty": "1gb_7days",     "type": "cg-data",  "label": "GLO 1GB - 7 days",     "amount": 380},   # cost ₦317
-        {"qty": "3gb_3days",     "type": "cg-data",  "label": "GLO 3GB - 3 days",     "amount": 950},   # cost ₦801
-        {"qty": "3gb_7days",     "type": "cg-data",  "label": "GLO 3GB - 7 days",     "amount": 1100},  # cost ₦920
-        {"qty": "500mb_monthly", "type": "cg-data",  "label": "GLO 500MB - 30 days",  "amount": 280},   # cost ₦228
-        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "GLO 1GB - 30 days",    "amount": 520},   # cost ₦430
-        {"qty": "2gb_monthly",   "type": "cg-data",  "label": "GLO 2GB - 30 days",    "amount": 990},   # cost ₦840
-        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "GLO 5GB - 30 days",    "amount": 2400},  # cost ₦2075
+        {"qty": "200mb_weekly",  "type": "cg-data",  "label": "GLO 200MB - 7 days",   "amount": 140},
+        {"qty": "1gb_3days",     "type": "cg-data",  "label": "GLO 1GB - 3 days",     "amount": 330},
+        {"qty": "1gb_7days",     "type": "cg-data",  "label": "GLO 1GB - 7 days",     "amount": 380},
+        {"qty": "3gb_3days",     "type": "cg-data",  "label": "GLO 3GB - 3 days",     "amount": 950},
+        {"qty": "3gb_7days",     "type": "cg-data",  "label": "GLO 3GB - 7 days",     "amount": 1100},
+        {"qty": "500mb_monthly", "type": "cg-data",  "label": "GLO 500MB - 30 days",  "amount": 280},
+        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "GLO 1GB - 30 days",    "amount": 520},
+        {"qty": "2gb_monthly",   "type": "cg-data",  "label": "GLO 2GB - 30 days",    "amount": 990},
+        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "GLO 5GB - 30 days",    "amount": 2400},
     ],
     "AIRTEL": [
-        # direct-gifting-data plans
-        {"qty": "150mb_daily",   "type": "direct-gifting-data", "label": "Airtel 150MB - 1 day",   "amount": 100},  # cost ₦70
-        {"qty": "300mb_2days",   "type": "direct-gifting-data", "label": "Airtel 300MB - 2 days",  "amount": 150},  # cost ₦115
-        {"qty": "600mb_2days",   "type": "direct-gifting-data", "label": "Airtel 600MB - 2 days",  "amount": 270},  # cost ₦220
-        {"qty": "1.5gb_1days",   "type": "direct-gifting-data", "label": "Airtel 1.5GB - 1 day",   "amount": 550},  # cost ₦460
-        {"qty": "2gb_2days",     "type": "direct-gifting-data", "label": "Airtel 2GB - 2 days",    "amount": 650},  # cost ₦560
-        {"qty": "3gb_2days",     "type": "direct-gifting-data", "label": "Airtel 3GB - 2 days",    "amount": 900},  # cost ₦800
-        {"qty": "10gb_monthly",  "type": "direct-gifting-data", "label": "Airtel 10GB - 30 days",  "amount": 3500}, # cost ₦3100
+        {"qty": "150mb_daily",   "type": "direct-gifting-data", "label": "Airtel 150MB - 1 day",   "amount": 100},
+        {"qty": "300mb_2days",   "type": "direct-gifting-data", "label": "Airtel 300MB - 2 days",  "amount": 150},
+        {"qty": "600mb_2days",   "type": "direct-gifting-data", "label": "Airtel 600MB - 2 days",  "amount": 270},
+        {"qty": "1.5gb_1days",   "type": "direct-gifting-data", "label": "Airtel 1.5GB - 1 day",   "amount": 550},
+        {"qty": "2gb_2days",     "type": "direct-gifting-data", "label": "Airtel 2GB - 2 days",    "amount": 650},
+        {"qty": "3gb_2days",     "type": "direct-gifting-data", "label": "Airtel 3GB - 2 days",    "amount": 900},
+        {"qty": "10gb_monthly",  "type": "direct-gifting-data", "label": "Airtel 10GB - 30 days",  "amount": 3500},
     ],
     "9MOBILE": [
-        # cg-data plans
-        {"qty": "500mb_weekly",  "type": "cg-data",  "label": "9Mobile 500MB - 7 days",  "amount": 360},  # cost ₦300
-        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "9Mobile 1GB - 30 days",   "amount": 650},  # cost ₦550
-        {"qty": "1.5gb_monthly", "type": "cg-data",  "label": "9Mobile 1.5GB - 30 days", "amount": 950},  # cost ₦800
-        {"qty": "3gb_monthly",   "type": "cg-data",  "label": "9Mobile 3GB - 30 days",   "amount": 1800}, # cost ₦1550
-        {"qty": "4gb_monthly",   "type": "cg-data",  "label": "9Mobile 4GB - 30 days",   "amount": 2350}, # cost ₦2050
-        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "9Mobile 5GB - 30 days",   "amount": 2800}, # cost ₦2500
+        {"qty": "500mb_weekly",  "type": "cg-data",  "label": "9Mobile 500MB - 7 days",  "amount": 360},
+        {"qty": "1gb_monthly",   "type": "cg-data",  "label": "9Mobile 1GB - 30 days",   "amount": 650},
+        {"qty": "1.5gb_monthly", "type": "cg-data",  "label": "9Mobile 1.5GB - 30 days", "amount": 950},
+        {"qty": "3gb_monthly",   "type": "cg-data",  "label": "9Mobile 3GB - 30 days",   "amount": 1800},
+        {"qty": "4gb_monthly",   "type": "cg-data",  "label": "9Mobile 4GB - 30 days",   "amount": 2350},
+        {"qty": "5gb_monthly",   "type": "cg-data",  "label": "9Mobile 5GB - 30 days",   "amount": 2800},
     ],
 }
 
-# Network names Beewave expects (lowercase)
 BEEWAVE_NETWORK_NAMES = {
     "MTN":     "mtn",
     "GLO":     "glo",
@@ -340,13 +320,6 @@ BEEWAVE_NETWORK_NAMES = {
 
 # =========================
 # SMM SERVICES
-# =========================
-
-# =========================
-# JAP SMM SERVICES
-# These are website traffic services available on your JAP account.
-# Rate is your selling price in Naira per 1000 visits.
-# JAP cost is ~$0.175/1000 = ~₦280 at ₦1600/USD, so ₦600+ gives good margin.
 # =========================
 
 SMM_SERVICES = {
@@ -394,9 +367,11 @@ SMM_SERVICES = {
     ],
 }
 
-#landing ######
+# Landing page
 def landing_page(request):
-    return render(request, "landing.html")  
+    return render(request, "landing.html")
+
+
 # =========================
 # WEB PAGES
 # =========================
@@ -812,47 +787,17 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
 
 
 # =========================
-# BEEWAVE API  ← FIXED
+# BEEWAVE API
 # =========================
-
-# ----------------------------------------------------------------
-# HOW TO FIND YOUR CORRECT FIELD NAMES:
-#   1. Log in to your Beewave dashboard
-#   2. Go to API / Developer docs section
-#   3. Confirm the exact values for:
-#        - endpoint URL  (currently: https://beewave.ng/api/data.php)
-#        - "type" field  (try: "SME", "sme", "data", "bundle")
-#        - phone field   (try: "phone" or "phone_number")
-#        - plan field    (try: "plan", "plan_id", "qty", "bundle_id")
-#        - plan value    (try: "1" for 1GB, "500" for 500MB, or "1gb"/"500mb")
-#
-# The current values below are the most common for Nigerian VTU APIs.
-# Check your terminal logs — the raw Beewave response is now printed.
-# ----------------------------------------------------------------
-
-# Map qty labels to plain numeric strings Beewave likely expects.
-# e.g. "1gb" → "1",  "500mb" → "500mb"  (adjust if your dashboard says otherwise)
-BEEWAVE_QTY_MAP = {
-    "500mb": "500mb",
-    "1gb":   "1gb",
-    "2gb":   "2gb",
-    "3gb":   "3gb",
-    "5gb":   "5gb",
-    "10gb":  "10gb",
-}
-
 
 import platform as _platform
 import subprocess as _subprocess
 
-# Windows dev: curl uses Schannel TLS which Beewave accepts.
-# Linux prod:  httpx works fine — no WAF block on Linux OpenSSL.
 _IS_WINDOWS = _platform.system() == "Windows"
 logger.info(f"Beewave backend: {'curl (Windows)' if _IS_WINDOWS else 'httpx (Linux)'}")
 
 
 def _beewave_via_curl(payload):
-    """Windows only — call Beewave using system curl (Schannel TLS, bypasses WAF block)."""
     try:
         result = _subprocess.run(
             [
@@ -883,7 +828,6 @@ def _beewave_via_curl(payload):
 
 
 def _beewave_via_httpx(payload):
-    """Linux/production — call Beewave using httpx HTTP/1.1."""
     import httpx
     try:
         with httpx.Client(http2=False, timeout=30) as client:
@@ -910,14 +854,6 @@ def _beewave_via_httpx(payload):
 
 
 def call_beewave_data_api(network, phone, qty, plan_type="sme-data"):
-    """
-    Call Beewave data API.
-    Returns (True, reference) on success, (False, error_message) on failure.
-    Windows → curl subprocess (Schannel TLS, bypasses WAF).
-    Linux   → httpx (no WAF issue on Linux OpenSSL).
-    plan_type varies per network: sme-data (MTN), cg-data (GLO/9Mobile),
-    direct-gifting-data (Airtel).
-    """
     api_key      = config("BEEWAVE_API_KEY")
     network_name = BEEWAVE_NETWORK_NAMES.get(network)
 
@@ -926,13 +862,13 @@ def call_beewave_data_api(network, phone, qty, plan_type="sme-data"):
 
     payload = {
         "api_key":      api_key,
-        "type":         plan_type,    # sme-data / cg-data / direct-gifting-data
-        "qty":          qty,          # exact code e.g. "1gb_weekly", "500mb_monthly"
-        "network":      network_name, # lowercase: "mtn", "glo", "airtel", "9mobile"
-        "phone_number": phone,        # exact field name per Beewave docs
+        "type":         plan_type,
+        "qty":          qty,
+        "network":      network_name,
+        "phone_number": phone,
     }
 
-    logger.info(f"Beewave → network={network_name} plan={plan_value} phone={phone} via={'curl' if _IS_WINDOWS else 'httpx'}")
+    logger.info(f"Beewave → network={network_name} plan={qty} phone={phone} via={'curl' if _IS_WINDOWS else 'httpx'}")
 
     if _IS_WINDOWS:
         data, err = _beewave_via_curl(payload)
@@ -983,7 +919,6 @@ def buy_data(request):
 
         amount = Decimal(str(plan_info["amount"]))
 
-        # ── Customer account ──────────────────────────────────────────
         try:
             customer_account = Account.objects.get(user=request.user)
         except Account.DoesNotExist:
@@ -993,7 +928,6 @@ def buy_data(request):
         if customer_account.balance < amount:
             return redirect("low_balance")
 
-        # ── Owner account (funds the API call) ────────────────────────
         try:
             owner_account = get_owner_account()
         except Exception as e:
@@ -1004,7 +938,6 @@ def buy_data(request):
         request_id   = str(uuid.uuid4()).replace("-", "")[:20]
         is_owner_buying = (customer_account.pk == owner_account.pk)
 
-        # Only transfer to owner if buyer is a different user (real customer)
         with db_transaction.atomic():
             customer_account.balance -= amount
             customer_account.save()
@@ -1074,7 +1007,6 @@ def buy_data(request):
 
 @login_required
 def buy_special_bundle(request):
-    """Handle Beewave special bundle data purchases."""
     if request.method == "POST":
         network = request.POST.get("network", "").strip().upper()
         phone   = request.POST.get("phone_number", "").strip()
@@ -1096,9 +1028,8 @@ def buy_special_bundle(request):
             return redirect("payment")
 
         amount     = Decimal(str(plan_info["amount"]))
-        plan_type  = plan_info.get("type", "sme-data")  # type per plan e.g. sme-data, cg-data
+        plan_type  = plan_info.get("type", "sme-data")
 
-        # ── Customer account ──────────────────────────────────────────
         try:
             customer_account = Account.objects.get(user=request.user)
         except Account.DoesNotExist:
@@ -1108,7 +1039,6 @@ def buy_special_bundle(request):
         if customer_account.balance < amount:
             return redirect("low_balance")
 
-        # ── Owner account (funds the Beewave API call) ─────────────────
         try:
             owner_account = get_owner_account()
         except Exception as e:
@@ -1271,7 +1201,6 @@ def buy_smm(request):
             )
             return redirect("market")
 
-        # Price is per 1000 units
         amount = Decimal(str(service_info["amount"])) * Decimal(quantity) / Decimal(1000)
         amount = amount.quantize(Decimal("0.01"))
 
@@ -1284,7 +1213,6 @@ def buy_smm(request):
         if account.balance < amount:
             return redirect("low_balance")
 
-        # SMM uses account directly — no owner transfer needed for traffic services
         account.balance -= amount
         account.save()
 
@@ -1445,29 +1373,120 @@ def report_view(request):
 
 
 # =========================
-# FOREIGN NUMBERS — 5SIM
+# FOREIGN NUMBERS — SHARED CONSTANTS (corrected & expanded)
 # =========================
 
-FOREIGN_COUNTRIES = ["usa", "uk", "canada", "russia", "india", "indonesia"]
-FOREIGN_SERVICES  = ["telegram", "whatsapp", "google", "facebook", "instagram", "twitter"]
+# All supported countries as slugs
+FOREIGN_COUNTRIES = [
+    "usa", "uk", "canada", "russia", "india", "indonesia",
+    "afghanistan", "albania", "algeria", "angola", "argentina",
+    "armenia", "australia", "austria", "azerbaijan", "bahrain",
+    "bangladesh", "belarus", "belgium", "brazil", "bulgaria",
+    "china", "egypt", "france", "germany", "ghana", "italy",
+    "japan", "kenya", "malaysia", "mexico", "netherlands",
+    "nigeria", "pakistan", "philippines", "poland", "saudi_arabia",
+    "singapore", "south_africa", "spain", "sweden", "switzerland",
+    "thailand", "turkey", "ukraine", "uae", "vietnam",
+]
 
+# Display name + ISO code for each slug
+FOREIGN_COUNTRY_DISPLAY = {
+    "usa":          ("United States",        "US", "🇺🇸"),
+    "uk":           ("United Kingdom",       "GB", "🇬🇧"),
+    "canada":       ("Canada",               "CA", "🇨🇦"),
+    "russia":       ("Russia",               "RU", "🇷🇺"),
+    "india":        ("India",                "IN", "🇮🇳"),
+    "indonesia":    ("Indonesia",            "ID", "🇮🇩"),
+    "afghanistan":  ("Afghanistan",          "AF", "🇦🇫"),
+    "albania":      ("Albania",              "AL", "🇦🇱"),
+    "algeria":      ("Algeria",              "DZ", "🇩🇿"),
+    "angola":       ("Angola",               "AO", "🇦🇴"),
+    "argentina":    ("Argentina",            "AR", "🇦🇷"),
+    "armenia":      ("Armenia",              "AM", "🇦🇲"),
+    "australia":    ("Australia",            "AU", "🇦🇺"),
+    "austria":      ("Austria",              "AT", "🇦🇹"),
+    "azerbaijan":   ("Azerbaijan",           "AZ", "🇦🇿"),
+    "bahrain":      ("Bahrain",              "BH", "🇧🇭"),
+    "bangladesh":   ("Bangladesh",           "BD", "🇧🇩"),
+    "belarus":      ("Belarus",              "BY", "🇧🇾"),
+    "belgium":      ("Belgium",              "BE", "🇧🇪"),
+    "brazil":       ("Brazil",               "BR", "🇧🇷"),
+    "bulgaria":     ("Bulgaria",             "BG", "🇧🇬"),
+    "china":        ("China",                "CN", "🇨🇳"),
+    "egypt":        ("Egypt",                "EG", "🇪🇬"),
+    "france":       ("France",               "FR", "🇫🇷"),
+    "germany":      ("Germany",              "DE", "🇩🇪"),
+    "ghana":        ("Ghana",                "GH", "🇬🇭"),
+    "italy":        ("Italy",                "IT", "🇮🇹"),
+    "japan":        ("Japan",                "JP", "🇯🇵"),
+    "kenya":        ("Kenya",                "KE", "🇰🇪"),
+    "malaysia":     ("Malaysia",             "MY", "🇲🇾"),
+    "mexico":       ("Mexico",               "MX", "🇲🇽"),
+    "netherlands":  ("Netherlands",          "NL", "🇳🇱"),
+    "nigeria":      ("Nigeria",              "NG", "🇳🇬"),
+    "pakistan":     ("Pakistan",             "PK", "🇵🇰"),
+    "philippines":  ("Philippines",          "PH", "🇵🇭"),
+    "poland":       ("Poland",               "PL", "🇵🇱"),
+    "saudi_arabia": ("Saudi Arabia",         "SA", "🇸🇦"),
+    "singapore":    ("Singapore",            "SG", "🇸🇬"),
+    "south_africa": ("South Africa",         "ZA", "🇿🇦"),
+    "spain":        ("Spain",                "ES", "🇪🇸"),
+    "sweden":       ("Sweden",               "SE", "🇸🇪"),
+    "switzerland":  ("Switzerland",          "CH", "🇨🇭"),
+    "thailand":     ("Thailand",             "TH", "🇹🇭"),
+    "turkey":       ("Turkey",               "TR", "🇹🇷"),
+    "ukraine":      ("Ukraine",              "UA", "🇺🇦"),
+    "uae":          ("United Arab Emirates", "AE", "🇦🇪"),
+    "vietnam":      ("Vietnam",              "VN", "🇻🇳"),
+}
+
+# All supported services as slugs (matches 5SIM + SteadySim service list)
+FOREIGN_SERVICES = [
+    "whatsapp", "telegram", "google", "facebook",
+    "instagram", "twitter", "tiktok", "snapchat",
+    "discord", "netflix", "amazon", "microsoft",
+    "apple", "uber", "airbnb", "spotify",
+    "paypal", "linkedin", "viber", "line",
+]
+
+# Display name + icon for each service slug
+FOREIGN_SERVICE_DISPLAY = {
+    "whatsapp":  ("WhatsApp",   "💬"),
+    "telegram":  ("Telegram",   "✈️"),
+    "google":    ("Google",     "🔍"),
+    "facebook":  ("Facebook",   "📘"),
+    "instagram": ("Instagram",  "📸"),
+    "twitter":   ("Twitter/X",  "🐦"),
+    "tiktok":    ("TikTok",     "🎵"),
+    "snapchat":  ("Snapchat",   "👻"),
+    "discord":   ("Discord",    "🎮"),
+    "netflix":   ("Netflix",    "🎬"),
+    "amazon":    ("Amazon",     "📦"),
+    "microsoft": ("Microsoft",  "🪟"),
+    "apple":     ("Apple",      "🍎"),
+    "uber":      ("Uber",       "🚗"),
+    "airbnb":    ("Airbnb",     "🏠"),
+    "spotify":   ("Spotify",    "🎧"),
+    "paypal":    ("PayPal",     "💳"),
+    "linkedin":  ("LinkedIn",   "💼"),
+    "viber":     ("Viber",      "📞"),
+    "line":      ("Line",       "🟢"),
+}
+
+
+# =========================
+# FOREIGN NUMBERS — 5SIM (PRIMARY PROVIDER)
+# =========================
 
 def _ngn_price(usd_price):
-    """
-    Convert a USD price to NGN with your profit markup applied.
-    Reads from .env:
-      USD_TO_NGN_RATE       — exchange rate e.g. 1600
-      FOREIGN_NUMBER_MARKUP — profit multiplier e.g. 1.3 = 30% markup
-    Result is rounded up to the nearest 10 naira for clean pricing.
-    """
     import math
-    # Strip spaces, quotes, inline comments — handles messy .env values
+
     def clean(val):
         return str(val).split("#")[0].strip().strip('"').strip("'")
 
     try:
-        rate   = Decimal(clean(config("USD_TO_NGN_RATE",        default="1600")))
-        markup = Decimal(clean(config("FOREIGN_NUMBER_MARKUP",   default="1.3")))
+        rate   = Decimal(clean(config("USD_TO_NGN_RATE",      default="1600")))
+        markup = Decimal(clean(config("FOREIGN_NUMBER_MARKUP", default="1.3")))
     except Exception as e:
         logger.error(f"_ngn_price config error: {e} — using defaults 1600 / 1.3")
         rate   = Decimal("1600")
@@ -1478,13 +1497,6 @@ def _ngn_price(usd_price):
 
 
 def _fetch_5sim_prices(country=None, service=None):
-    """
-    Fetch live prices from 5SIM and convert to NGN with markup.
-    If country AND service are provided, returns only matching rows.
-    Returns list of dicts: {country, service, operator, price_usd, price_ngn, count}
-    price_ngn is what the customer pays (NGN, with your markup baked in).
-    price_usd is the raw 5SIM cost (what actually gets charged to your 5SIM account).
-    """
     try:
         response = requests.get("https://5sim.net/v1/guest/prices", timeout=30)
         data     = response.json()
@@ -1509,8 +1521,8 @@ def _fetch_5sim_prices(country=None, service=None):
                     "service":   s,
                     "operator":  operator_name,
                     "price_usd": usd,
-                    "price_ngn": _ngn_price(usd),   # what customer pays in ₦
-                    "price":     _ngn_price(usd),    # alias kept for template compatibility
+                    "price_ngn": _ngn_price(usd),
+                    "price":     _ngn_price(usd),
                     "count":     operator_data.get("count", 0),
                 })
     return prices
@@ -1518,11 +1530,6 @@ def _fetch_5sim_prices(country=None, service=None):
 
 @login_required
 def buy_foreign_number(request):
-    """
-    GET  → show form + user's numbers. Prices only load after country/service selected.
-    POST → customer balance deducted, owner account credited, 5SIM API called with owner key.
-           If API fails, customer is refunded and owner balance restored.
-    """
     customer_account = get_or_create_account(request.user)
 
     selected_country = request.GET.get("country", "") or request.POST.get("country", "")
@@ -1559,13 +1566,12 @@ def buy_foreign_number(request):
             return redirect(f"buy_foreign_number?country={country}&service={service}")
 
         cheapest       = min(available, key=lambda x: x["price_ngn"])
-        selected_price = Decimal(str(cheapest["price_ngn"]))  # NGN with markup — what customer pays
+        selected_price = Decimal(str(cheapest["price_ngn"]))
 
         if customer_account.balance < selected_price:
             messages.error(request, f"Insufficient balance. You need ₦{selected_price:,} for this number.")
             return redirect("buy_foreign_number")
 
-        # ── Owner account (the 5SIM API key belongs to the owner) ──────
         try:
             owner_account = get_owner_account()
         except Exception as e:
@@ -1573,7 +1579,6 @@ def buy_foreign_number(request):
             messages.error(request, "Service temporarily unavailable. Please try again later.")
             return redirect("buy_foreign_number")
 
-        # Deduct customer, credit owner — atomically
         is_owner_buying = (customer_account.pk == owner_account.pk)
 
         with db_transaction.atomic():
@@ -1607,7 +1612,6 @@ def buy_foreign_number(request):
                 messages.success(request, f"Number {data.get('phone')} purchased successfully!")
 
             else:
-                # API failed — refund customer, restore owner
                 with db_transaction.atomic():
                     customer_account.balance += selected_price
                     customer_account.save()
@@ -1647,6 +1651,8 @@ def buy_foreign_number(request):
         "account":          customer_account,
         "countries":        FOREIGN_COUNTRIES,
         "services":         FOREIGN_SERVICES,
+        "country_display":  FOREIGN_COUNTRY_DISPLAY,
+        "service_display":  FOREIGN_SERVICE_DISPLAY,
         "numbers":          numbers,
         "prices":           prices,
         "selected_country": selected_country,
@@ -1657,7 +1663,6 @@ def buy_foreign_number(request):
 
 @login_required
 def foreign_number_prices(request):
-    """AJAX endpoint — returns prices for a specific country+service as JSON."""
     country = request.GET.get("country", "").strip().lower()
     service = request.GET.get("service", "").strip().lower()
 
@@ -1705,6 +1710,329 @@ def cancel_foreign_number(request, order_id):
 
 
 # =========================
+# FOREIGN NUMBERS — STEADYSIM (SECOND PROVIDER)
+# =========================
+
+STEADYSIM_BASE = "https://steadysim.com/stubs/handler_api.php"
+
+# Corrected & expanded SteadySim country IDs
+STEADYSIM_COUNTRY_IDS = {
+    "usa":          "187",
+    "uk":           "16",
+    "canada":       "36",
+    "russia":       "0",
+    "india":        "22",
+    "indonesia":    "6",
+    "afghanistan":  "185",
+    "albania":      "62",
+    "algeria":      "59",
+    "angola":       "116",
+    "argentina":    "8",
+    "armenia":      "51",
+    "australia":    "26",
+    "austria":      "90",
+    "azerbaijan":   "73",
+    "bahrain":      "107",
+    "bangladesh":   "50",
+    "belarus":      "86",
+    "belgium":      "95",
+    "brazil":       "7",
+    "bulgaria":     "55",
+    "china":        "46",
+    "egypt":        "39",
+    "france":       "78",
+    "germany":      "43",
+    "ghana":        "140",
+    "italy":        "35",
+    "japan":        "33",
+    "kenya":        "33",   # verify in your SteadySim dashboard
+    "malaysia":     "12",
+    "mexico":       "13",
+    "netherlands":  "73",   # verify in your SteadySim dashboard
+    "nigeria":      "109",
+    "pakistan":     "11",
+    "philippines":  "4",
+    "poland":       "15",
+    "saudi_arabia": "101",
+    "singapore":    "41",
+    "south_africa": "126",
+    "spain":        "33",   # verify in your SteadySim dashboard
+    "sweden":       "55",   # verify in your SteadySim dashboard
+    "switzerland":  "76",
+    "thailand":     "5",
+    "turkey":       "3",
+    "ukraine":      "1",
+    "uae":          "73",   # verify in your SteadySim dashboard
+    "vietnam":      "10",
+}
+
+# Corrected SteadySim service codes (verified against their API)
+STEADYSIM_SERVICE_CODES = {
+    "whatsapp":  "wa",
+    "telegram":  "tg",
+    "google":    "go",
+    "facebook":  "fb",
+    "instagram": "ig",
+    "twitter":   "tw",
+    "tiktok":    "tt",
+    "snapchat":  "sc",
+    "discord":   "ds",
+    "netflix":   "nf",
+    "amazon":    "am",
+    "microsoft": "ms",
+    "apple":     "ap",
+    "uber":      "ub",
+    "airbnb":    "ab",
+    "spotify":   "sf",
+    "paypal":    "pp",
+    "linkedin":  "li",
+    "viber":     "vi",
+    "line":      "ln",
+}
+
+
+def _steadysim_get(params):
+    params["api_key"] = config("STEADYSIM_API_KEY")
+    try:
+        resp = requests.get(STEADYSIM_BASE, params=params, timeout=15)
+        return resp.text.strip()
+    except requests.RequestException as e:
+        logger.error(f"SteadySim request error: {e}")
+        return None
+
+
+def _fetch_steadysim_price(country, service):
+    country_id   = STEADYSIM_COUNTRY_IDS.get(country)
+    service_code = STEADYSIM_SERVICE_CODES.get(service)
+
+    if not country_id or not service_code:
+        return None
+
+    raw = _steadysim_get({
+        "action":  "getPrices",
+        "country": country_id,
+        "service": service_code,
+    })
+
+    if not raw:
+        return None
+
+    if raw.startswith("BAD_KEY") or raw.startswith("COUNTRY_AND_SERVICE_REQUIRED"):
+        logger.error(f"SteadySim getPrices error: {raw}")
+        return None
+
+    try:
+        data     = json.loads(raw)
+        entry    = data.get(country_id, {}).get(service_code, {})
+        cost_usd = entry.get("cost", 0)
+        count    = entry.get("count", 0)
+        if count <= 0:
+            return None
+        return {
+            "cost_usd":  cost_usd,
+            "price_ngn": int(_ngn_price(cost_usd)),
+            "count":     count,
+            "provider":  "steadysim",
+        }
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"SteadySim getPrices parse error: {e} | raw: {raw[:200]}")
+        return None
+
+
+def call_steadysim_buy_number(country, service):
+    country_id   = STEADYSIM_COUNTRY_IDS.get(country)
+    service_code = STEADYSIM_SERVICE_CODES.get(service)
+
+    if not country_id or not service_code:
+        return False, f"Unsupported country or service for SteadySim: {country}/{service}", None
+
+    raw = _steadysim_get({
+        "action":  "getNumber",
+        "country": country_id,
+        "service": service_code,
+    })
+
+    if raw is None:
+        return False, "Could not connect to SteadySim.", None
+
+    if raw.startswith("ACCESS_NUMBER:"):
+        parts = raw.split(":")
+        if len(parts) >= 3:
+            activation_id = parts[1]
+            phone_number  = parts[2]
+            return True, activation_id, phone_number
+        return False, "Unexpected SteadySim response format.", None
+
+    error_map = {
+        "NO_NUMBERS": "No numbers available right now. Try another country or service.",
+        "NO_BALANCE": "SteadySim provider balance is low. Contact support.",
+        "BAD_KEY":    "SteadySim API key error. Contact support.",
+    }
+    return False, error_map.get(raw, f"SteadySim error: {raw}"), None
+
+
+def call_steadysim_cancel(activation_id):
+    raw = _steadysim_get({
+        "action": "setStatus",
+        "id":     activation_id,
+        "status": "8",
+    })
+    if raw is None:
+        return False, "Network error."
+    if raw == "ACCESS_CANCEL":
+        return True, "Cancelled."
+    return False, f"SteadySim cancel response: {raw}"
+
+
+def call_steadysim_check_sms(activation_id):
+    raw = _steadysim_get({
+        "action": "getStatus",
+        "id":     activation_id,
+    })
+    if raw is None:
+        return "error", None
+    if raw == "STATUS_WAIT_CODE":
+        return "waiting", None
+    if raw.startswith("STATUS_OK:"):
+        code = raw.split(":", 1)[1]
+        return "received", code
+    if raw == "STATUS_CANCEL":
+        return "cancelled", None
+    return "error", None
+
+
+@login_required
+def buy_foreign_number_steadysim(request):
+    customer_account = get_or_create_account(request.user)
+
+    selected_country = (
+        request.GET.get("country", "") or request.POST.get("country", "")
+    )
+    selected_service = (
+        request.GET.get("service", "") or request.POST.get("service", "")
+    )
+
+    # AJAX price fetch
+    if request.method == "GET" and request.GET.get("fetch_price"):
+        country = request.GET.get("country", "").strip().lower()
+        service = request.GET.get("service", "").strip().lower()
+        info    = _fetch_steadysim_price(country, service)
+        if info:
+            return JsonResponse({"available": True, **info})
+        return JsonResponse({"available": False})
+
+    if request.method == "POST":
+        country = request.POST.get("country", "").strip().lower()
+        service = request.POST.get("service", "").strip().lower()
+
+        if not country or not service:
+            messages.error(request, "Please select a country and service.")
+            return redirect("buy_foreign_number_steadysim")
+
+        if country not in FOREIGN_COUNTRIES:
+            messages.error(request, "Invalid country selected.")
+            return redirect("buy_foreign_number_steadysim")
+
+        if service not in FOREIGN_SERVICES:
+            messages.error(request, "Invalid service selected.")
+            return redirect("buy_foreign_number_steadysim")
+
+        price_info = _fetch_steadysim_price(country, service)
+        if not price_info:
+            messages.error(request, "No numbers available right now. Try another option.")
+            return redirect(f"/buy-foreign-number-steadysim/?country={country}&service={service}")
+
+        charge = Decimal(str(price_info["price_ngn"]))
+
+        if customer_account.balance < charge:
+            messages.error(request, f"Insufficient balance. You need ₦{charge:,} for this number.")
+            return redirect("buy_foreign_number_steadysim")
+
+        try:
+            owner_account = get_owner_account()
+        except Exception as e:
+            logger.error(f"buy_foreign_number_steadysim: owner account error: {e}")
+            messages.error(request, "Service temporarily unavailable. Please try again later.")
+            return redirect("buy_foreign_number_steadysim")
+
+        is_owner_buying = (customer_account.pk == owner_account.pk)
+
+        with db_transaction.atomic():
+            customer_account.balance -= charge
+            customer_account.save()
+            if not is_owner_buying:
+                owner_account.balance += charge
+                owner_account.save()
+
+        try:
+            ok, activation_id_or_err, phone_number = call_steadysim_buy_number(country, service)
+        except Exception as e:
+            with db_transaction.atomic():
+                customer_account.balance += charge
+                customer_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= charge
+                    owner_account.save()
+            logger.error(f"SteadySim buy crashed: {e}")
+            messages.error(request, "Something went wrong. Your balance has been refunded.")
+            return redirect("buy_foreign_number_steadysim")
+
+        if ok:
+            ForeignNumber.objects.create(
+                user         = request.user,
+                order_id     = activation_id_or_err,
+                country      = country,
+                service      = service,
+                phone_number = phone_number,
+                price        = charge,
+                status       = "PENDING",
+            )
+            messages.success(request, f"Number {phone_number} purchased via SteadySim successfully!")
+        else:
+            with db_transaction.atomic():
+                customer_account.balance += charge
+                customer_account.save()
+                if not is_owner_buying:
+                    owner_account.balance -= charge
+                    owner_account.save()
+            messages.error(request, activation_id_or_err)
+
+        return redirect(f"/buy-foreign-number-steadysim/?country={country}&service={service}")
+
+    numbers = ForeignNumber.objects.filter(user=request.user).order_by("-created_at")
+    context = {
+        "account":          customer_account,
+        "countries":        FOREIGN_COUNTRIES,
+        "services":         FOREIGN_SERVICES,
+        "country_display":  FOREIGN_COUNTRY_DISPLAY,
+        "service_display":  FOREIGN_SERVICE_DISPLAY,
+        "numbers":          numbers,
+        "selected_country": selected_country,
+        "selected_service": selected_service,
+    }
+    return render(request, "buy_foreign_number_steadysim.html", context)
+
+
+@login_required
+def cancel_foreign_number_steadysim(request, order_id):
+    try:
+        foreign_number = ForeignNumber.objects.get(order_id=order_id, user=request.user)
+    except ForeignNumber.DoesNotExist:
+        messages.error(request, "Number not found.")
+        return redirect("buy_foreign_number_steadysim")
+
+    ok, msg = call_steadysim_cancel(order_id)
+    if ok:
+        foreign_number.status = "CANCELLED"
+        foreign_number.save()
+        messages.success(request, "Number cancelled successfully.")
+    else:
+        messages.error(request, f"Could not cancel: {msg}")
+
+    return redirect("buy_foreign_number_steadysim")
+
+
+# =========================
 # ELECTRICITY — CLUBKONNECT
 # =========================
 
@@ -1730,7 +2058,6 @@ METER_TYPES = {
 
 
 def verify_meter(electric_company, meter_no, meter_type):
-    """Verify a meter number via ClubKonnect before purchase."""
     user_id = config("CLUBKONNECT_USER_ID")
     api_key = config("CLUBKONNECT_API_KEY")
     url = (
@@ -1793,7 +2120,6 @@ def call_clubkonnect_electricity_api(electric_company, meter_type, meter_no, amo
 def buy_electricity(request):
     account = get_or_create_account(request.user)
 
-    # AJAX meter verification
     if request.method == "GET" and request.GET.get("verify_meter"):
         company    = request.GET.get("company", "")
         meter_no   = request.GET.get("meter_no", "")
@@ -1847,7 +2173,6 @@ def buy_electricity(request):
             return redirect("buy_electricity")
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
-
         is_owner_buying = (customer_account.pk == owner_account.pk)
 
         with db_transaction.atomic():
@@ -1876,14 +2201,14 @@ def buy_electricity(request):
 
         if success_flag:
             ElectricityPurchase.objects.create(
-                user             = request.user,
-                electric_provider = company_name,   # existing column
-                meter_type       = meter_label,
-                meter_number     = meter_no,        # existing column name
-                amount           = amount,
-                token            = token,
-                reference        = request_id,
-                status           = "successful",
+                user              = request.user,
+                electric_provider = company_name,
+                meter_type        = meter_label,
+                meter_number      = meter_no,
+                amount            = amount,
+                token             = token,
+                reference         = request_id,
+                status            = "successful",
             )
             messages.success(request, f"₦{amount:,} electricity purchased! Token: {token}")
             return redirect("buy_electricity")
@@ -1895,11 +2220,7 @@ def buy_electricity(request):
                     owner_account.balance -= amount
                     owner_account.save()
 
-            if "insufficient" in success_flag if isinstance(success_flag, str) else "insufficient" in str(token).lower():
-                error_msg = "Provider balance is low. Please try again later."
-            else:
-                error_msg = f"Purchase failed: {token}. Your balance has been refunded."
-
+            error_msg = f"Purchase failed: {token}. Your balance has been refunded."
             messages.error(request, error_msg)
             return redirect("buy_electricity")
 
@@ -1966,7 +2287,6 @@ CABLE_TV_PACKAGES = {
 
 
 def verify_smartcard(cable_tv, smartcard_no):
-    """Verify a smartcard/IUC number before purchase."""
     user_id = config("CLUBKONNECT_USER_ID")
     api_key = config("CLUBKONNECT_API_KEY")
     url = (
@@ -2031,14 +2351,12 @@ def call_clubkonnect_cabletv_api(cable_tv, package, smartcard_no, phone, request
 def buy_cable_tv(request):
     account = get_or_create_account(request.user)
 
-    # AJAX smartcard verification
     if request.method == "GET" and request.GET.get("verify_card"):
         cable_tv     = request.GET.get("cable_tv", "")
         smartcard_no = request.GET.get("smartcard_no", "")
         ok, result   = verify_smartcard(cable_tv, smartcard_no)
         return JsonResponse({"success": ok, "customer_name": result if ok else "", "error": result if not ok else ""})
 
-    # AJAX package list for selected provider
     if request.method == "GET" and request.GET.get("get_packages"):
         cable_tv = request.GET.get("cable_tv", "")
         packages = CABLE_TV_PACKAGES.get(cable_tv, [])
@@ -2062,7 +2380,7 @@ def buy_cable_tv(request):
             messages.error(request, "Enter a valid 11-digit phone number.")
             return redirect("buy_cable_tv")
 
-        packages    = CABLE_TV_PACKAGES.get(cable_tv, [])
+        packages     = CABLE_TV_PACKAGES.get(cable_tv, [])
         package_info = next((p for p in packages if p["code"] == package_code), None)
 
         if not package_info:
@@ -2088,7 +2406,6 @@ def buy_cable_tv(request):
             return redirect("buy_cable_tv")
 
         request_id = str(uuid.uuid4()).replace("-", "")[:20]
-
         is_owner_buying = (customer_account.pk == owner_account.pk)
 
         with db_transaction.atomic():

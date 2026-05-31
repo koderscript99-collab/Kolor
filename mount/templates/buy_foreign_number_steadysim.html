@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kolor - Foreign Numbers</title>
+    <title>Kolor - Foreign Numbers (SteadySim)</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,6 +32,28 @@
 
         /* CONTAINER */
         .container { max-width: 700px; margin: 0 auto; padding: 20px 16px 100px; }
+
+        /* PROVIDER SWITCHER */
+        .provider-switcher {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: #f3f4f6; border-radius: 12px; padding: 5px;
+        }
+        .provider-btn {
+            flex: 1; padding: 10px; border-radius: 8px; text-decoration: none;
+            text-align: center; font-size: 13px; font-weight: 700;
+            color: #6b7280; transition: all 0.2s;
+        }
+        .provider-btn.active {
+            background: #fff; color: #1e3a5f;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .provider-badge {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            padding: 1px 6px; border-radius: 10px; margin-left: 4px;
+            vertical-align: middle;
+        }
+        .badge-primary { background: #dbeafe; color: #1d4ed8; }
+        .badge-secondary { background: #f0fdf4; color: #15803d; }
 
         /* BALANCE BAR */
         .balance-bar {
@@ -84,25 +106,23 @@
         .select-wrap select { padding-right: 36px; cursor: pointer; }
 
         .field-group { margin-bottom: 14px; }
-
-        /* Stack on all screens — single column always for mobile */
         .form-row { display: flex; flex-direction: column; gap: 0; }
 
         /* Price preview */
         #price-preview {
-            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            background: #f0fdf4; border: 1.5px solid #bbf7d0;
             border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
-            font-size: 13px; color: #1e40af; font-weight: 600; display: none;
+            font-size: 13px; color: #15803d; font-weight: 600; display: none;
         }
         #price-preview.visible { display: block; }
-        #price-preview .price-val { font-size: 22px; font-weight: 900; color: #1e3a5f; }
-        #price-preview .price-avail { font-size: 12px; color: #3b82f6; margin-top: 4px; line-height: 1.5; }
+        #price-preview .price-val { font-size: 22px; font-weight: 900; color: #14532d; }
+        #price-preview .price-avail { font-size: 12px; color: #16a34a; margin-top: 4px; line-height: 1.5; }
         #price-preview.unavailable { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
         /* Buttons */
         .btn-send {
             width: 100%; padding: 14px; border: none; border-radius: 10px;
-            background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
             color: white; font-size: 15px; font-weight: 700;
             font-family: 'Nunito', sans-serif; cursor: pointer;
             transition: opacity .2s, transform .15s;
@@ -113,13 +133,13 @@
 
         /* Info box */
         .info-box {
-            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            background: #f0fdf4; border: 1.5px solid #bbf7d0;
             border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;
-            font-size: 13px; color: #1e40af; font-weight: 600; line-height: 1.6;
+            font-size: 13px; color: #15803d; font-weight: 600; line-height: 1.6;
         }
-        .info-box strong { display: block; margin-bottom: 4px; color: #1e3a5f; font-size: 14px; }
+        .info-box strong { display: block; margin-bottom: 4px; color: #14532d; font-size: 14px; }
 
-        /* Numbers list — cards instead of table on mobile */
+        /* Numbers list */
         .number-list { display: flex; flex-direction: column; gap: 12px; }
         .number-card {
             background: #f9fafb; border: 1.5px solid #e5e7eb;
@@ -150,6 +170,11 @@
             font-size: 11px; font-weight: 700; text-transform: capitalize;
             background: #f3e8ff; color: #7c3aed;
         }
+        .provider-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700;
+            background: #f0fdf4; color: #15803d;
+        }
         .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
         .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
         .status-pill.PENDING::before    { background:#f59e0b; }
@@ -165,39 +190,9 @@
         .waiting-text { color: #9ca3af; font-size: 13px; font-weight: 600; }
         .number-date  { font-size: 11px; color: #9ca3af; font-weight: 600; }
 
-        /* Price table (desktop only — hidden on mobile) */
-        .price-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 280px; }
-        thead th {
-            font-size: 11px; font-weight: 700; color: #9ca3af;
-            text-transform: uppercase; letter-spacing: 0.7px;
-            padding: 0 10px 12px; text-align: left; border-bottom: 1.5px solid #e5e7eb;
-            white-space: nowrap;
-        }
-        tbody td {
-            padding: 12px 10px; border-bottom: 1px solid #f3f4f6;
-            font-size: 13px; font-weight: 600; color: #374151;
-        }
-        tbody tr:last-child td { border-bottom: none; }
-        .avail-badge {
-            display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
-        }
-        .avail-badge.good { background: #dcfce7; color: #15803d; }
-        .avail-badge.low  { background: #fef9c3; color: #92400e; }
-        .avail-badge.none { background: #fee2e2; color: #dc2626; }
-
-        .price-section-title {
-            font-size: 13px; font-weight: 700; color: #374151;
-            margin: 20px 0 10px; display: flex; align-items: center; gap: 6px;
-        }
-        .price-badge {
-            background: #dbeafe; color: #1d4ed8; font-size: 11px;
-            padding: 2px 8px; border-radius: 20px; font-weight: 700;
-        }
-
         .spinner {
             display: inline-block; width: 16px; height: 16px;
-            border: 2px solid #bfdbfe; border-top-color: #3b82f6;
+            border: 2px solid #bbf7d0; border-top-color: #22c55e;
             border-radius: 50%; animation: spin .6s linear infinite;
             vertical-align: middle; margin-right: 6px;
         }
@@ -222,7 +217,7 @@
 
         @media (max-width: 600px) {
             .bottom-nav { display: flex; }
-            .user-name { display: none; } /* save space on very small screens */
+            .user-name { display: none; }
         }
 
         @media (min-width: 600px) {
@@ -230,30 +225,6 @@
             .form-row .field-group { flex: 1; }
             .container { padding: 28px 24px 100px; }
         }
-        
-        /* PROVIDER SWITCHER */
-          .provider-switcher {
-            display: flex; gap: 10px; margin-bottom: 20px;
-            background: #f3f4f6; border-radius: 12px; padding: 5px;
-        }
-        .provider-btn {
-            flex: 1; padding: 10px; border-radius: 8px; text-decoration: none;
-            text-align: center; font-size: 13px; font-weight: 700;
-            color: #6b7280; transition: all 0.2s;
-        }
-        .provider-btn.active {
-            background: #fff; color: #1e3a5f;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .provider-badge {
-            display: inline-block; font-size: 10px; font-weight: 700;
-            padding: 1px 6px; border-radius: 10px; margin-left: 4px;
-            vertical-align: middle;
-        }
-        .badge-primary { background: #dbeafe; color: #1d4ed8; }
-        .badge-secondary { background: #f0fdf4; color: #15803d; }
-
-        
     </style>
 </head>
 <body>
@@ -276,7 +247,8 @@
             </div>
         {% endfor %}
     {% endif %}
-      <!-- PROVIDER SWITCHER -->
+
+    <!-- PROVIDER SWITCHER -->
     <div class="provider-switcher">
         <a href="{% url 'buy_foreign_number' %}" class="provider-btn">
             5SIM <span class="provider-badge badge-primary">Primary</span>
@@ -297,16 +269,16 @@
 
     <!-- INFO BOX -->
     <div class="info-box">
-        <strong>📱 How Foreign Numbers Work</strong>
-        Buy a temporary virtual number from another country. Use it to receive SMS verification codes for WhatsApp, Telegram, Google and more. Select a country and service to see live prices.
+        <strong>🟢 SteadySim — Backup Provider</strong>
+        Use SteadySim as an alternative when 5SIM has no available numbers. Same countries and services, independently priced. Select a country and service to see live availability.
     </div>
 
     <!-- BUY FORM -->
     <div class="card">
-        <div class="card-title">Buy Foreign Number</div>
-        <div class="card-sub">Select country and service — live price loads before you confirm.</div>
+        <div class="card-title">Buy Foreign Number via SteadySim</div>
+        <div class="card-sub">Live price loads automatically — no surprises before you confirm.</div>
 
-        <form method="POST" action="{% url 'buy_foreign_number' %}" id="buy-form">
+        <form method="POST" action="{% url 'buy_foreign_number_steadysim' %}" id="buy-form">
             {% csrf_token %}
 
             <div class="form-row">
@@ -345,48 +317,12 @@
                 🌍 Select Country &amp; Service to Continue
             </button>
         </form>
-
-        {% if prices %}
-        <div class="price-section-title">
-            Prices for {{ selected_country|title }} / {{ selected_service|title }}
-            <span class="price-badge">{{ prices|length }}</span>
-        </div>
-        <div class="price-table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Operator</th>
-                        <th>Price</th>
-                        <th>Available</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in prices %}
-                    <tr>
-                        <td>{{ item.operator }}</td>
-                        <td><strong>₦{{ item.price_ngn }}</strong> <span style="color:#9ca3af;font-size:11px;">${{ item.price_usd }}</span></td>
-                        <td>
-                            <span class="avail-badge {% if item.count > 10 %}good{% elif item.count > 0 %}low{% else %}none{% endif %}">
-                                {% if item.count > 0 %}{{ item.count }}{% else %}None{% endif %}
-                            </span>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% elif selected_country and selected_service %}
-        <div class="empty-state" style="padding:16px;">
-            <div class="e-icon">😕</div>
-            <p>No prices found. Try a different combination.</p>
-        </div>
-        {% endif %}
     </div>
 
-    <!-- MY NUMBERS -->
+    <!-- MY NUMBERS (all providers shown together) -->
     <div class="card">
         <div class="card-title">My Rented Numbers</div>
-        <div class="card-sub">Your purchased foreign numbers and received SMS codes.</div>
+        <div class="card-sub">All your purchased foreign numbers across both providers.</div>
 
         {% if numbers %}
         <div class="number-list">
@@ -395,12 +331,13 @@
                 <div class="number-card-header">
                     <span class="phone-number">{{ number.phone_number }}</span>
                     {% if number.status != "CANCELLED" %}
-                        <a href="{% url 'cancel_foreign_number' number.order_id %}" class="btn-cancel">Cancel</a>
+                        <a href="{% url 'cancel_foreign_number_steadysim' number.order_id %}" class="btn-cancel">Cancel</a>
                     {% endif %}
                 </div>
                 <div class="number-meta">
                     <span class="country-tag">{{ number.country|title }}</span>
                     <span class="service-tag">{{ number.service|title }}</span>
+                    <span class="provider-tag">SteadySim</span>
                     <span class="status-pill {{ number.status }}">{{ number.status|title }}</span>
                     <span class="number-date">{{ number.created_at|date:"d M, H:i" }}</span>
                 </div>
@@ -423,7 +360,7 @@
         {% else %}
         <div class="empty-state">
             <div class="e-icon">📱</div>
-            <p>No rented numbers yet. Buy your first foreign number above!</p>
+            <p>No numbers purchased via SteadySim yet.</p>
         </div>
         {% endif %}
     </div>
@@ -444,6 +381,10 @@ const serviceSelect = document.getElementById('service-select');
 const pricePreview  = document.getElementById('price-preview');
 const buyBtn        = document.getElementById('buy-btn');
 
+function cap(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function updatePreview() {
     const country = countrySelect.value;
     const service = serviceSelect.value;
@@ -457,37 +398,35 @@ function updatePreview() {
     }
 
     pricePreview.className = 'visible';
-    pricePreview.innerHTML = '<span class="spinner"></span> Fetching live price…';
+    pricePreview.innerHTML = '<span class="spinner"></span> Fetching live SteadySim price…';
     buyBtn.disabled = true;
 
-    fetch(`{% url 'foreign_prices' %}?country=${country}&service=${service}`)
+    // AJAX call — api_key is injected server-side, never exposed here
+    fetch(`{% url 'buy_foreign_number_steadysim' %}?fetch_price=1&country=${country}&service=${service}`)
         .then(r => r.json())
         .then(data => {
-            const available = (data.prices || []).filter(p => p.count > 0);
-
-            if (!available.length) {
+            if (!data.available) {
                 pricePreview.className = 'visible unavailable';
-                pricePreview.innerHTML = `<strong>❌ No numbers available</strong><br>No ${service} numbers in ${country} right now.`;
+                pricePreview.innerHTML = `
+                    <strong>❌ No numbers available</strong><br>
+                    No ${cap(service)} numbers in ${cap(country)} on SteadySim right now.
+                    <br><a href="{% url 'buy_foreign_number' %}" style="color:#1d4ed8;font-weight:700;">Try 5SIM instead →</a>
+                `;
                 buyBtn.disabled = true;
                 buyBtn.textContent = '🌍 No Numbers Available';
                 return;
             }
 
-            const cheapest   = available.reduce((a, b) => a.price_ngn < b.price_ngn ? a : b);
-            const totalAvail = available.reduce((sum, p) => sum + p.count, 0);
-            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
             pricePreview.className = 'visible';
             pricePreview.innerHTML = `
-                <div class="price-val">₦${cheapest.price_ngn.toLocaleString()}</div>
-                <div style="font-size:12px;color:#3b82f6;margin-top:2px;">Raw cost: $${cheapest.price_usd} USD</div>
+                <div class="price-val">₦${Number(data.price_ngn).toLocaleString()}</div>
+                <div style="font-size:12px;color:#16a34a;margin-top:2px;">Raw cost: $${data.cost_usd} USD</div>
                 <div class="price-avail">
-                    ✅ ${totalAvail} number${totalAvail !== 1 ? 's' : ''} available
-                    · cheapest via <strong>${cheapest.operator}</strong>
+                    ✅ ${data.count} number${data.count !== 1 ? 's' : ''} available via SteadySim
                 </div>
             `;
             buyBtn.disabled = false;
-            buyBtn.textContent = `🌍 Buy ${cap(service)} Number — ${cap(country)} (₦${cheapest.price_ngn.toLocaleString()})`;
+            buyBtn.textContent = `🟢 Buy via SteadySim — ${cap(service)} / ${cap(country)} (₦${Number(data.price_ngn).toLocaleString()})`;
         })
         .catch(() => {
             pricePreview.className = 'visible unavailable';
@@ -498,7 +437,11 @@ function updatePreview() {
 
 countrySelect.addEventListener('change', updatePreview);
 serviceSelect.addEventListener('change', updatePreview);
-if (countrySelect.value && serviceSelect.value) updatePreview();
+
+// Auto-load if country+service already selected (e.g. after redirect back)
+if (countrySelect.value && serviceSelect.value) {
+    updatePreview();
+}
 </script>
 
 </body>

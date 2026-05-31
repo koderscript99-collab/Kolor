@@ -16,7 +16,7 @@ CLUBKONNECT_API_KEY = config("CLUBKONNECT_API_KEY")
 JAP_API_KEY = config("JAP_API_KEY")
 BEEWAVE_API_KEY = config("BEEWAVE_API_KEY")
 FIVE_SIM_API_KEY = config("FIVE_SIM_API_KEY")
-
+STEADYSIM_API_KEY = config("STEADYSIM_API_KEY")
 
 # Debug: True locally, False on Render
 DEBUG = config("DEBUG", default="True") == "True"
