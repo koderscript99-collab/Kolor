@@ -27,7 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('mount.urls')),
     path('',landing_page, name='landing'),
-    path('api/', include('mount.urls')),
+    
 ]
 
 if settings.DEBUG:

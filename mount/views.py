@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -65,25 +64,61 @@ def credit_account(transaction_obj):
     return True
 
 
-# =========================
-# AUTH (WEB)
-# =========================
+def _deduct_from_owner(owner_account, amount):
+    """Safely deduct amount from owner inside an existing atomic block."""
+    try:
+        owner = Account.objects.select_for_update().get(pk=owner_account.pk)
+        owner.balance -= amount
+        owner.save()
+    except Exception as e:
+        logger.error(f"Owner balance deduct failed: {e}")
 
+
+# =========================
+# AUTH VIEWS
+# =========================
 def signup(request):
     if request.method == "POST":
-        username = request.POST.get("username", "").strip()
-        email    = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
+        username         = request.POST.get("username", "").strip()
+        full_name        = request.POST.get("full_name", "").strip()
+        email            = request.POST.get("email", "").strip()
+        phone            = request.POST.get("phone", "").strip()
+        password         = request.POST.get("password", "")
+        confirm_password = request.POST.get("confirm_password", "")
 
         if not username or not password:
             messages.error(request, "Username and password are required.")
             return redirect("signup")
-
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("signup")
+        if len(password) < 6:
+            messages.error(request, "Password must be at least 6 characters.")
+            return redirect("signup")
         if User.objects.filter(username=username).exists():
             messages.error(request, "That username is already taken.")
             return redirect("signup")
+        if email and User.objects.filter(email=email).exists():
+            messages.error(request, "An account with that email already exists.")
+            return redirect("signup")
 
-        User.objects.create_user(username=username, email=email, password=password)
+        name_parts = full_name.split(" ", 1)
+        first_name = name_parts[0]
+        last_name  = name_parts[1] if len(name_parts) > 1 else ""
+
+        user = User.objects.create_user(
+            username=username, email=email, password=password,
+            first_name=first_name, last_name=last_name,
+        )
+
+        try:
+            detail, _ = Detail.objects.get_or_create(user=user)
+            if phone:
+                detail.phone_number = phone  # ← correct field name
+                detail.save()
+        except Exception as e:
+            logger.error(f"Signup Detail save error: {e}")
+
         messages.success(request, "Account created! Please log in.")
         return redirect("login")
 
@@ -109,15 +144,10 @@ def logout_view(request):
 
 
 # =========================
-# CLUBKONNECT DATA PLANS
+# DATA PLANS & NETWORK CONSTANTS
 # =========================
 
-NETWORK_CODES = {
-    "MTN":     "01",
-    "GLO":     "02",
-    "AIRTEL":  "04",
-    "9MOBILE": "03",
-}
+NETWORK_CODES = {"MTN": "01", "GLO": "02", "AIRTEL": "04", "9MOBILE": "03"}
 
 DATA_PLANS = {
     "MTN": [
@@ -264,11 +294,6 @@ DATA_PLANS = {
     ],
 }
 
-
-# =========================
-# BEEWAVE SPECIAL BUNDLE PLANS
-# =========================
-
 BEEWAVE_PLANS = {
     "MTN": [
         {"qty": "500mb_weekly",  "type": "sme-data", "label": "MTN 500MB - 7 days",   "amount": 390},
@@ -310,17 +335,7 @@ BEEWAVE_PLANS = {
     ],
 }
 
-BEEWAVE_NETWORK_NAMES = {
-    "MTN":     "mtn",
-    "GLO":     "glo",
-    "AIRTEL":  "airtel",
-    "9MOBILE": "9mobile",
-}
-
-
-# =========================
-# SMM SERVICES
-# =========================
+BEEWAVE_NETWORK_NAMES = {"MTN": "mtn", "GLO": "glo", "AIRTEL": "airtel", "9MOBILE": "9mobile"}
 
 SMM_SERVICES = {
     "usa_traffic": [
@@ -367,36 +382,26 @@ SMM_SERVICES = {
     ],
 }
 
-# Landing page
+
+# =========================
+# PAGE VIEWS
+# =========================
+
 def landing_page(request):
     return render(request, "landing.html")
 
 
-# =========================
-# WEB PAGES
-# =========================
-
 @login_required
 def home(request):
     account             = get_or_create_account(request.user)
-    recent_transactions = Transaction.objects.filter(
-        user=request.user
-    ).order_by("-created_at")[:5]
+    recent_transactions = Transaction.objects.filter(user=request.user).order_by("-created_at")[:5]
     context = {
         "account":             account,
         "recent_transactions": recent_transactions,
-        "total_deposits":    Transaction.objects.filter(
-            user=request.user, transaction_type="deposit", status="successful"
-        ).count(),
-        "total_withdrawals": Transaction.objects.filter(
-            user=request.user, transaction_type="withdraw", status="successful"
-        ).count(),
-        "total_data": DataPurchase.objects.filter(
-            user=request.user, status="successful"
-        ).count(),
-        "total_smm": SMMOrder.objects.filter(
-            user=request.user, status="completed"
-        ).count(),
+        "total_deposits":    Transaction.objects.filter(user=request.user, transaction_type="deposit",  status="successful").count(),
+        "total_withdrawals": Transaction.objects.filter(user=request.user, transaction_type="withdraw", status="successful").count(),
+        "total_data":        DataPurchase.objects.filter(user=request.user, status="successful").count(),
+        "total_smm":         SMMOrder.objects.filter(user=request.user, status="completed").count(),
     }
     return render(request, "home.html", context)
 
@@ -404,10 +409,8 @@ def home(request):
 @login_required
 def payment(request):
     account      = get_or_create_account(request.user)
-    transactions = Transaction.objects.filter(
-        user=request.user
-    ).order_by("-created_at")[:10]
-    detail, _ = Detail.objects.get_or_create(user=request.user)
+    transactions = Transaction.objects.filter(user=request.user).order_by("-created_at")[:10]
+    detail, _    = Detail.objects.get_or_create(user=request.user)
     context = {
         "account":            account,
         "transactions":       transactions,
@@ -423,35 +426,21 @@ def report(request):
     transactions   = Transaction.objects.filter(user=request.user).order_by("-created_at")
     data_purchases = DataPurchase.objects.filter(user=request.user).order_by("-created_at")
     smm_orders     = SMMOrder.objects.filter(user=request.user).order_by("-created_at")
-    context = {
-        "transactions":   transactions,
-        "data_purchases": data_purchases,
-        "smm_orders":     smm_orders,
-    }
-    return render(request, "report.html", context)
+    return render(request, "report.html", {"transactions": transactions, "data_purchases": data_purchases, "smm_orders": smm_orders})
 
 
 @login_required
-def success(request):
-    return render(request, "success.html")
-
+def success(request):      return render(request, "success.html")
 @login_required
-def succed_data(request):
-    return render(request, "succed_data.html")
-
+def succed_data(request):  return render(request, "succed_data.html")
 @login_required
-def succed_trans(request):
-    return render(request, "succed_trans.html")
-
-def low_balance(request):
-    return render(request, "low_balance.html")
-
-def transfer(request):
-    return render(request, "transfer.html")
+def succed_trans(request): return render(request, "succed_trans.html")
+def low_balance(request):  return render(request, "low_balance.html")
+def transfer(request):     return render(request, "transfer.html")
 
 
 # =========================
-# PROFILE (DRF)
+# API VIEWS
 # =========================
 
 @api_view(["GET"])
@@ -472,59 +461,39 @@ def update_profile(request):
     return Response(serializer.errors, status=400)
 
 
-# =========================
-# AUTH API
-# =========================
-
 @api_view(["POST"])
 def api_login(request):
-    user = authenticate(
-        username=request.data.get("username"),
-        password=request.data.get("password"),
-    )
+    user = authenticate(username=request.data.get("username"), password=request.data.get("password"))
     if not user:
         return Response({"error": "Invalid credentials"}, status=400)
     token, _ = Token.objects.get_or_create(user=user)
     return Response({"token": token.key})
 
 
-# =========================
-# WALLET API
-# =========================
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def withdraw(request):
     account_number = request.data.get("account_number")
     amount_raw     = request.data.get("amount")
-
     if not account_number or not amount_raw:
         return Response({"error": "account_number and amount are required."}, status=400)
-
     try:
         account = Account.objects.get(account_number=account_number)
         amount  = Decimal(str(amount_raw))
     except (Account.DoesNotExist, InvalidOperation):
         return Response({"error": "Invalid account number or amount."}, status=400)
-
     if amount <= 0:
         return Response({"error": "Amount must be positive."}, status=400)
-
     if account.balance < amount:
         return Response({"error": "Insufficient balance."}, status=400)
-
     account.balance -= amount
     account.save()
-
-    Transaction.objects.create(
-        user=account.user, account=account,
-        amount=amount, transaction_type="withdraw", status="successful",
-    )
+    Transaction.objects.create(user=account.user, account=account, amount=amount, transaction_type="withdraw", status="successful")
     return Response({"message": "Withdrawal successful.", "balance": str(account.balance)})
 
 
 # =========================
-# DEPOSIT (WEB)
+# DEPOSIT / PAYMENT
 # =========================
 
 @login_required
@@ -535,89 +504,64 @@ def deposit(request):
         except InvalidOperation:
             messages.error(request, "Invalid amount.")
             return redirect("payment")
-
         if amount <= 0:
             messages.error(request, "Amount must be greater than zero.")
             return redirect("payment")
-
         account = get_or_create_account(request.user)
         ref     = str(uuid.uuid4())
-
         transaction = Transaction.objects.create(
-            user=request.user, account=account,
-            amount=amount, transaction_type="deposit",
-            status="pending", reference=ref,
+            user=request.user, account=account, amount=amount,
+            transaction_type="deposit", status="pending", reference=ref,
         )
-
         site_url = config("SITE_URL", default="http://127.0.0.1:8000").rstrip("/")
         payload  = {
-            "tx_ref":       ref,
-            "amount":       str(amount),
-            "currency":     "NGN",
+            "tx_ref": ref, "amount": str(amount), "currency": "NGN",
             "redirect_url": f"{site_url}/payment_success/",
             "customer": {
                 "email": request.user.email or f"{request.user.username}@placeholder.com",
                 "name":  request.user.get_full_name() or request.user.username,
             },
             "customizations": {
-                "title":       "Wallet Deposit",
+                "title": "Wallet Deposit",
                 "description": f"Deposit NGN{amount} into your wallet",
             },
         }
-
         try:
-            resp      = requests.post(
-                "https://api.flutterwave.com/v3/payments",
-                json=payload, headers=flw_headers(), timeout=10,
-            )
+            resp      = requests.post("https://api.flutterwave.com/v3/payments", json=payload, headers=flw_headers(), timeout=10)
             resp_data = resp.json()
         except requests.RequestException as e:
             logger.error(f"Flutterwave initiation error: {e}")
-            transaction.status = "failed"
-            transaction.save()
+            transaction.status = "failed"; transaction.save()
             messages.error(request, "Could not connect to payment provider.")
             return redirect("payment")
-
         if resp_data.get("status") == "success":
             return redirect(resp_data["data"]["link"])
-
         logger.error(f"Flutterwave error response: {resp_data}")
-        transaction.status = "failed"
-        transaction.save()
+        transaction.status = "failed"; transaction.save()
         messages.error(request, "Payment initiation failed. Please try again.")
         return redirect("payment")
-
     return redirect("payment")
 
-
-# =========================
-# PAYMENT SUCCESS
-# =========================
 
 @login_required
 def payment_success(request):
     status         = request.GET.get("status")
     transaction_id = request.GET.get("transaction_id")
     tx_ref         = request.GET.get("tx_ref")
-
     if status == "cancelled":
         messages.error(request, "Payment was cancelled.")
         return redirect("payment")
-
     if status not in ("successful", "completed") or not transaction_id or not tx_ref:
         messages.error(request, "Payment incomplete. Contact support if money was deducted.")
         return redirect("payment")
-
     try:
         transaction_obj = Transaction.objects.get(reference=tx_ref)
     except Transaction.DoesNotExist:
         messages.error(request, f"Transaction record not found for ref: {tx_ref}")
         return redirect("payment")
-
     if transaction_obj.status == "successful":
         messages.success(request, "Deposit already processed.")
         return redirect("home")
-
     try:
         resp = requests.get(
             f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify",
@@ -628,9 +572,7 @@ def payment_success(request):
         logger.error(f"Flutterwave verify error: {e}")
         messages.error(request, "Could not verify payment. Contact support.")
         return redirect("payment")
-
     flw_data = data.get("data", {})
-
     if (
         data.get("status") == "success"
         and flw_data.get("status") in ("successful", "completed")
@@ -639,129 +581,82 @@ def payment_success(request):
         if credit_account(transaction_obj):
             messages.success(request, f"₦{transaction_obj.amount:,} deposited successfully.")
         return redirect("home")
-
     messages.error(request, "Payment verification failed. Contact support.")
     return redirect("payment")
 
-
-# =========================
-# TRANSACTION (withdraw + transfer)
-# =========================
 
 @login_required
 def transaction(request):
     if request.method == "POST":
         tx_type = request.POST.get("transaction_type")
-
         if tx_type == "deposit":
             return deposit(request)
-
         elif tx_type == "withdraw":
             try:
                 amount = Decimal(request.POST.get("amount", "0"))
             except InvalidOperation:
-                messages.error(request, "Invalid amount.")
-                return redirect("payment")
-
+                messages.error(request, "Invalid amount."); return redirect("payment")
             if amount <= 0:
-                messages.error(request, "Amount must be greater than zero.")
-                return redirect("payment")
-
+                messages.error(request, "Amount must be greater than zero."); return redirect("payment")
             account = get_or_create_account(request.user)
             if account.balance < amount:
                 return redirect("low_balance")
-
-            account.balance -= amount
-            account.save()
-            Transaction.objects.create(
-                user=request.user, account=account,
-                amount=amount, transaction_type="withdraw", status="successful",
-            )
+            account.balance -= amount; account.save()
+            Transaction.objects.create(user=request.user, account=account, amount=amount, transaction_type="withdraw", status="successful")
             messages.success(request, f"₦{amount:,} successfully withdrawn.")
             return redirect("succed_trans")
-
         elif tx_type == "transfer":
             receiver_no = request.POST.get("receiver", "").strip()
             try:
                 amount = Decimal(request.POST.get("amount", "0"))
             except InvalidOperation:
-                messages.error(request, "Invalid amount.")
-                return redirect("payment")
-
+                messages.error(request, "Invalid amount."); return redirect("payment")
             if amount <= 0:
-                messages.error(request, "Amount must be greater than zero.")
-                return redirect("payment")
-
+                messages.error(request, "Amount must be greater than zero."); return redirect("payment")
             if not receiver_no:
-                messages.error(request, "Please enter a recipient account number.")
-                return redirect("payment")
-
+                messages.error(request, "Please enter a recipient account number."); return redirect("payment")
             sender = get_or_create_account(request.user)
-
             try:
                 receiver = Account.objects.get(account_number=receiver_no)
             except Account.DoesNotExist:
-                messages.error(request, "Recipient account not found.")
-                return redirect("payment")
-
+                messages.error(request, "Recipient account not found."); return redirect("payment")
             if receiver.user == request.user:
-                messages.error(request, "You cannot transfer to your own account.")
-                return redirect("payment")
-
+                messages.error(request, "You cannot transfer to your own account."); return redirect("payment")
             if sender.balance < amount:
                 return redirect("low_balance")
-
             with db_transaction.atomic():
-                sender.balance   -= amount
-                receiver.balance += amount
-                sender.save()
-                receiver.save()
-                Transaction.objects.create(
-                    user=request.user, account=sender,
-                    amount=amount, transaction_type="transfer", status="successful",
-                )
-
+                sender.balance -= amount; receiver.balance += amount
+                sender.save(); receiver.save()
+                Transaction.objects.create(user=request.user, account=sender, amount=amount, transaction_type="transfer", status="successful")
             messages.success(request, f"₦{amount:,} transferred successfully.")
             return redirect("succed_trans")
-
     return redirect("payment")
 
 
 # =========================
-# CLUBKONNECT API
+# DATA — CLUBKONNECT
 # =========================
 
 def call_clubkonnect_data_api(network, phone, plan_id, request_id):
     user_id      = config("CLUBKONNECT_USER_ID")
     api_key      = config("CLUBKONNECT_API_KEY")
     network_code = NETWORK_CODES.get(network)
-
     if not network_code:
         return False, f"Unknown network: {network}"
-
     url    = "https://www.nellobytesystems.com/APIDatabundleV1.asp"
     params = {
-        "UserID":        user_id,
-        "APIKey":        api_key,
-        "MobileNetwork": network_code,
-        "DataPlan":      plan_id,
-        "MobileNumber":  phone,
-        "RequestID":     request_id,
-        "CallBackURL":   "",
+        "UserID": user_id, "APIKey": api_key, "MobileNetwork": network_code,
+        "DataPlan": plan_id, "MobileNumber": phone, "RequestID": request_id, "CallBackURL": "",
     }
-
     logger.info(f"ClubKonnect → network={network_code} plan={plan_id} phone={phone}")
-
     try:
         response = requests.get(url, params=params, timeout=15)
         text     = response.text.strip()
         logger.info(f"ClubKonnect response: {text}")
-
         try:
             json_resp   = json.loads(text)
             status      = json_resp.get("status", "")
             status_code = str(json_resp.get("statuscode", ""))
-
             if status == "ORDER_RECEIVED" or status_code == "100":
                 return True, text
             elif status == "INSUFFICIENT_BALANCE":
@@ -771,129 +666,63 @@ def call_clubkonnect_data_api(network, phone, plan_id, request_id):
             elif status == "INVALID_MOBILENUMBER":
                 return False, "invalid number"
             else:
-                logger.error(f"ClubKonnect error: {text}")
-                return False, text
-
+                logger.error(f"ClubKonnect error: {text}"); return False, text
         except json.JSONDecodeError:
             if "successful" in text.lower() or "success" in text.lower():
                 return True, text
-            else:
-                logger.error(f"ClubKonnect plain text error: {text}")
-                return False, text
-
+            logger.error(f"ClubKonnect plain text error: {text}"); return False, text
     except requests.RequestException as e:
-        logger.error(f"ClubKonnect request failed: {e}")
-        return False, "Network error contacting ClubKonnect."
+        logger.error(f"ClubKonnect request failed: {e}"); return False, "Network error contacting ClubKonnect."
 
-
-# =========================
-# BEEWAVE API
-# =========================
 
 import platform as _platform
 import subprocess as _subprocess
-
 _IS_WINDOWS = _platform.system() == "Windows"
-logger.info(f"Beewave backend: {'curl (Windows)' if _IS_WINDOWS else 'httpx (Linux)'}")
 
 
 def _beewave_via_curl(payload):
     try:
         result = _subprocess.run(
-            [
-                "curl", "-s", "-X", "POST",
-                "https://beewave.ng/api/data.php",
-                "-H", "Content-Type: application/json",
-                "-d", json.dumps(payload),
-                "--max-time", "30",
-            ],
+            ["curl", "-s", "-X", "POST", "https://beewave.ng/api/data.php",
+             "-H", "Content-Type: application/json", "-d", json.dumps(payload), "--max-time", "30"],
             capture_output=True, text=True, timeout=35,
         )
         raw = result.stdout.strip()
-        if not raw:
-            logger.error(f"Beewave curl no output. stderr: {result.stderr.strip()}")
-            return None, "No response from Beewave."
-        logger.info(f"Beewave curl raw: {raw}")
+        if not raw: return None, "No response from Beewave."
         return json.loads(raw), None
-    except _subprocess.TimeoutExpired:
-        return None, "Beewave request timed out."
-    except json.JSONDecodeError as e:
-        logger.error(f"Beewave curl JSON error: {e}")
-        return None, "Beewave returned unexpected response."
-    except FileNotFoundError:
-        return None, "curl not found on this system."
-    except Exception as e:
-        logger.error(f"Beewave curl error: {e}")
-        return None, "Network error contacting Beewave."
+    except _subprocess.TimeoutExpired: return None, "Beewave request timed out."
+    except json.JSONDecodeError:       return None, "Beewave returned unexpected response."
+    except FileNotFoundError:          return None, "curl not found on this system."
+    except Exception:                  return None, "Network error contacting Beewave."
 
 
 def _beewave_via_httpx(payload):
     import httpx
     try:
         with httpx.Client(http2=False, timeout=30) as client:
-            response = client.post(
-                "https://beewave.ng/api/data.php",
-                json=payload,
-            )
-        logger.info(f"Beewave HTTP {response.status_code} | raw: {response.text[:500]}")
+            response = client.post("https://beewave.ng/api/data.php", json=payload)
         if response.status_code != 200:
             return None, f"Beewave server error (HTTP {response.status_code})"
-        try:
-            return response.json(), None
-        except ValueError:
-            logger.error(f"Beewave non-JSON: {response.text[:300]}")
-            return None, "Beewave returned unexpected response format."
-    except httpx.ConnectError as e:
-        logger.error(f"Beewave connect error: {e}")
-        return None, "Could not connect to Beewave. Please try again."
-    except httpx.TimeoutException:
-        return None, "Beewave request timed out. Please try again."
-    except Exception as e:
-        logger.error(f"Beewave unexpected error: {e}")
-        return None, "Network error contacting Beewave."
+        try:    return response.json(), None
+        except: return None, "Beewave returned unexpected response format."
+    except httpx.ConnectError:     return None, "Could not connect to Beewave. Please try again."
+    except httpx.TimeoutException: return None, "Beewave request timed out. Please try again."
+    except Exception:              return None, "Network error contacting Beewave."
 
 
 def call_beewave_data_api(network, phone, qty, plan_type="sme-data"):
     api_key      = config("BEEWAVE_API_KEY")
     network_name = BEEWAVE_NETWORK_NAMES.get(network)
-
-    if not network_name:
-        return False, f"Unknown network: {network}"
-
-    payload = {
-        "api_key":      api_key,
-        "type":         plan_type,
-        "qty":          qty,
-        "network":      network_name,
-        "phone_number": phone,
-    }
-
-    logger.info(f"Beewave → network={network_name} plan={qty} phone={phone} via={'curl' if _IS_WINDOWS else 'httpx'}")
-
-    if _IS_WINDOWS:
-        data, err = _beewave_via_curl(payload)
-    else:
-        data, err = _beewave_via_httpx(payload)
-
-    if err:
-        return False, err
-
-    logger.info(f"Beewave parsed: {data}")
+    if not network_name: return False, f"Unknown network: {network}"
+    payload = {"api_key": api_key, "type": plan_type, "qty": qty, "network": network_name, "phone_number": phone}
+    logger.info(f"Beewave → network={network_name} plan={qty} phone={phone}")
+    data, err = _beewave_via_curl(payload) if _IS_WINDOWS else _beewave_via_httpx(payload)
+    if err: return False, err
     status = data.get("status", "")
+    if status == "success": return True, data.get("reference", "beewave-ok")
+    if status == "pending": return True, data.get("reference", "pending")
+    return False, data.get("desc", data.get("message", "Transaction failed"))
 
-    if status == "success":
-        return True, data.get("reference", "beewave-ok")
-    elif status == "pending":
-        return True, data.get("reference", "pending")
-    else:
-        error_msg = data.get("desc", data.get("message", "Transaction failed"))
-        logger.error(f"Beewave error response: {data}")
-        return False, error_msg
-
-
-# =========================
-# BUY DATA — CLUBKONNECT (WEB)
-# =========================
 
 @login_required
 def buy_data(request):
@@ -901,109 +730,49 @@ def buy_data(request):
         network = request.POST.get("network", "").strip().upper()
         phone   = request.POST.get("phone_number", "").strip()
         plan_id = request.POST.get("product_code", "").strip()
-
         if not network or not phone or not plan_id:
-            messages.error(request, "Network, phone number, and data plan are required.")
-            return redirect("buy_data")
-
+            messages.error(request, "Network, phone number, and data plan are required."); return redirect("buy_data")
         if len(phone) < 11:
-            messages.error(request, "Enter a valid 11-digit phone number.")
-            return redirect("buy_data")
-
-        network_plans = DATA_PLANS.get(network, [])
-        plan_info     = next((p for p in network_plans if p["id"] == plan_id), None)
-
+            messages.error(request, "Enter a valid 11-digit phone number."); return redirect("buy_data")
+        plan_info = next((p for p in DATA_PLANS.get(network, []) if p["id"] == plan_id), None)
         if not plan_info:
-            messages.error(request, "Invalid data plan selected.")
-            return redirect("buy_data")
-
+            messages.error(request, "Invalid data plan selected."); return redirect("buy_data")
         amount = Decimal(str(plan_info["amount"]))
-
-        try:
-            customer_account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if customer_account.balance < amount:
-            return redirect("low_balance")
-
-        try:
-            owner_account = get_owner_account()
+        try:    customer_account = Account.objects.get(user=request.user)
+        except: messages.error(request, "Wallet account not found."); return redirect("home")
+        if customer_account.balance < amount: return redirect("low_balance")
+        try:    owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_data: owner account error: {e}")
-            messages.error(request, "Service temporarily unavailable. Please try again later.")
-            return redirect("buy_data")
-
-        request_id   = str(uuid.uuid4()).replace("-", "")[:20]
+            logger.error(f"buy_data owner error: {e}"); messages.error(request, "Service temporarily unavailable."); return redirect("buy_data")
+        request_id      = str(uuid.uuid4()).replace("-", "")[:20]
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= amount
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += amount
-                owner_account.save()
-
+            customer_account.balance -= amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance += amount; owner_account.save()
         try:
-            success_flag, ck_response = call_clubkonnect_data_api(
-                network, phone, plan_id, request_id
-            )
+            success_flag, ck_response = call_clubkonnect_data_api(network, phone, plan_id, request_id)
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-            logger.error(f"buy_data crashed: {e}")
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("buy_data")
-
+                customer_account.balance += amount; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+            messages.error(request, "Something went wrong. Your balance has been refunded."); return redirect("buy_data")
         if success_flag:
-            DataPurchase.objects.create(
-                user=request.user, network=network,
-                phone_number=phone, amount=amount,
-                status="successful", reference=request_id,
-            )
+            DataPurchase.objects.create(user=request.user, network=network, phone_number=phone, amount=amount, status="successful", reference=request_id)
             messages.success(request, f"{plan_info['label']} purchased successfully for {phone}.")
             return redirect("succed_data")
+        with db_transaction.atomic():
+            customer_account.balance += amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+        r = ck_response.lower()
+        if "insufficient" in r:    error_msg = "Our data provider balance is low. Please try again later."
+        elif "invalid api" in r:   error_msg = "API configuration error. Please contact support."
+        elif "invalid number" in r: error_msg = "Invalid phone number. Please check and try again."
+        else:                      error_msg = f"Purchase failed: {ck_response}. Your balance has been refunded."
+        messages.error(request, error_msg)
+        DataPurchase.objects.create(user=request.user, network=network, phone_number=phone, amount=amount, status="failed", reference=request_id)
+        return redirect("buy_data")
+    return render(request, "buy_data.html", {"data_plans_json": json.dumps(DATA_PLANS), "networks": list(DATA_PLANS.keys())})
 
-        else:
-            with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-
-            if "insufficient" in ck_response.lower():
-                error_msg = "Our data provider balance is low. Please try again later."
-            elif "invalid api" in ck_response.lower():
-                error_msg = "API configuration error. Please contact support."
-            elif "invalid number" in ck_response.lower():
-                error_msg = "Invalid phone number. Please check and try again."
-            else:
-                error_msg = f"Purchase failed: {ck_response}. Your balance has been refunded."
-
-            messages.error(request, error_msg)
-            DataPurchase.objects.create(
-                user=request.user, network=network,
-                phone_number=phone, amount=amount,
-                status="failed", reference=request_id,
-            )
-            return redirect("buy_data")
-
-    context = {
-        "data_plans_json": json.dumps(DATA_PLANS),
-        "networks":        list(DATA_PLANS.keys()),
-    }
-    return render(request, "buy_data.html", context)
-
-
-# =========================
-# BUY SPECIAL BUNDLE — BEEWAVE (WEB)
-# =========================
 
 @login_required
 def buy_special_bundle(request):
@@ -1011,153 +780,76 @@ def buy_special_bundle(request):
         network = request.POST.get("network", "").strip().upper()
         phone   = request.POST.get("phone_number", "").strip()
         qty     = request.POST.get("qty", "").strip()
-
         if not network or not phone or not qty:
-            messages.error(request, "Network, phone number, and data plan are required.")
-            return redirect("payment")
-
+            messages.error(request, "Network, phone number, and data plan are required."); return redirect("payment")
         if len(phone) < 11:
-            messages.error(request, "Enter a valid 11-digit phone number.")
-            return redirect("payment")
-
-        network_plans = BEEWAVE_PLANS.get(network, [])
-        plan_info     = next((p for p in network_plans if p["qty"] == qty), None)
-
+            messages.error(request, "Enter a valid 11-digit phone number."); return redirect("payment")
+        plan_info = next((p for p in BEEWAVE_PLANS.get(network, []) if p["qty"] == qty), None)
         if not plan_info:
-            messages.error(request, "Invalid data plan selected.")
-            return redirect("payment")
-
-        amount     = Decimal(str(plan_info["amount"]))
-        plan_type  = plan_info.get("type", "sme-data")
-
-        try:
-            customer_account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if customer_account.balance < amount:
-            return redirect("low_balance")
-
-        try:
-            owner_account = get_owner_account()
+            messages.error(request, "Invalid data plan selected."); return redirect("payment")
+        amount    = Decimal(str(plan_info["amount"]))
+        plan_type = plan_info.get("type", "sme-data")
+        try:    customer_account = Account.objects.get(user=request.user)
+        except: messages.error(request, "Wallet account not found."); return redirect("home")
+        if customer_account.balance < amount: return redirect("low_balance")
+        try:    owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_special_bundle: owner account error: {e}")
-            messages.error(request, "Service temporarily unavailable. Please try again later.")
-            return redirect("payment")
-
+            logger.error(f"buy_special_bundle owner error: {e}"); messages.error(request, "Service temporarily unavailable."); return redirect("payment")
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= amount
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += amount
-                owner_account.save()
-
+            customer_account.balance -= amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance += amount; owner_account.save()
         try:
             success_flag, bw_response = call_beewave_data_api(network, phone, qty, plan_type)
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-            logger.error(f"buy_special_bundle crashed: {e}")
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("payment")
-
+                customer_account.balance += amount; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+            messages.error(request, "Something went wrong. Your balance has been refunded."); return redirect("payment")
         if success_flag:
-            DataPurchase.objects.create(
-                user=request.user,
-                network=network,
-                phone_number=phone,
-                amount=amount,
-                status="successful",
-                reference=str(bw_response),
-            )
-            messages.success(
-                request, f"{plan_info['label']} purchased successfully for {phone}."
-            )
+            DataPurchase.objects.create(user=request.user, network=network, phone_number=phone, amount=amount, status="successful", reference=str(bw_response))
+            messages.success(request, f"{plan_info['label']} purchased successfully for {phone}.")
             return redirect("succed_data")
-
-        else:
-            with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-
-            bw_lower = bw_response.lower()
-            if "insufficient" in bw_lower:
-                error_msg = "Our data provider balance is low. Please try again later."
-            elif "invalid" in bw_lower:
-                error_msg = "Invalid request. Please check your details and try again."
-            elif "timed out" in bw_lower:
-                error_msg = "Request timed out. Please try again in a moment."
-            elif "connect" in bw_lower:
-                error_msg = "Could not reach data provider. Please try again shortly."
-            else:
-                error_msg = f"Purchase failed: {bw_response}. Your balance has been refunded."
-
-            messages.error(request, error_msg)
-            DataPurchase.objects.create(
-                user=request.user,
-                network=network,
-                phone_number=phone,
-                amount=amount,
-                status="failed",
-                reference=str(uuid.uuid4()).replace("-", "")[:20],
-            )
-            return redirect("payment")
-
+        with db_transaction.atomic():
+            customer_account.balance += amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+        r = bw_response.lower()
+        if "insufficient" in r: error_msg = "Our data provider balance is low. Please try again later."
+        elif "invalid" in r:    error_msg = "Invalid request. Please check your details and try again."
+        elif "timed out" in r:  error_msg = "Request timed out. Please try again in a moment."
+        elif "connect" in r:    error_msg = "Could not reach data provider. Please try again shortly."
+        else:                   error_msg = f"Purchase failed: {bw_response}. Your balance has been refunded."
+        messages.error(request, error_msg)
+        DataPurchase.objects.create(user=request.user, network=network, phone_number=phone, amount=amount, status="failed", reference=str(uuid.uuid4()).replace("-", "")[:20])
+        return redirect("payment")
     return redirect("payment")
 
 
 # =========================
-# JAP SMM API
+# SMM / MARKET
 # =========================
 
 def call_jap_api(action, extra_params=None):
     api_key = config("JAP_API_KEY")
-    url     = "https://justanotherpanel.com/api/v2"
     params  = {"key": api_key, "action": action}
-
-    if extra_params:
-        params.update(extra_params)
-
+    if extra_params: params.update(extra_params)
     try:
-        response = requests.post(url, data=params, timeout=15)
-        result   = response.json()
-        logger.info(f"JAP response: {result}")
-        return result
+        response = requests.post("https://justanotherpanel.com/api/v2", data=params, timeout=15)
+        return response.json()
     except Exception as e:
-        logger.error(f"JAP API error: {e}")
-        return None
+        logger.error(f"JAP API error: {e}"); return None
 
-
-# =========================
-# MARKET / SMM PAGE
-# =========================
 
 @login_required
 def market(request):
     account           = get_or_create_account(request.user)
-    recent_smm_orders = SMMOrder.objects.filter(
-        user=request.user
-    ).order_by("-created_at")[:10]
+    recent_smm_orders = SMMOrder.objects.filter(user=request.user).order_by("-created_at")[:10]
     context = {
-        "account":           account,
-        "smm_services_json": json.dumps(SMM_SERVICES),
-        "platforms":         list(SMM_SERVICES.keys()),
-        "recent_orders":     recent_smm_orders,
+        "account": account, "smm_services_json": json.dumps(SMM_SERVICES),
+        "platforms": list(SMM_SERVICES.keys()), "recent_orders": recent_smm_orders,
         "platform_labels": {
-            "usa_traffic":    "🇺🇸 USA Traffic",
-            "uk_traffic":     "🇬🇧 UK Traffic",
-            "india_traffic":  "🇮🇳 India Traffic",
-            "global_traffic": "🌍 Global Traffic",
+            "usa_traffic": "🇺🇸 USA Traffic", "uk_traffic": "🇬🇧 UK Traffic",
+            "india_traffic": "🇮🇳 India Traffic", "global_traffic": "🌍 Global Traffic",
         },
     }
     return render(request, "market.html", context)
@@ -1170,152 +862,66 @@ def buy_smm(request):
         service_id = request.POST.get("service_id", "").strip()
         link       = request.POST.get("link", "").strip()
         quantity   = request.POST.get("quantity", "0").strip()
-
         if not platform or not service_id or not link or not quantity:
-            messages.error(request, "All fields are required.")
-            return redirect("market")
-
-        try:
-            quantity = int(quantity)
-        except ValueError:
-            messages.error(request, "Invalid quantity.")
-            return redirect("market")
-
+            messages.error(request, "All fields are required."); return redirect("market")
+        try:    quantity = int(quantity)
+        except: messages.error(request, "Invalid quantity."); return redirect("market")
         if quantity <= 0:
-            messages.error(request, "Quantity must be greater than zero.")
-            return redirect("market")
-
-        platform_services = SMM_SERVICES.get(platform, [])
-        service_info      = next(
-            (s for s in platform_services if s["id"] == service_id), None
-        )
-
+            messages.error(request, "Quantity must be greater than zero."); return redirect("market")
+        service_info = next((s for s in SMM_SERVICES.get(platform, []) if s["id"] == service_id), None)
         if not service_info:
-            messages.error(request, "Invalid service selected.")
-            return redirect("market")
-
+            messages.error(request, "Invalid service selected."); return redirect("market")
         if quantity < service_info["min"] or quantity > service_info["max"]:
-            messages.error(
-                request,
-                f"Quantity must be between {service_info['min']} and {service_info['max']}."
-            )
-            return redirect("market")
-
-        amount = Decimal(str(service_info["amount"])) * Decimal(quantity) / Decimal(1000)
-        amount = amount.quantize(Decimal("0.01"))
-
+            messages.error(request, f"Quantity must be between {service_info['min']} and {service_info['max']}."); return redirect("market")
+        amount = (Decimal(str(service_info["amount"])) * Decimal(quantity) / Decimal(1000)).quantize(Decimal("0.01"))
+        try:    account = Account.objects.get(user=request.user)
+        except: messages.error(request, "Wallet account not found."); return redirect("home")
+        if account.balance < amount: return redirect("low_balance")
+        account.balance -= amount; account.save()
         try:
-            account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if account.balance < amount:
-            return redirect("low_balance")
-
-        account.balance -= amount
-        account.save()
-
-        try:
-            result = call_jap_api("add", {
-                "service":  service_id,
-                "link":     link,
-                "quantity": quantity,
-            })
+            result = call_jap_api("add", {"service": service_id, "link": link, "quantity": quantity})
         except Exception as e:
-            account.balance += amount
-            account.save()
-            logger.error(f"JAP API crashed: {e}")
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("market")
-
+            account.balance += amount; account.save()
+            messages.error(request, "Something went wrong. Your balance has been refunded."); return redirect("market")
         if result and "order" in result:
-            jap_order_id = str(result["order"])
-
             SMMOrder.objects.create(
-                user=request.user,
-                platform=platform,
-                service_name=service_info["label"],
-                service_id=service_id,
-                link=link,
-                quantity=quantity,
-                amount=amount,
-                jap_order_id=jap_order_id,
-                status="processing",
+                user=request.user, platform=platform, service_name=service_info["label"],
+                service_id=service_id, link=link, quantity=quantity, amount=amount,
+                jap_order_id=str(result["order"]), status="processing",
             )
-
             Transaction.objects.create(
-                user=request.user,
-                account=account,
-                amount=amount,
-                transaction_type="smm",
-                status="successful",
-                description=f"{service_info['label']} x{quantity}",
+                user=request.user, account=account, amount=amount, transaction_type="smm",
+                status="successful", description=f"{service_info['label']} x{quantity}",
             )
-
-            messages.success(
-                request,
-                f"Order placed! {service_info['label']} x{quantity} is now processing."
-            )
+            messages.success(request, f"Order placed! {service_info['label']} x{quantity} is now processing.")
             return redirect("market")
-
-        else:
-            account.balance += amount
-            account.save()
-
-            error_detail = result.get("error", "Unknown error") if result else "No response"
-            logger.error(f"JAP order failed: {error_detail}")
-
-            SMMOrder.objects.create(
-                user=request.user,
-                platform=platform,
-                service_name=service_info["label"],
-                service_id=service_id,
-                link=link,
-                quantity=quantity,
-                amount=amount,
-                status="failed",
-            )
-
-            messages.error(
-                request,
-                f"Order failed: {error_detail}. Your balance has been refunded."
-            )
-            return redirect("market")
-
+        account.balance += amount; account.save()
+        error_detail = result.get("error", "Unknown error") if result else "No response"
+        SMMOrder.objects.create(
+            user=request.user, platform=platform, service_name=service_info["label"],
+            service_id=service_id, link=link, quantity=quantity, amount=amount, status="failed",
+        )
+        messages.error(request, f"Order failed: {error_detail}. Your balance has been refunded.")
+        return redirect("market")
     return redirect("market")
 
 
 @login_required
 def check_smm_order(request, order_id):
-    try:
-        order = SMMOrder.objects.get(id=order_id, user=request.user)
-    except SMMOrder.DoesNotExist:
-        messages.error(request, "Order not found.")
-        return redirect("market")
-
+    try:    order = SMMOrder.objects.get(id=order_id, user=request.user)
+    except: messages.error(request, "Order not found."); return redirect("market")
     if not order.jap_order_id:
-        messages.error(request, "No JAP order ID found for this order.")
-        return redirect("market")
-
+        messages.error(request, "No JAP order ID found for this order."); return redirect("market")
     result = call_jap_api("status", {"order": order.jap_order_id})
-
     if result and "status" in result:
-        jap_status = result["status"].lower()
         status_map = {
-            "completed":   "completed",
-            "partial":     "partial",
-            "cancelled":   "cancelled",
-            "processing":  "processing",
-            "pending":     "pending",
-            "in progress": "processing",
+            "completed": "completed", "partial": "partial", "cancelled": "cancelled",
+            "processing": "processing", "pending": "pending", "in progress": "processing",
         }
-        order.status = status_map.get(jap_status, "processing")
-        order.save()
+        order.status = status_map.get(result["status"].lower(), "processing"); order.save()
         messages.success(request, f"Order status updated: {order.status.title()}")
     else:
         messages.error(request, "Could not fetch order status. Try again later.")
-
     return redirect("market")
 
 
@@ -1327,56 +933,36 @@ def check_smm_order(request, order_id):
 def flutterwave_webhook(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed."}, status=405)
-
     secret_hash = config("FLW_WEBHOOK_SECRET", default="")
     signature   = request.headers.get("verif-hash", "")
-
     if secret_hash and signature != secret_hash:
-        logger.warning("Flutterwave webhook: invalid signature.")
         return JsonResponse({"error": "Unauthorized."}, status=401)
-
-    try:
-        payload = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON."}, status=400)
-
+    try:    payload = json.loads(request.body)
+    except: return JsonResponse({"error": "Invalid JSON."}, status=400)
     if payload.get("event") == "charge.completed":
         data = payload.get("data", {})
         if data.get("status") == "successful":
             tx_ref = data.get("tx_ref")
             try:
                 transaction_obj = Transaction.objects.get(reference=tx_ref)
+                credit_account(transaction_obj)
             except Transaction.DoesNotExist:
                 logger.error(f"Webhook: transaction not found for tx_ref={tx_ref}")
-                return JsonResponse({"status": "ok"})
-
-            credited = credit_account(transaction_obj)
-            logger.info(
-                f"Webhook: tx_ref={tx_ref} "
-                f"{'credited' if credited else 'already processed'}."
-            )
-
     return JsonResponse({"status": "ok"})
 
 
-# =========================
-# REPORT
-# =========================
-
 def report_view(request):
     if request.method == "POST":
-        message = request.POST.get("message")
-        Report.objects.create(message=message)
+        Report.objects.create(message=request.POST.get("message"))
         messages.success(request, "Report sent!")
         return redirect("report")
     return render(request, "report.html")
 
 
 # =========================
-# FOREIGN NUMBERS — SHARED CONSTANTS (corrected & expanded)
+# FOREIGN NUMBERS — SHARED CONSTANTS
 # =========================
 
-# All supported countries as slugs
 FOREIGN_COUNTRIES = [
     "usa", "uk", "canada", "russia", "india", "indonesia",
     "afghanistan", "albania", "algeria", "angola", "argentina",
@@ -1389,7 +975,6 @@ FOREIGN_COUNTRIES = [
     "thailand", "turkey", "ukraine", "uae", "vietnam",
 ]
 
-# Display name + ISO code for each slug
 FOREIGN_COUNTRY_DISPLAY = {
     "usa":          ("United States",        "US", "🇺🇸"),
     "uk":           ("United Kingdom",       "GB", "🇬🇧"),
@@ -1440,7 +1025,6 @@ FOREIGN_COUNTRY_DISPLAY = {
     "vietnam":      ("Vietnam",              "VN", "🇻🇳"),
 }
 
-# All supported services as slugs (matches 5SIM + SteadySim service list)
 FOREIGN_SERVICES = [
     "whatsapp", "telegram", "google", "facebook",
     "instagram", "twitter", "tiktok", "snapchat",
@@ -1449,7 +1033,6 @@ FOREIGN_SERVICES = [
     "paypal", "linkedin", "viber", "line",
 ]
 
-# Display name + icon for each service slug
 FOREIGN_SERVICE_DISPLAY = {
     "whatsapp":  ("WhatsApp",   "💬"),
     "telegram":  ("Telegram",   "✈️"),
@@ -1473,25 +1056,48 @@ FOREIGN_SERVICE_DISPLAY = {
     "line":      ("Line",       "🟢"),
 }
 
+FIVESIM_COUNTRY_MAP = {
+    "usa": "usa", "uk": "england", "canada": "canada", "russia": "russia",
+    "india": "india", "indonesia": "indonesia", "afghanistan": "afghanistan",
+    "albania": "albania", "algeria": "algeria", "angola": "angola",
+    "argentina": "argentina", "armenia": "armenia", "australia": "australia",
+    "austria": "austria", "azerbaijan": "azerbaijan", "bahrain": "bahrain",
+    "bangladesh": "bangladesh", "belarus": "belarus", "belgium": "belgium",
+    "brazil": "brazil", "bulgaria": "bulgaria", "china": "china",
+    "egypt": "egypt", "france": "france", "germany": "germany",
+    "ghana": "ghana", "italy": "italy", "japan": "japan", "kenya": "kenya",
+    "malaysia": "malaysia", "mexico": "mexico", "netherlands": "netherlands",
+    "nigeria": "nigeria", "pakistan": "pakistan", "philippines": "philippines",
+    "poland": "poland", "saudi_arabia": "saudiarabia", "singapore": "singapore",
+    "south_africa": "southafrica", "spain": "spain", "sweden": "sweden",
+    "switzerland": "switzerland", "thailand": "thailand", "turkey": "turkey",
+    "ukraine": "ukraine", "uae": "uae", "vietnam": "vietnam",
+}
+
+FIVESIM_SERVICE_MAP = {
+    "whatsapp": "whatsapp", "telegram": "telegram", "google": "google",
+    "facebook": "facebook", "instagram": "instagram", "twitter": "twitter",
+    "tiktok": "tiktok", "snapchat": "snapchat", "discord": "discord",
+    "netflix": "netflix", "amazon": "amazon", "microsoft": "microsoft",
+    "apple": "apple", "uber": "uber", "airbnb": "airbnb", "spotify": "spotify",
+    "paypal": "paypal", "linkedin": "linkedin", "viber": "viber", "line": "line",
+}
+
 
 # =========================
-# FOREIGN NUMBERS — 5SIM (PRIMARY PROVIDER)
+# FOREIGN NUMBERS — 5SIM
 # =========================
 
 def _ngn_price(usd_price):
     import math
-
     def clean(val):
         return str(val).split("#")[0].strip().strip('"').strip("'")
-
     try:
         rate   = Decimal(clean(config("USD_TO_NGN_RATE",      default="1600")))
         markup = Decimal(clean(config("FOREIGN_NUMBER_MARKUP", default="1.3")))
     except Exception as e:
-        logger.error(f"_ngn_price config error: {e} — using defaults 1600 / 1.3")
-        rate   = Decimal("1600")
-        markup = Decimal("1.3")
-
+        logger.error(f"_ngn_price config error: {e}")
+        rate = Decimal("1600"); markup = Decimal("1.3")
     ngn = Decimal(str(usd_price)) * rate * markup
     return Decimal(str(math.ceil(float(ngn) / 10) * 10))
 
@@ -1503,160 +1109,134 @@ def _fetch_5sim_prices(country=None, service=None):
     except Exception as e:
         logger.error(f"5SIM price fetch error: {e}")
         return []
-
     prices    = []
     countries = [country] if country else FOREIGN_COUNTRIES
-    services  = [service]  if service  else FOREIGN_SERVICES
-
+    services  = [service] if service  else FOREIGN_SERVICES
     for c in countries:
-        if c not in data:
+        fivesim_c = FIVESIM_COUNTRY_MAP.get(c, c)
+        if fivesim_c not in data:
+            logger.debug(f"5SIM prices: '{fivesim_c}' not found (slug='{c}')")
             continue
         for s in services:
-            if s not in data[c]:
+            fivesim_s = FIVESIM_SERVICE_MAP.get(s, s)
+            if fivesim_s not in data[fivesim_c]:
                 continue
-            for operator_name, operator_data in data[c][s].items():
+            for operator_name, operator_data in data[fivesim_c][fivesim_s].items():
                 usd = operator_data.get("cost", 0)
                 prices.append({
                     "country":   c,
                     "service":   s,
                     "operator":  operator_name,
                     "price_usd": usd,
-                    "price_ngn": _ngn_price(usd),
-                    "price":     _ngn_price(usd),
+                    "price_ngn": float(_ngn_price(usd)),
+                    "price":     float(_ngn_price(usd)),
                     "count":     operator_data.get("count", 0),
                 })
     return prices
 
 
+def _fivesim_headers():
+    return {
+        "Authorization": f"Bearer {config('FIVE_SIM_API_KEY').strip()}",
+        "Accept": "application/json",
+    }
+
+
 @login_required
 def buy_foreign_number(request):
     customer_account = get_or_create_account(request.user)
-
     selected_country = request.GET.get("country", "") or request.POST.get("country", "")
     selected_service = request.GET.get("service", "") or request.POST.get("service", "")
-
     prices = []
     if selected_country and selected_service:
         prices = _fetch_5sim_prices(
             country=selected_country if selected_country in FOREIGN_COUNTRIES else None,
             service=selected_service if selected_service in FOREIGN_SERVICES  else None,
         )
-
     if request.method == "POST":
         country = request.POST.get("country", "").strip().lower()
         service = request.POST.get("service", "").strip().lower()
-
         if not country or not service:
             messages.error(request, "Please select a country and service.")
             return redirect("buy_foreign_number")
-
         if country not in FOREIGN_COUNTRIES:
             messages.error(request, "Invalid country selected.")
             return redirect("buy_foreign_number")
-
         if service not in FOREIGN_SERVICES:
             messages.error(request, "Invalid service selected.")
             return redirect("buy_foreign_number")
-
         plan_prices = _fetch_5sim_prices(country=country, service=service)
         available   = [p for p in plan_prices if p["count"] > 0]
-
         if not available:
             messages.error(request, "No available numbers right now. Try another country or service.")
-            return redirect(f"buy_foreign_number?country={country}&service={service}")
-
+            return redirect(f"/buy-foreign-number/?country={country}&service={service}")
         cheapest       = min(available, key=lambda x: x["price_ngn"])
         selected_price = Decimal(str(cheapest["price_ngn"]))
-
         if customer_account.balance < selected_price:
             messages.error(request, f"Insufficient balance. You need ₦{selected_price:,} for this number.")
             return redirect("buy_foreign_number")
-
         try:
             owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_foreign_number: owner account error: {e}")
+            logger.error(f"buy_foreign_number owner error: {e}")
             messages.error(request, "Service temporarily unavailable. Please try again later.")
             return redirect("buy_foreign_number")
-
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= selected_price
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += selected_price
-                owner_account.save()
-
+            customer_account.balance -= selected_price; customer_account.save()
+            if not is_owner_buying: owner_account.balance += selected_price; owner_account.save()
+        fivesim_country = FIVESIM_COUNTRY_MAP.get(country, country)
+        fivesim_service = FIVESIM_SERVICE_MAP.get(service, service)
         try:
-            headers = {
-                "Authorization": f"Bearer {settings.FIVE_SIM_API_KEY}",
-                "Accept":        "application/json",
-            }
-            buy_url  = f"https://5sim.net/v1/user/buy/activation/{country}/any/{service}"
-            response = requests.get(buy_url, headers=headers, timeout=30)
-
-            logger.info(f"5SIM buy → HTTP {response.status_code} | {response.text[:300]}")
-
+            buy_url  = f"https://5sim.net/v1/user/buy/activation/{fivesim_country}/any/{fivesim_service}"
+            logger.info(f"5SIM buy → {buy_url} | slug=({country},{service}) | price=₦{selected_price}")
+            response = requests.get(buy_url, headers=_fivesim_headers(), timeout=30)
+            logger.info(f"5SIM buy ← HTTP {response.status_code} | {response.text[:300]}")
             if response.status_code == 200:
                 data = response.json()
                 ForeignNumber.objects.create(
-                    user         = request.user,
-                    order_id     = data.get("id"),
-                    country      = data.get("country"),
-                    service      = data.get("product"),
-                    phone_number = data.get("phone"),
-                    price        = selected_price,
-                    status       = "PENDING",
+                    user=request.user, order_id=data.get("id"), country=country,
+                    service=service, phone_number=data.get("phone"),
+                    price=selected_price, status="PENDING",
                 )
                 messages.success(request, f"Number {data.get('phone')} purchased successfully!")
-
             else:
                 with db_transaction.atomic():
-                    customer_account.balance += selected_price
-                    customer_account.save()
-                    if not is_owner_buying:
-                        owner_account.balance -= selected_price
-                        owner_account.save()
-
+                    customer_account.balance += selected_price; customer_account.save()
+                    if not is_owner_buying: owner_account.balance -= selected_price; owner_account.save()
+                err_msg = f"HTTP {response.status_code}"
                 try:
                     err_data = response.json()
-                    err_msg  = err_data.get("message") or err_data.get("error") or response.text
+                    err_msg  = err_data.get("message") or err_data.get("error") or err_data.get("msg") or str(err_data)
                 except Exception:
-                    err_msg = response.text
-
-                err_lower = err_msg.lower()
-                if "no free phones" in err_lower:
+                    if response.text.strip(): err_msg = response.text.strip()
+                logger.error(f"5SIM buy failed: HTTP {response.status_code} | {err_msg}")
+                err_lower = str(err_msg).lower()
+                if "no free phones" in err_lower or "no numbers" in err_lower:
                     messages.error(request, "No available numbers right now. Try another country or service.")
-                elif "not enough user balance" in err_lower:
+                elif "not enough user balance" in err_lower or "not enough balance" in err_lower:
                     messages.error(request, "5SIM provider balance is low. Contact support.")
+                elif "bad country" in err_lower or "bad product" in err_lower:
+                    messages.error(request, "Invalid country or service. Please try again.")
+                elif response.status_code == 401:
+                    messages.error(request, "5SIM authentication error. Contact support.")
+                elif response.status_code == 400:
+                    messages.error(request, f"5SIM rejected the request: {err_msg}. Balance refunded.")
                 else:
-                    messages.error(request, f"Purchase failed: {err_msg}")
-
+                    messages.error(request, f"Purchase failed ({response.status_code}): {err_msg}. Balance refunded.")
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += selected_price
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= selected_price
-                    owner_account.save()
-            logger.error(f"5SIM buy error: {e}")
+                customer_account.balance += selected_price; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= selected_price; owner_account.save()
+            logger.error(f"5SIM buy exception: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
-
         return redirect(f"/buy-foreign-number/?country={country}&service={service}")
-
     numbers = ForeignNumber.objects.filter(user=request.user).order_by("-created_at")
-
     context = {
-        "account":          customer_account,
-        "countries":        FOREIGN_COUNTRIES,
-        "services":         FOREIGN_SERVICES,
-        "country_display":  FOREIGN_COUNTRY_DISPLAY,
-        "service_display":  FOREIGN_SERVICE_DISPLAY,
-        "numbers":          numbers,
-        "prices":           prices,
-        "selected_country": selected_country,
-        "selected_service": selected_service,
+        "account": customer_account, "countries": FOREIGN_COUNTRIES, "services": FOREIGN_SERVICES,
+        "country_display": FOREIGN_COUNTRY_DISPLAY, "service_display": FOREIGN_SERVICE_DISPLAY,
+        "numbers": numbers, "prices": prices,
+        "selected_country": selected_country, "selected_service": selected_service,
     }
     return render(request, "buy_foreign_number.html", context)
 
@@ -1665,10 +1245,8 @@ def buy_foreign_number(request):
 def foreign_number_prices(request):
     country = request.GET.get("country", "").strip().lower()
     service = request.GET.get("service", "").strip().lower()
-
     if not country or not service:
         return JsonResponse({"prices": [], "error": "country and service required"})
-
     prices = _fetch_5sim_prices(
         country=country if country in FOREIGN_COUNTRIES else None,
         service=service if service  in FOREIGN_SERVICES  else None,
@@ -1684,110 +1262,69 @@ def cancel_foreign_number(request, order_id):
         messages.error(request, "Number not found.")
         return redirect("buy_foreign_number")
 
+    if foreign_number.status == "CANCELLED":
+        messages.error(request, "This number is already cancelled.")
+        return redirect("buy_foreign_number")
+
     try:
-        headers  = {
-            "Authorization": f"Bearer {settings.FIVE_SIM_API_KEY}",
-            "Accept":        "application/json",
-        }
         response = requests.get(
             f"https://5sim.net/v1/user/cancel/{order_id}",
-            headers=headers, timeout=30,
+            headers=_fivesim_headers(), timeout=30,
         )
         logger.info(f"5SIM cancel → HTTP {response.status_code} | {response.text[:200]}")
-
         if response.status_code == 200:
-            foreign_number.status = "CANCELLED"
-            foreign_number.save()
-            messages.success(request, "Number cancelled successfully.")
+            with db_transaction.atomic():
+                foreign_number.status = "CANCELLED"
+                foreign_number.save()
+                # Refund customer
+                customer_account = Account.objects.select_for_update().get(user=request.user)
+                customer_account.balance += foreign_number.price
+                customer_account.save()
+                # Deduct from owner to keep books balanced
+                try:
+                    owner_account = get_owner_account()
+                    if owner_account.pk != customer_account.pk:
+                        owner_acc = Account.objects.select_for_update().get(pk=owner_account.pk)
+                        owner_acc.balance -= foreign_number.price
+                        owner_acc.save()
+                except Exception as e:
+                    logger.error(f"Owner balance deduct on 5SIM cancel failed: {e}")
+            messages.success(request, f"Number cancelled. ₦{foreign_number.price:,} refunded to your wallet.")
         else:
             messages.error(request, "Unable to cancel number. It may have already expired.")
-
     except Exception as e:
         logger.error(f"5SIM cancel error: {e}")
-        messages.error(request, str(e))
-
+        messages.error(request, "Something went wrong while cancelling. Please try again.")
     return redirect("buy_foreign_number")
 
 
 # =========================
-# FOREIGN NUMBERS — STEADYSIM (SECOND PROVIDER)
+# FOREIGN NUMBERS — STEADYSIM
 # =========================
 
 STEADYSIM_BASE = "https://steadysim.com/stubs/handler_api.php"
 
-# Corrected & expanded SteadySim country IDs
 STEADYSIM_COUNTRY_IDS = {
-    "usa":          "187",
-    "uk":           "16",
-    "canada":       "36",
-    "russia":       "0",
-    "india":        "22",
-    "indonesia":    "6",
-    "afghanistan":  "185",
-    "albania":      "62",
-    "algeria":      "59",
-    "angola":       "116",
-    "argentina":    "8",
-    "armenia":      "51",
-    "australia":    "26",
-    "austria":      "90",
-    "azerbaijan":   "73",
-    "bahrain":      "107",
-    "bangladesh":   "50",
-    "belarus":      "86",
-    "belgium":      "95",
-    "brazil":       "7",
-    "bulgaria":     "55",
-    "china":        "46",
-    "egypt":        "39",
-    "france":       "78",
-    "germany":      "43",
-    "ghana":        "140",
-    "italy":        "35",
-    "japan":        "33",
-    "kenya":        "33",   # verify in your SteadySim dashboard
-    "malaysia":     "12",
-    "mexico":       "13",
-    "netherlands":  "73",   # verify in your SteadySim dashboard
-    "nigeria":      "109",
-    "pakistan":     "11",
-    "philippines":  "4",
-    "poland":       "15",
-    "saudi_arabia": "101",
-    "singapore":    "41",
-    "south_africa": "126",
-    "spain":        "33",   # verify in your SteadySim dashboard
-    "sweden":       "55",   # verify in your SteadySim dashboard
-    "switzerland":  "76",
-    "thailand":     "5",
-    "turkey":       "3",
-    "ukraine":      "1",
-    "uae":          "73",   # verify in your SteadySim dashboard
-    "vietnam":      "10",
+    "usa": "187", "uk": "16", "canada": "36", "russia": "0", "india": "22",
+    "indonesia": "6", "afghanistan": "185", "albania": "62", "algeria": "59",
+    "angola": "116", "argentina": "8", "armenia": "51", "australia": "26",
+    "austria": "90", "azerbaijan": "73", "bahrain": "107", "bangladesh": "50",
+    "belarus": "86", "belgium": "95", "brazil": "7", "bulgaria": "55",
+    "china": "46", "egypt": "39", "france": "78", "germany": "43",
+    "ghana": "140", "italy": "35", "japan": "33", "kenya": "109",
+    "malaysia": "12", "mexico": "13", "netherlands": "102", "nigeria": "109",
+    "pakistan": "11", "philippines": "4", "poland": "15", "saudi_arabia": "101",
+    "singapore": "41", "south_africa": "126", "spain": "65", "sweden": "134",
+    "switzerland": "76", "thailand": "5", "turkey": "3", "ukraine": "1",
+    "uae": "230", "vietnam": "10",
 }
 
-# Corrected SteadySim service codes (verified against their API)
 STEADYSIM_SERVICE_CODES = {
-    "whatsapp":  "wa",
-    "telegram":  "tg",
-    "google":    "go",
-    "facebook":  "fb",
-    "instagram": "ig",
-    "twitter":   "tw",
-    "tiktok":    "tt",
-    "snapchat":  "sc",
-    "discord":   "ds",
-    "netflix":   "nf",
-    "amazon":    "am",
-    "microsoft": "ms",
-    "apple":     "ap",
-    "uber":      "ub",
-    "airbnb":    "ab",
-    "spotify":   "sf",
-    "paypal":    "pp",
-    "linkedin":  "li",
-    "viber":     "vi",
-    "line":      "ln",
+    "whatsapp": "wa", "telegram": "tg", "google": "go", "facebook": "fb",
+    "instagram": "ig", "twitter": "tw", "tiktok": "tt", "snapchat": "sc",
+    "discord": "ds", "netflix": "nf", "amazon": "am", "microsoft": "ms",
+    "apple": "ap", "uber": "ub", "airbnb": "ab", "spotify": "sf",
+    "paypal": "pp", "linkedin": "li", "viber": "vi", "line": "ln",
 }
 
 
@@ -1797,72 +1334,39 @@ def _steadysim_get(params):
         resp = requests.get(STEADYSIM_BASE, params=params, timeout=15)
         return resp.text.strip()
     except requests.RequestException as e:
-        logger.error(f"SteadySim request error: {e}")
-        return None
+        logger.error(f"SteadySim request error: {e}"); return None
 
 
 def _fetch_steadysim_price(country, service):
     country_id   = STEADYSIM_COUNTRY_IDS.get(country)
     service_code = STEADYSIM_SERVICE_CODES.get(service)
-
-    if not country_id or not service_code:
-        return None
-
-    raw = _steadysim_get({
-        "action":  "getPrices",
-        "country": country_id,
-        "service": service_code,
-    })
-
-    if not raw:
-        return None
-
+    if not country_id or not service_code: return None
+    raw = _steadysim_get({"action": "getPrices", "country": country_id, "service": service_code})
+    if not raw: return None
     if raw.startswith("BAD_KEY") or raw.startswith("COUNTRY_AND_SERVICE_REQUIRED"):
-        logger.error(f"SteadySim getPrices error: {raw}")
-        return None
-
+        logger.error(f"SteadySim getPrices error: {raw}"); return None
     try:
         data     = json.loads(raw)
         entry    = data.get(country_id, {}).get(service_code, {})
         cost_usd = entry.get("cost", 0)
         count    = entry.get("count", 0)
-        if count <= 0:
-            return None
-        return {
-            "cost_usd":  cost_usd,
-            "price_ngn": int(_ngn_price(cost_usd)),
-            "count":     count,
-            "provider":  "steadysim",
-        }
+        if count <= 0: return None
+        return {"cost_usd": cost_usd, "price_ngn": int(_ngn_price(cost_usd)), "count": count, "provider": "steadysim"}
     except (json.JSONDecodeError, KeyError) as e:
-        logger.error(f"SteadySim getPrices parse error: {e} | raw: {raw[:200]}")
-        return None
+        logger.error(f"SteadySim getPrices parse error: {e} | raw: {raw[:200]}"); return None
 
 
 def call_steadysim_buy_number(country, service):
     country_id   = STEADYSIM_COUNTRY_IDS.get(country)
     service_code = STEADYSIM_SERVICE_CODES.get(service)
-
     if not country_id or not service_code:
-        return False, f"Unsupported country or service for SteadySim: {country}/{service}", None
-
-    raw = _steadysim_get({
-        "action":  "getNumber",
-        "country": country_id,
-        "service": service_code,
-    })
-
-    if raw is None:
-        return False, "Could not connect to SteadySim.", None
-
+        return False, f"Unsupported country or service: {country}/{service}", None
+    raw = _steadysim_get({"action": "getNumber", "country": country_id, "service": service_code})
+    if raw is None: return False, "Could not connect to SteadySim.", None
     if raw.startswith("ACCESS_NUMBER:"):
         parts = raw.split(":")
-        if len(parts) >= 3:
-            activation_id = parts[1]
-            phone_number  = parts[2]
-            return True, activation_id, phone_number
+        if len(parts) >= 3: return True, parts[1], parts[2]
         return False, "Unexpected SteadySim response format.", None
-
     error_map = {
         "NO_NUMBERS": "No numbers available right now. Try another country or service.",
         "NO_BALANCE": "SteadySim provider balance is low. Contact support.",
@@ -1872,143 +1376,83 @@ def call_steadysim_buy_number(country, service):
 
 
 def call_steadysim_cancel(activation_id):
-    raw = _steadysim_get({
-        "action": "setStatus",
-        "id":     activation_id,
-        "status": "8",
-    })
-    if raw is None:
-        return False, "Network error."
-    if raw == "ACCESS_CANCEL":
-        return True, "Cancelled."
+    raw = _steadysim_get({"action": "setStatus", "id": activation_id, "status": "8"})
+    if raw is None: return False, "Network error."
+    if raw == "ACCESS_CANCEL": return True, "Cancelled."
     return False, f"SteadySim cancel response: {raw}"
 
 
 def call_steadysim_check_sms(activation_id):
-    raw = _steadysim_get({
-        "action": "getStatus",
-        "id":     activation_id,
-    })
-    if raw is None:
-        return "error", None
-    if raw == "STATUS_WAIT_CODE":
-        return "waiting", None
-    if raw.startswith("STATUS_OK:"):
-        code = raw.split(":", 1)[1]
-        return "received", code
-    if raw == "STATUS_CANCEL":
-        return "cancelled", None
+    raw = _steadysim_get({"action": "getStatus", "id": activation_id})
+    if raw is None: return "error", None
+    if raw == "STATUS_WAIT_CODE": return "waiting", None
+    if raw.startswith("STATUS_OK:"): return "received", raw.split(":", 1)[1]
+    if raw == "STATUS_CANCEL": return "cancelled", None
     return "error", None
 
 
 @login_required
 def buy_foreign_number_steadysim(request):
     customer_account = get_or_create_account(request.user)
-
-    selected_country = (
-        request.GET.get("country", "") or request.POST.get("country", "")
-    )
-    selected_service = (
-        request.GET.get("service", "") or request.POST.get("service", "")
-    )
-
-    # AJAX price fetch
+    selected_country = request.GET.get("country", "") or request.POST.get("country", "")
+    selected_service = request.GET.get("service", "") or request.POST.get("service", "")
     if request.method == "GET" and request.GET.get("fetch_price"):
-        country = request.GET.get("country", "").strip().lower()
-        service = request.GET.get("service", "").strip().lower()
-        info    = _fetch_steadysim_price(country, service)
-        if info:
-            return JsonResponse({"available": True, **info})
+        country  = request.GET.get("country", "").strip().lower()
+        service  = request.GET.get("service", "").strip().lower()
+        info     = _fetch_steadysim_price(country, service)
+        if info: return JsonResponse({"available": True, **info})
         return JsonResponse({"available": False})
-
     if request.method == "POST":
         country = request.POST.get("country", "").strip().lower()
         service = request.POST.get("service", "").strip().lower()
-
         if not country or not service:
-            messages.error(request, "Please select a country and service.")
-            return redirect("buy_foreign_number_steadysim")
-
+            messages.error(request, "Please select a country and service."); return redirect("buy_foreign_number_steadysim")
         if country not in FOREIGN_COUNTRIES:
-            messages.error(request, "Invalid country selected.")
-            return redirect("buy_foreign_number_steadysim")
-
+            messages.error(request, "Invalid country selected."); return redirect("buy_foreign_number_steadysim")
         if service not in FOREIGN_SERVICES:
-            messages.error(request, "Invalid service selected.")
-            return redirect("buy_foreign_number_steadysim")
-
+            messages.error(request, "Invalid service selected."); return redirect("buy_foreign_number_steadysim")
         price_info = _fetch_steadysim_price(country, service)
         if not price_info:
             messages.error(request, "No numbers available right now. Try another option.")
             return redirect(f"/buy-foreign-number-steadysim/?country={country}&service={service}")
-
         charge = Decimal(str(price_info["price_ngn"]))
-
         if customer_account.balance < charge:
             messages.error(request, f"Insufficient balance. You need ₦{charge:,} for this number.")
             return redirect("buy_foreign_number_steadysim")
-
-        try:
-            owner_account = get_owner_account()
+        try:    owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_foreign_number_steadysim: owner account error: {e}")
-            messages.error(request, "Service temporarily unavailable. Please try again later.")
-            return redirect("buy_foreign_number_steadysim")
-
+            logger.error(f"buy_foreign_number_steadysim owner error: {e}")
+            messages.error(request, "Service temporarily unavailable."); return redirect("buy_foreign_number_steadysim")
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= charge
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += charge
-                owner_account.save()
-
+            customer_account.balance -= charge; customer_account.save()
+            if not is_owner_buying: owner_account.balance += charge; owner_account.save()
         try:
             ok, activation_id_or_err, phone_number = call_steadysim_buy_number(country, service)
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += charge
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= charge
-                    owner_account.save()
+                customer_account.balance += charge; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= charge; owner_account.save()
             logger.error(f"SteadySim buy crashed: {e}")
             messages.error(request, "Something went wrong. Your balance has been refunded.")
             return redirect("buy_foreign_number_steadysim")
-
         if ok:
             ForeignNumber.objects.create(
-                user         = request.user,
-                order_id     = activation_id_or_err,
-                country      = country,
-                service      = service,
-                phone_number = phone_number,
-                price        = charge,
-                status       = "PENDING",
+                user=request.user, order_id=activation_id_or_err, country=country,
+                service=service, phone_number=phone_number, price=charge, status="PENDING",
             )
             messages.success(request, f"Number {phone_number} purchased via SteadySim successfully!")
         else:
             with db_transaction.atomic():
-                customer_account.balance += charge
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= charge
-                    owner_account.save()
+                customer_account.balance += charge; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= charge; owner_account.save()
             messages.error(request, activation_id_or_err)
-
         return redirect(f"/buy-foreign-number-steadysim/?country={country}&service={service}")
-
     numbers = ForeignNumber.objects.filter(user=request.user).order_by("-created_at")
     context = {
-        "account":          customer_account,
-        "countries":        FOREIGN_COUNTRIES,
-        "services":         FOREIGN_SERVICES,
-        "country_display":  FOREIGN_COUNTRY_DISPLAY,
-        "service_display":  FOREIGN_SERVICE_DISPLAY,
-        "numbers":          numbers,
-        "selected_country": selected_country,
-        "selected_service": selected_service,
+        "account": customer_account, "countries": FOREIGN_COUNTRIES, "services": FOREIGN_SERVICES,
+        "country_display": FOREIGN_COUNTRY_DISPLAY, "service_display": FOREIGN_SERVICE_DISPLAY,
+        "numbers": numbers, "selected_country": selected_country, "selected_service": selected_service,
     }
     return render(request, "buy_foreign_number_steadysim.html", context)
 
@@ -2021,14 +1465,31 @@ def cancel_foreign_number_steadysim(request, order_id):
         messages.error(request, "Number not found.")
         return redirect("buy_foreign_number_steadysim")
 
+    if foreign_number.status == "CANCELLED":
+        messages.error(request, "This number is already cancelled.")
+        return redirect("buy_foreign_number_steadysim")
+
     ok, msg = call_steadysim_cancel(order_id)
     if ok:
-        foreign_number.status = "CANCELLED"
-        foreign_number.save()
-        messages.success(request, "Number cancelled successfully.")
+        with db_transaction.atomic():
+            foreign_number.status = "CANCELLED"
+            foreign_number.save()
+            # Refund customer
+            customer_account = Account.objects.select_for_update().get(user=request.user)
+            customer_account.balance += foreign_number.price
+            customer_account.save()
+            # Deduct from owner to keep books balanced
+            try:
+                owner_account = get_owner_account()
+                if owner_account.pk != customer_account.pk:
+                    owner_acc = Account.objects.select_for_update().get(pk=owner_account.pk)
+                    owner_acc.balance -= foreign_number.price
+                    owner_acc.save()
+            except Exception as e:
+                logger.error(f"Owner balance deduct on SteadySim cancel failed: {e}")
+        messages.success(request, f"Number cancelled. ₦{foreign_number.price:,} refunded to your wallet.")
     else:
         messages.error(request, f"Could not cancel: {msg}")
-
     return redirect("buy_foreign_number_steadysim")
 
 
@@ -2037,67 +1498,46 @@ def cancel_foreign_number_steadysim(request, order_id):
 # =========================
 
 ELECTRIC_COMPANIES = {
-    "01": "Eko Electric (EKEDC)",
-    "02": "Ikeja Electric (IKEDC)",
-    "03": "Abuja Electric (AEDC)",
-    "04": "Kano Electric (KEDC)",
-    "05": "Portharcourt Electric (PHEDC)",
-    "06": "Jos Electric (JEDC)",
-    "07": "Ibadan Electric (IBEDC)",
-    "08": "Kaduna Electric (KAEDC)",
-    "09": "Enugu Electric (EEDC)",
-    "10": "Benin Electric (BEDC)",
-    "11": "Yola Electric (YEDC)",
-    "12": "Aba Electric (APLE)",
+    "01": "Eko Electric (EKEDC)",         "02": "Ikeja Electric (IKEDC)",
+    "03": "Abuja Electric (AEDC)",         "04": "Kano Electric (KEDC)",
+    "05": "Portharcourt Electric (PHEDC)", "06": "Jos Electric (JEDC)",
+    "07": "Ibadan Electric (IBEDC)",       "08": "Kaduna Electric (KAEDC)",
+    "09": "Enugu Electric (EEDC)",         "10": "Benin Electric (BEDC)",
+    "11": "Yola Electric (YEDC)",          "12": "Aba Electric (APLE)",
 }
-
-METER_TYPES = {
-    "01": "Prepaid",
-    "02": "Postpaid",
-}
+METER_TYPES = {"01": "Prepaid", "02": "Postpaid"}
 
 
 def verify_meter(electric_company, meter_no, meter_type):
-    user_id = config("CLUBKONNECT_USER_ID")
-    api_key = config("CLUBKONNECT_API_KEY")
+    user_id = config("CLUBKONNECT_USER_ID"); api_key = config("CLUBKONNECT_API_KEY")
     url = (
         f"https://www.nellobytesystems.com/APIVerifyElectricityV1.asp"
-        f"?UserID={user_id}&APIKey={api_key}"
-        f"&ElectricCompany={electric_company}&MeterNo={meter_no}&MeterType={meter_type}"
+        f"?UserID={user_id}&APIKey={api_key}&ElectricCompany={electric_company}"
+        f"&MeterNo={meter_no}&MeterType={meter_type}"
     )
     try:
-        resp = requests.get(url, timeout=15)
-        data = resp.json()
+        resp = requests.get(url, timeout=15); data = resp.json()
         name = data.get("customer_name", "")
-        if name and name != "INVALID_METERNO":
-            return True, name
+        if name and name != "INVALID_METERNO": return True, name
         return False, "Invalid meter number"
     except Exception as e:
-        logger.error(f"Meter verify error: {e}")
-        return False, "Could not verify meter number"
+        logger.error(f"Meter verify error: {e}"); return False, "Could not verify meter number"
 
 
 def call_clubkonnect_electricity_api(electric_company, meter_type, meter_no, amount, phone, request_id):
-    user_id  = config("CLUBKONNECT_USER_ID")
-    api_key  = config("CLUBKONNECT_API_KEY")
+    user_id  = config("CLUBKONNECT_USER_ID"); api_key = config("CLUBKONNECT_API_KEY")
     site_url = config("SITE_URL", default="http://127.0.0.1:8000").rstrip("/")
     url = (
         f"https://www.nellobytesystems.com/APIElectricityV1.asp"
-        f"?UserID={user_id}&APIKey={api_key}"
-        f"&ElectricCompany={electric_company}&MeterType={meter_type}"
-        f"&MeterNo={meter_no}&Amount={amount}&PhoneNo={phone}"
-        f"&RequestID={request_id}&CallBackURL={site_url}/webhook/clubkonnect/"
+        f"?UserID={user_id}&APIKey={api_key}&ElectricCompany={electric_company}"
+        f"&MeterType={meter_type}&MeterNo={meter_no}&Amount={amount}"
+        f"&PhoneNo={phone}&RequestID={request_id}&CallBackURL={site_url}/webhook/clubkonnect/"
     )
-    logger.info(f"ClubKonnect Electricity → company={electric_company} meter={meter_no} amount={amount}")
     try:
-        resp = requests.get(url, timeout=15)
-        text = resp.text.strip()
-        logger.info(f"ClubKonnect Electricity response: {text}")
+        resp = requests.get(url, timeout=15); text = resp.text.strip()
         try:
-            data        = json.loads(text)
-            status      = data.get("status", "")
-            status_code = str(data.get("statuscode", ""))
-            if status == "ORDER_RECEIVED" or status_code == "100":
+            data = json.loads(text); status = data.get("status", ""); sc = str(data.get("statuscode", ""))
+            if status == "ORDER_RECEIVED" or sc == "100":
                 return True, data.get("metertoken", ""), data.get("orderid", "")
             elif status == "INSUFFICIENT_BALANCE":
                 return False, "insufficient balance in provider wallet", ""
@@ -2106,227 +1546,156 @@ def call_clubkonnect_electricity_api(electric_company, meter_type, meter_no, amo
             elif status == "INVALID_MeterNo":
                 return False, "invalid meter number", ""
             else:
-                logger.error(f"ClubKonnect Electricity error: {text}")
                 return False, text, ""
         except json.JSONDecodeError:
-            logger.error(f"ClubKonnect Electricity non-JSON: {text}")
             return False, text, ""
     except requests.RequestException as e:
-        logger.error(f"ClubKonnect Electricity request failed: {e}")
         return False, "Network error contacting ClubKonnect.", ""
 
 
 @login_required
 def buy_electricity(request):
     account = get_or_create_account(request.user)
-
     if request.method == "GET" and request.GET.get("verify_meter"):
         company    = request.GET.get("company", "")
         meter_no   = request.GET.get("meter_no", "")
         meter_type = request.GET.get("meter_type", "01")
         ok, result = verify_meter(company, meter_no, meter_type)
         return JsonResponse({"success": ok, "customer_name": result if ok else "", "error": result if not ok else ""})
-
     if request.method == "POST":
         company    = request.POST.get("electric_company", "").strip()
         meter_type = request.POST.get("meter_type", "01").strip()
         meter_no   = request.POST.get("meter_no", "").strip()
         phone      = request.POST.get("phone", "").strip()
         amount_raw = request.POST.get("amount", "").strip()
-
         if not all([company, meter_type, meter_no, phone, amount_raw]):
-            messages.error(request, "All fields are required.")
-            return redirect("buy_electricity")
-
-        try:
-            amount = Decimal(amount_raw)
-        except InvalidOperation:
-            messages.error(request, "Invalid amount.")
-            return redirect("buy_electricity")
-
+            messages.error(request, "All fields are required."); return redirect("buy_electricity")
+        try:    amount = Decimal(amount_raw)
+        except: messages.error(request, "Invalid amount."); return redirect("buy_electricity")
         if amount < 1000:
-            messages.error(request, "Minimum electricity purchase is ₦1,000.")
-            return redirect("buy_electricity")
-
+            messages.error(request, "Minimum electricity purchase is ₦1,000."); return redirect("buy_electricity")
         if company not in ELECTRIC_COMPANIES:
-            messages.error(request, "Invalid electricity company selected.")
-            return redirect("buy_electricity")
-
+            messages.error(request, "Invalid electricity company selected."); return redirect("buy_electricity")
         if len(phone) < 11:
-            messages.error(request, "Enter a valid 11-digit phone number.")
-            return redirect("buy_electricity")
-
-        try:
-            customer_account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if customer_account.balance < amount:
-            return redirect("low_balance")
-
-        try:
-            owner_account = get_owner_account()
+            messages.error(request, "Enter a valid 11-digit phone number."); return redirect("buy_electricity")
+        try:    customer_account = Account.objects.get(user=request.user)
+        except: messages.error(request, "Wallet account not found."); return redirect("home")
+        if customer_account.balance < amount: return redirect("low_balance")
+        try:    owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_electricity: owner account error: {e}")
-            messages.error(request, "Service temporarily unavailable.")
-            return redirect("buy_electricity")
-
-        request_id = str(uuid.uuid4()).replace("-", "")[:20]
+            logger.error(f"buy_electricity owner error: {e}")
+            messages.error(request, "Service temporarily unavailable."); return redirect("buy_electricity")
+        request_id      = str(uuid.uuid4()).replace("-", "")[:20]
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= amount
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += amount
-                owner_account.save()
-
+            customer_account.balance -= amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance += amount; owner_account.save()
         try:
             success_flag, token, order_id = call_clubkonnect_electricity_api(
-                company, meter_type, meter_no, int(amount), phone, request_id
+                company, meter_type, meter_no, int(amount), phone, request_id,
             )
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
-            logger.error(f"buy_electricity crashed: {e}")
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("buy_electricity")
-
-        company_name = ELECTRIC_COMPANIES.get(company, company)
-        meter_label  = METER_TYPES.get(meter_type, meter_type)
-
+                customer_account.balance += amount; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+            messages.error(request, "Something went wrong. Your balance has been refunded."); return redirect("buy_electricity")
         if success_flag:
             ElectricityPurchase.objects.create(
-                user              = request.user,
-                electric_provider = company_name,
-                meter_type        = meter_label,
-                meter_number      = meter_no,
-                amount            = amount,
-                token             = token,
-                reference         = request_id,
-                status            = "successful",
+                user=request.user,
+                electric_provider=ELECTRIC_COMPANIES.get(company, company),
+                meter_type=METER_TYPES.get(meter_type, meter_type),
+                meter_number=meter_no, amount=amount, token=token,
+                reference=request_id, status="successful",
             )
             messages.success(request, f"₦{amount:,} electricity purchased! Token: {token}")
             return redirect("buy_electricity")
-        else:
-            with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-
-            error_msg = f"Purchase failed: {token}. Your balance has been refunded."
-            messages.error(request, error_msg)
-            return redirect("buy_electricity")
-
+        with db_transaction.atomic():
+            customer_account.balance += amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+        messages.error(request, f"Purchase failed: {token}. Your balance has been refunded.")
+        return redirect("buy_electricity")
     purchases = ElectricityPurchase.objects.filter(user=request.user).order_by("-created_at")[:10]
-    context = {
-        "account":     account,
-        "companies":   ELECTRIC_COMPANIES,
-        "meter_types": METER_TYPES,
-        "purchases":   purchases,
-    }
-    return render(request, "buy_electricity.html", context)
+    return render(request, "buy_electricity.html", {
+        "account": account, "companies": ELECTRIC_COMPANIES,
+        "meter_types": METER_TYPES, "purchases": purchases,
+    })
 
 
 # =========================
 # CABLE TV — CLUBKONNECT
 # =========================
 
-CABLE_TV_PROVIDERS = {
-    "dstv":      "DStv",
-    "gotv":      "GOtv",
-    "startimes": "StarTimes",
-    "showmax":   "Showmax",
-}
+CABLE_TV_PROVIDERS = {"dstv": "DStv", "gotv": "GOtv", "startimes": "StarTimes", "showmax": "Showmax"}
 
 CABLE_TV_PACKAGES = {
     "dstv": [
-        {"code": "dstv-padi",              "label": "DStv Padi",                    "amount": 4600},
-        {"code": "dstv-yanga",             "label": "DStv Yanga",                   "amount": 6200},
-        {"code": "dstv-confam",            "label": "DStv Confam",                  "amount": 11400},
-        {"code": "dstv79",                 "label": "DStv Compact",                 "amount": 19500},
-        {"code": "dstv7",                  "label": "DStv Compact Plus",            "amount": 30500},
-        {"code": "dstv3",                  "label": "DStv Premium",                 "amount": 45000},
-        {"code": "confam-extra",           "label": "DStv Confam + ExtraView",      "amount": 17000},
-        {"code": "yanga-extra",            "label": "DStv Yanga + ExtraView",       "amount": 12000},
-        {"code": "padi-extra",             "label": "DStv Padi + ExtraView",        "amount": 10400},
-        {"code": "dstv30",                 "label": "DStv Compact + ExtraView",     "amount": 25000},
-        {"code": "dstv33",                 "label": "DStv Premium + ExtraView",     "amount": 50500},
-        {"code": "dstv45",                 "label": "DStv Compact Plus + ExtraView","amount": 36000},
+        {"code": "dstv-padi",    "label": "DStv Padi",                     "amount": 4600},
+        {"code": "dstv-yanga",   "label": "DStv Yanga",                    "amount": 6200},
+        {"code": "dstv-confam",  "label": "DStv Confam",                   "amount": 11400},
+        {"code": "dstv79",       "label": "DStv Compact",                  "amount": 19500},
+        {"code": "dstv7",        "label": "DStv Compact Plus",             "amount": 30500},
+        {"code": "dstv3",        "label": "DStv Premium",                  "amount": 45000},
+        {"code": "confam-extra", "label": "DStv Confam + ExtraView",       "amount": 17000},
+        {"code": "yanga-extra",  "label": "DStv Yanga + ExtraView",        "amount": 12000},
+        {"code": "padi-extra",   "label": "DStv Padi + ExtraView",         "amount": 10400},
+        {"code": "dstv30",       "label": "DStv Compact + ExtraView",      "amount": 25000},
+        {"code": "dstv33",       "label": "DStv Premium + ExtraView",      "amount": 50500},
+        {"code": "dstv45",       "label": "DStv Compact Plus + ExtraView", "amount": 36000},
     ],
     "gotv": [
-        {"code": "gotv-smallie",  "label": "GOtv Smallie",  "amount": 2200},
-        {"code": "gotv-jinja",    "label": "GOtv Jinja",    "amount": 4200},
-        {"code": "gotv-jolli",    "label": "GOtv Jolli",    "amount": 6100},
-        {"code": "gotv-max",      "label": "GOtv Max",      "amount": 8700},
-        {"code": "gotv-super",    "label": "GOtv Super",    "amount": 11700},
+        {"code": "gotv-smallie", "label": "GOtv Smallie", "amount": 2200},
+        {"code": "gotv-jinja",   "label": "GOtv Jinja",   "amount": 4200},
+        {"code": "gotv-jolli",   "label": "GOtv Jolli",   "amount": 6100},
+        {"code": "gotv-max",     "label": "GOtv Max",     "amount": 8700},
+        {"code": "gotv-super",   "label": "GOtv Super",   "amount": 11700},
     ],
     "startimes": [
-        {"code": "nova_weekly",    "label": "StarTimes Nova Weekly",    "amount": 900},
-        {"code": "basic_weekly",   "label": "StarTimes Basic Weekly",   "amount": 1600},
-        {"code": "classic_weekly", "label": "StarTimes Classic Weekly", "amount": 2200},
-        {"code": "smart_weekly",   "label": "StarTimes Smart Weekly",   "amount": 1900},
-        {"code": "super_weekly",   "label": "StarTimes Super Weekly",   "amount": 3400},
-        {"code": "nova",           "label": "StarTimes Nova Monthly",   "amount": 2300},
-        {"code": "basic",          "label": "StarTimes Basic Monthly",  "amount": 4200},
-        {"code": "classic",        "label": "StarTimes Classic Monthly","amount": 6200},
-        {"code": "smart",          "label": "StarTimes Smart Monthly",  "amount": 5300},
-        {"code": "super",          "label": "StarTimes Super Monthly",  "amount": 9700},
+        {"code": "nova_weekly",    "label": "StarTimes Nova Weekly",     "amount": 900},
+        {"code": "basic_weekly",   "label": "StarTimes Basic Weekly",    "amount": 1600},
+        {"code": "classic_weekly", "label": "StarTimes Classic Weekly",  "amount": 2200},
+        {"code": "smart_weekly",   "label": "StarTimes Smart Weekly",    "amount": 1900},
+        {"code": "super_weekly",   "label": "StarTimes Super Weekly",    "amount": 3400},
+        {"code": "nova",           "label": "StarTimes Nova Monthly",    "amount": 2300},
+        {"code": "basic",          "label": "StarTimes Basic Monthly",   "amount": 4200},
+        {"code": "classic",        "label": "StarTimes Classic Monthly", "amount": 6200},
+        {"code": "smart",          "label": "StarTimes Smart Monthly",   "amount": 5300},
+        {"code": "super",          "label": "StarTimes Super Monthly",   "amount": 9700},
     ],
     "showmax": [
-        {"code": "showmax",        "label": "Showmax Mobile",           "amount": 2900},
+        {"code": "showmax",                "label": "Showmax Mobile",         "amount": 2900},
         {"code": "showmax-premier-league", "label": "Showmax Premier League", "amount": 3600},
     ],
 }
 
 
 def verify_smartcard(cable_tv, smartcard_no):
-    user_id = config("CLUBKONNECT_USER_ID")
-    api_key = config("CLUBKONNECT_API_KEY")
+    user_id = config("CLUBKONNECT_USER_ID"); api_key = config("CLUBKONNECT_API_KEY")
     url = (
         f"https://www.nellobytesystems.com/APIVerifyCableTVV1.asp"
-        f"?UserID={user_id}&APIKey={api_key}"
-        f"&CableTV={cable_tv}&SmartCardNo={smartcard_no}"
+        f"?UserID={user_id}&APIKey={api_key}&CableTV={cable_tv}&SmartCardNo={smartcard_no}"
     )
     try:
-        resp = requests.get(url, timeout=15)
-        data = resp.json()
-        name = data.get("customer_name", "")
-        if name and name != "INVALID_SMARTCARDNO":
-            return True, name
+        resp = requests.get(url, timeout=15); data = resp.json(); name = data.get("customer_name", "")
+        if name and name != "INVALID_SMARTCARDNO": return True, name
         return False, "Invalid smartcard number"
     except Exception as e:
-        logger.error(f"Smartcard verify error: {e}")
-        return False, "Could not verify smartcard"
+        logger.error(f"Smartcard verify error: {e}"); return False, "Could not verify smartcard"
 
 
 def call_clubkonnect_cabletv_api(cable_tv, package, smartcard_no, phone, request_id):
-    user_id  = config("CLUBKONNECT_USER_ID")
-    api_key  = config("CLUBKONNECT_API_KEY")
+    user_id  = config("CLUBKONNECT_USER_ID"); api_key = config("CLUBKONNECT_API_KEY")
     site_url = config("SITE_URL", default="http://127.0.0.1:8000").rstrip("/")
     url = (
         f"https://www.nellobytesystems.com/APICableTVV1.asp"
-        f"?UserID={user_id}&APIKey={api_key}"
-        f"&CableTV={cable_tv}&Package={package}"
-        f"&SmartCardNo={smartcard_no}&PhoneNo={phone}"
-        f"&RequestID={request_id}&CallBackURL={site_url}/webhook/clubkonnect/"
+        f"?UserID={user_id}&APIKey={api_key}&CableTV={cable_tv}&Package={package}"
+        f"&SmartCardNo={smartcard_no}&PhoneNo={phone}&RequestID={request_id}"
+        f"&CallBackURL={site_url}/webhook/clubkonnect/"
     )
-    logger.info(f"ClubKonnect CableTV → tv={cable_tv} pkg={package} card={smartcard_no}")
     try:
-        resp = requests.get(url, timeout=15)
-        text = resp.text.strip()
-        logger.info(f"ClubKonnect CableTV response: {text}")
+        resp = requests.get(url, timeout=15); text = resp.text.strip()
         try:
-            data        = json.loads(text)
-            status      = data.get("status", "")
-            status_code = str(data.get("statuscode", ""))
-            if status == "ORDER_RECEIVED" or status_code == "100":
+            data = json.loads(text); status = data.get("status", ""); sc = str(data.get("statuscode", ""))
+            if status == "ORDER_RECEIVED" or sc == "100":
                 return True, data.get("orderid", request_id)
             elif status == "INSUFFICIENT_BALANCE":
                 return False, "insufficient balance in provider wallet"
@@ -2337,142 +1706,79 @@ def call_clubkonnect_cabletv_api(cable_tv, package, smartcard_no, phone, request
             elif status == "PACKAGE_NOT_AVAILABLE":
                 return False, "selected package is not available"
             else:
-                logger.error(f"ClubKonnect CableTV error: {text}")
                 return False, text
         except json.JSONDecodeError:
-            logger.error(f"ClubKonnect CableTV non-JSON: {text}")
             return False, text
     except requests.RequestException as e:
-        logger.error(f"ClubKonnect CableTV request failed: {e}")
         return False, "Network error contacting ClubKonnect."
 
 
 @login_required
 def buy_cable_tv(request):
     account = get_or_create_account(request.user)
-
     if request.method == "GET" and request.GET.get("verify_card"):
-        cable_tv     = request.GET.get("cable_tv", "")
-        smartcard_no = request.GET.get("smartcard_no", "")
-        ok, result   = verify_smartcard(cable_tv, smartcard_no)
+        ok, result = verify_smartcard(request.GET.get("cable_tv", ""), request.GET.get("smartcard_no", ""))
         return JsonResponse({"success": ok, "customer_name": result if ok else "", "error": result if not ok else ""})
-
     if request.method == "GET" and request.GET.get("get_packages"):
-        cable_tv = request.GET.get("cable_tv", "")
-        packages = CABLE_TV_PACKAGES.get(cable_tv, [])
-        return JsonResponse({"packages": packages})
-
+        return JsonResponse({"packages": CABLE_TV_PACKAGES.get(request.GET.get("cable_tv", ""), [])})
     if request.method == "POST":
         cable_tv     = request.POST.get("cable_tv", "").strip().lower()
         package_code = request.POST.get("package", "").strip()
         smartcard_no = request.POST.get("smartcard_no", "").strip()
         phone        = request.POST.get("phone", "").strip()
-
         if not all([cable_tv, package_code, smartcard_no, phone]):
-            messages.error(request, "All fields are required.")
-            return redirect("buy_cable_tv")
-
+            messages.error(request, "All fields are required."); return redirect("buy_cable_tv")
         if cable_tv not in CABLE_TV_PROVIDERS:
-            messages.error(request, "Invalid cable TV provider.")
-            return redirect("buy_cable_tv")
-
+            messages.error(request, "Invalid cable TV provider."); return redirect("buy_cable_tv")
         if len(phone) < 11:
-            messages.error(request, "Enter a valid 11-digit phone number.")
-            return redirect("buy_cable_tv")
-
-        packages     = CABLE_TV_PACKAGES.get(cable_tv, [])
-        package_info = next((p for p in packages if p["code"] == package_code), None)
-
+            messages.error(request, "Enter a valid 11-digit phone number."); return redirect("buy_cable_tv")
+        package_info = next((p for p in CABLE_TV_PACKAGES.get(cable_tv, []) if p["code"] == package_code), None)
         if not package_info:
-            messages.error(request, "Invalid package selected.")
-            return redirect("buy_cable_tv")
-
+            messages.error(request, "Invalid package selected."); return redirect("buy_cable_tv")
         amount = Decimal(str(package_info["amount"]))
-
-        try:
-            customer_account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if customer_account.balance < amount:
-            return redirect("low_balance")
-
-        try:
-            owner_account = get_owner_account()
+        try:    customer_account = Account.objects.get(user=request.user)
+        except: messages.error(request, "Wallet account not found."); return redirect("home")
+        if customer_account.balance < amount: return redirect("low_balance")
+        try:    owner_account = get_owner_account()
         except Exception as e:
-            logger.error(f"buy_cable_tv: owner account error: {e}")
-            messages.error(request, "Service temporarily unavailable.")
-            return redirect("buy_cable_tv")
-
-        request_id = str(uuid.uuid4()).replace("-", "")[:20]
+            logger.error(f"buy_cable_tv owner error: {e}")
+            messages.error(request, "Service temporarily unavailable."); return redirect("buy_cable_tv")
+        request_id      = str(uuid.uuid4()).replace("-", "")[:20]
         is_owner_buying = (customer_account.pk == owner_account.pk)
-
         with db_transaction.atomic():
-            customer_account.balance -= amount
-            customer_account.save()
-            if not is_owner_buying:
-                owner_account.balance += amount
-                owner_account.save()
-
+            customer_account.balance -= amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance += amount; owner_account.save()
         try:
             success_flag, ck_response = call_clubkonnect_cabletv_api(
-                cable_tv, package_code, smartcard_no, phone, request_id
+                cable_tv, package_code, smartcard_no, phone, request_id,
             )
         except Exception as e:
             with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                owner_account.balance -= amount
-                owner_account.save()
-            logger.error(f"buy_cable_tv crashed: {e}")
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("buy_cable_tv")
-
-        provider_name = CABLE_TV_PROVIDERS.get(cable_tv, cable_tv)
-
+                customer_account.balance += amount; customer_account.save()
+                if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+            messages.error(request, "Something went wrong. Your balance has been refunded."); return redirect("buy_cable_tv")
         if success_flag:
             CableTVPurchase.objects.create(
-                user          = request.user,
-                provider      = cable_tv,
-                provider_name = provider_name,
-                package_code  = package_code,
-                package_name  = package_info["label"],
-                smartcard_no  = smartcard_no,
-                phone         = phone,
-                amount        = amount,
-                order_id      = ck_response,
-                reference     = request_id,
-                status        = "successful",
+                user=request.user, provider=cable_tv,
+                provider_name=CABLE_TV_PROVIDERS.get(cable_tv, cable_tv),
+                package_code=package_code, package_name=package_info["label"],
+                smartcard_no=smartcard_no, phone=phone, amount=amount,
+                order_id=ck_response, reference=request_id, status="successful",
             )
             messages.success(request, f"{package_info['label']} subscription successful for {smartcard_no}!")
             return redirect("buy_cable_tv")
-        else:
-            with db_transaction.atomic():
-                customer_account.balance += amount
-                customer_account.save()
-                if not is_owner_buying:
-                    owner_account.balance -= amount
-                    owner_account.save()
-
-            ck_lower = ck_response.lower()
-            if "insufficient" in ck_lower:
-                error_msg = "Provider balance is low. Please try again later."
-            elif "invalid smartcard" in ck_lower:
-                error_msg = "Invalid smartcard number. Please check and try again."
-            elif "not available" in ck_lower:
-                error_msg = "Selected package is currently unavailable."
-            else:
-                error_msg = f"Subscription failed: {ck_response}. Your balance has been refunded."
-
-            messages.error(request, error_msg)
-            return redirect("buy_cable_tv")
-
+        with db_transaction.atomic():
+            customer_account.balance += amount; customer_account.save()
+            if not is_owner_buying: owner_account.balance -= amount; owner_account.save()
+        r = ck_response.lower()
+        if "insufficient" in r:        error_msg = "Provider balance is low. Please try again later."
+        elif "invalid smartcard" in r:  error_msg = "Invalid smartcard number. Please check and try again."
+        elif "not available" in r:      error_msg = "Selected package is currently unavailable."
+        else:                           error_msg = f"Subscription failed: {ck_response}. Your balance has been refunded."
+        messages.error(request, error_msg)
+        return redirect("buy_cable_tv")
     purchases = CableTVPurchase.objects.filter(user=request.user).order_by("-created_at")[:10]
-    context = {
-        "account":   account,
-        "providers": CABLE_TV_PROVIDERS,
-        "packages":  json.dumps(CABLE_TV_PACKAGES),
-        "purchases": purchases,
-    }
-    return render(request, "buy_cable_tv.html", context)
+    return render(request, "buy_cable_tv.html", {
+        "account": account, "providers": CABLE_TV_PROVIDERS,
+        "packages": json.dumps(CABLE_TV_PACKAGES), "purchases": purchases,
+    })

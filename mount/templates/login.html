@@ -4,205 +4,154 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kolor - Login</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
-
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Nunito', sans-serif;
-    background: #111;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
     padding: 20px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    position: relative; overflow: hidden;
   }
 
-  /* Logo circle */
+  /* ── BLOBS ── */
+  .blob {
+    position: fixed; border-radius: 50%;
+    filter: blur(80px); opacity: .15; pointer-events: none; z-index: 0;
+  }
+  .blob-1 { width: 500px; height: 500px; background: #3b82f6; top: -100px; right: -100px; animation: drift 8s ease-in-out infinite; }
+  .blob-2 { width: 400px; height: 400px; background: #7dd3fc; bottom: -100px; left: -100px; animation: drift 10s ease-in-out infinite reverse; }
+  .blob-3 { width: 300px; height: 300px; background: #1d4ed8; top: 40%; left: 40%; animation: drift 12s ease-in-out infinite; }
+
+  @keyframes drift {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(30px,-30px) scale(1.05); }
+  }
+
+  /* ── FLOATING ICONS ── */
+  .float-icon {
+    position: fixed; font-size: 24px; opacity: .12;
+    animation: floatUp linear infinite; pointer-events: none; z-index: 0;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(100vh) rotate(0deg); opacity: .12; }
+    100% { transform: translateY(-20px) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── CONTENT ── */
   .logo-wrap {
     margin-bottom: 28px;
     animation: fadeDown 0.6s ease both;
+    text-align: center; z-index: 2; position: relative;
   }
-
   .logo-circle {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
+    width: 72px; height: 72px; border-radius: 50%;
     background: linear-gradient(135deg, #4facfe 0%, #0078ff 60%, #0044cc 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 24px rgba(0, 120, 255, 0.45);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 32px rgba(0,120,255,.5); margin: 0 auto;
   }
-
-  .logo-circle span {
-    font-size: 32px;
-    font-weight: 900;
-    color: white;
-    letter-spacing: -1px;
-  }
-
+  .logo-circle span { font-size: 32px; font-weight: 900; color: white; letter-spacing: -1px; }
   .brand-name {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 28px;
-    font-weight: 900;
+    text-align: center; margin-top: 10px; font-size: 28px; font-weight: 900;
     background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: 1px;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; letter-spacing: 1px;
   }
 
-  /* Card */
   .card {
-    background: #1a1a1a;
-    width: 100%;
-    max-width: 380px;
-    padding: 28px 24px 20px;
-    border-radius: 16px;
+    background: rgba(15,23,42,0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    width: 100%; max-width: 400px;
+    padding: 32px 28px 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(125,211,252,.12);
+    box-shadow: 0 24px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
     animation: fadeUp 0.7s ease 0.1s both;
+    z-index: 2; position: relative;
   }
 
-  /* Inputs */
-  .input-group {
-    margin-bottom: 10px;
+  .card-title {
+    font-size: 22px; font-weight: 900; color: #e2e8f0; margin-bottom: 4px;
+  }
+  .card-sub {
+    font-size: 13px; color: #475569; font-weight: 600; margin-bottom: 22px;
   }
 
-  input[type="text"],
-  input[type="password"] {
-    width: 100%;
-    padding: 14px 16px;
-    background: #2a2a2a;
-    border: 1.5px solid #333;
-    border-radius: 10px;
-    color: #e0e0e0;
-    font-size: 15px;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    transition: border-color 0.25s;
+  /* ALERTS */
+  .alert { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  .alert-error   { background: rgba(220,38,38,.15); color: #fca5a5; border: 1px solid rgba(220,38,38,.3); }
+  .alert-success { background: rgba(21,128,61,.15); color: #86efac; border: 1px solid rgba(21,128,61,.3); }
+
+  .input-group { margin-bottom: 12px; position: relative; }
+
+  .input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; pointer-events: none;
   }
 
-  input::placeholder {
-    color: #666;
+  input[type="text"], input[type="password"] {
+    width: 100%; padding: 14px 16px 14px 42px;
+    background: rgba(255,255,255,.05);
+    border: 1.5px solid rgba(125,211,252,.1);
+    border-radius: 12px; color: #e2e8f0;
+    font-size: 15px; font-family: 'Nunito', sans-serif;
+    outline: none; transition: border-color 0.25s, background 0.2s;
   }
-
+  input::placeholder { color: #334155; }
   input:focus {
-    border-color: #3b82f6;
+    border-color: rgba(59,130,246,.6);
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
   }
 
-  /* Login button */
   .btn-login {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
     background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: opacity 0.2s, transform 0.15s;
-    letter-spacing: 0.3px;
+    color: white; font-size: 16px; font-weight: 800;
+    font-family: 'Nunito', sans-serif; cursor: pointer; margin-top: 6px;
+    transition: opacity 0.2s, transform 0.15s; letter-spacing: 0.3px;
+    box-shadow: 0 4px 24px rgba(59,130,246,.4);
   }
+  .btn-login:hover  { opacity: .9; transform: translateY(-1px); box-shadow: 0 8px 32px rgba(59,130,246,.5); }
+  .btn-login:active { transform: translateY(0); }
 
-  .btn-login:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  .btn-login:active {
-    transform: translateY(0);
-  }
-
-  /* Forgot password */
   .forgot {
-    text-align: center;
-    margin-top: 16px;
-    font-size: 14px;
-    color: #5ba4f5;
-    cursor: pointer;
-    font-weight: 600;
+    text-align: center; margin-top: 16px; font-size: 13px;
+    color: #3b82f6; cursor: pointer; font-weight: 700;
+    transition: color .2s;
   }
+  .forgot:hover { color: #7dd3fc; }
 
-  .forgot:hover {
-    text-decoration: underline;
-  }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
+  .divider-line { flex: 1; height: 1px; background: rgba(125,211,252,.1); }
+  .divider span { font-size: 12px; color: #334155; white-space: nowrap; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* Divider */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 22px 0;
-  }
-
-  .divider-line {
-    flex: 1;
-    height: 1px;
-    background: #333;
-  }
-
-  .divider span {
-    font-size: 13px;
-    color: #555;
-    white-space: nowrap;
-  }
-
-  /* Create account button */
   .btn-create {
-    width: 100%;
-    padding: 14px;
-    border: 1.5px solid #3b82f6;
-    border-radius: 10px;
-    background: transparent;
-    color: #5ba4f5;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    letter-spacing: 0.2px;
+    width: 100%; padding: 14px;
+    border: 1.5px solid rgba(59,130,246,.35);
+    border-radius: 12px; background: rgba(59,130,246,.06);
+    color: #7dd3fc; font-size: 15px; font-weight: 700;
+    font-family: 'Nunito', sans-serif; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s; letter-spacing: 0.2px;
   }
+  .btn-create:hover { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.6); }
 
-  .btn-create:hover {
-    background: rgba(59, 130, 246, 0.08);
-  }
-
-  /* Meta footer */
   .meta-footer {
-    margin-top: 28px;
-    text-align: center;
-    animation: fadeUp 0.7s ease 0.25s both;
+    margin-top: 28px; text-align: center;
+    animation: fadeUp 0.7s ease 0.25s both; z-index: 2; position: relative;
   }
+  .meta-logo { font-size: 13px; color: rgba(255,255,255,.15); font-weight: 700; letter-spacing: 1px; }
+  .meta-logo span { font-size: 16px; margin-right: 4px; }
 
-  .meta-logo {
-    font-size: 13px;
-    color: #444;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-
-  .meta-logo span {
-    font-size: 16px;
-    margin-right: 4px;
-  }
-
-  /* Animations */
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-18px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -211,50 +160,69 @@
 </head>
 <body>
 
-  <!-- Logo -->
-  <div class="logo-wrap">
-    <div class="logo-circle">
-      <span>K</span>
+<!-- BLOBS -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<!-- FLOATING ICONS -->
+<span class="float-icon" style="left:8%;animation-duration:12s;animation-delay:0s;">📶</span>
+<span class="float-icon" style="left:18%;animation-duration:9s;animation-delay:3s;">📡</span>
+<span class="float-icon" style="left:30%;animation-duration:15s;animation-delay:1s;">⚡</span>
+<span class="float-icon" style="left:55%;animation-duration:11s;animation-delay:4s;">🌍</span>
+<span class="float-icon" style="left:72%;animation-duration:8s;animation-delay:2s;">📱</span>
+<span class="float-icon" style="left:85%;animation-duration:13s;animation-delay:5s;">💳</span>
+<span class="float-icon" style="left:92%;animation-duration:10s;animation-delay:1.5s;">🎬</span>
+
+<!-- LOGO -->
+<div class="logo-wrap">
+  <div class="logo-circle"><span>K</span></div>
+  <div class="brand-name">kolor</div>
+</div>
+
+<!-- CARD -->
+<div class="card">
+
+  <div class="card-title">Welcome back 👋</div>
+  <div class="card-sub">Log in to your Kolor account</div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="input-group">
+      <span class="input-icon">👤</span>
+      <input type="text" name="username" placeholder="Username" required autofocus>
     </div>
-    <div class="brand-name">kolor</div>
+    <div class="input-group">
+      <span class="input-icon">🔒</span>
+      <input type="password" name="password" placeholder="Password" required>
+    </div>
+    <button class="btn-login" type="submit">Log in</button>
+  </form>
+
+  <div class="forgot">Forgot password?</div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <span>or</span>
+    <div class="divider-line"></div>
   </div>
 
-  <!-- Card -->
-  <div class="card">
-    <form method="POST">
-      {% csrf_token %}
-
-      <div class="input-group">
-        <input type="text" name="username" placeholder="Username" required>
-      </div>
-
-      <div class="input-group">
-        <input type="password" name="password" placeholder="Password" required>
-      </div>
-
-      <button class="btn-login" type="submit">Log in</button>
-    </form>
-
-    <div class="forgot">Forgot password?</div>
-
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span>or</span>
-      <div class="divider-line"></div>
-    </div>
-     
-   <button class="btn-create"
-        type="button"
-        onclick="window.location.href='{% url "signup" %}'">
+  <button class="btn-create" type="button" onclick="window.location.href='{% url "signup" %}'">
     Create new account
-</button>
-    
-  </div>
+  </button>
+</div>
 
-  <!-- Footer -->
-  <div class="meta-footer">
-    <div class="meta-logo"><span>∞</span> kolor</div>
-  </div>
+<div class="meta-footer">
+  <div class="meta-logo"><span>∞</span> kolor</div>
+</div>
 
 </body>
 </html>
