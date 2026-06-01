@@ -199,7 +199,7 @@ class ForeignNumber(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True
     )
-
+    provider = models.CharField(max_length=20, default="5sim")  # "5sim" or "steadysim"
     def __str__(self):
         return self.phone_number
 

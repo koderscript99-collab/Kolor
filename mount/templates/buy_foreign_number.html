@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kolor - Foreign Numbers</title>
+    <title>Kolor - Foreign Numbers (5SIM)</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Nunito', sans-serif; background: #f9fafb; min-height: 100vh; }
 
-        /* TOPBAR */
         .topbar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 16px 20px; border-bottom: 1.5px solid #e5e7eb;
@@ -30,65 +29,49 @@
         }
         .user-name { font-size: 13px; font-weight: 700; color: #1a1a1a; }
 
-        /* CONTAINER */
         .container { max-width: 700px; margin: 0 auto; padding: 20px 16px 100px; }
 
-        /* BALANCE BAR */
         .balance-bar {
             background: linear-gradient(135deg, #0f172a, #1e3a5f);
             border-radius: 14px; padding: 18px 20px;
             display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 12px;
-            margin-bottom: 20px; color: white;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 20px; color: white;
         }
         .balance-bar .label { font-size: 11px; color: #7dd3fc; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
         .balance-bar .amount { font-size: 26px; font-weight: 900; margin-top: 2px; }
         .balance-bar a {
             background: #3b82f6; color: white; text-decoration: none;
-            padding: 10px 18px; border-radius: 10px; font-weight: 700;
-            font-size: 13px; white-space: nowrap;
+            padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; white-space: nowrap;
         }
 
-        /* CARD */
         .card {
-            background: #fff; border-radius: 16px;
-            border: 1.5px solid #e5e7eb;
-            box-shadow: 0 4px 24px rgba(0,0,0,.06);
-            padding: 22px 18px; margin-bottom: 20px;
+            background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06); padding: 22px 18px; margin-bottom: 20px;
         }
         .card-title { font-size: 15px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
         .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 18px; }
 
-        /* ALERTS */
         .alert { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
         .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
         .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 
-        /* FORM */
         label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
         select {
-            width: 100%; padding: 12px 14px;
-            background: #f9fafb; border: 1.5px solid #e5e7eb;
-            border-radius: 10px; color: #1a1a1a;
-            font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
-            outline: none; transition: border-color .25s, background .2s;
+            width: 100%; padding: 12px 14px; background: #f9fafb; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; color: #1a1a1a; font-size: 14px; font-family: 'Nunito', sans-serif;
+            font-weight: 600; outline: none; transition: border-color .25s, background .2s;
             appearance: none; -webkit-appearance: none;
         }
         select:focus { border-color: #3b82f6; background: #fff; }
-
         .select-wrap { position: relative; margin-bottom: 14px; }
         .select-wrap::after {
             content: '▾'; position: absolute; right: 14px; top: 50%;
             transform: translateY(-50%); color: #9ca3af; pointer-events: none; font-size: 13px;
         }
         .select-wrap select { padding-right: 36px; cursor: pointer; }
-
         .field-group { margin-bottom: 14px; }
-
-        /* Stack on all screens — single column always for mobile */
         .form-row { display: flex; flex-direction: column; gap: 0; }
 
-        /* Price preview */
         #price-preview {
             background: #eff6ff; border: 1.5px solid #bfdbfe;
             border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
@@ -96,34 +79,44 @@
         }
         #price-preview.visible { display: block; }
         #price-preview .price-val { font-size: 22px; font-weight: 900; color: #1e3a5f; }
-        #price-preview .price-avail { font-size: 12px; color: #3b82f6; margin-top: 4px; line-height: 1.5; }
         #price-preview.unavailable { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
-        /* Buttons */
         .btn-send {
             width: 100%; padding: 14px; border: none; border-radius: 10px;
             background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
             color: white; font-size: 15px; font-weight: 700;
-            font-family: 'Nunito', sans-serif; cursor: pointer;
-            transition: opacity .2s, transform .15s;
+            font-family: 'Nunito', sans-serif; cursor: pointer; transition: opacity .2s, transform .15s;
         }
         .btn-send:hover  { opacity: .9; transform: translateY(-1px); }
         .btn-send:active { transform: translateY(0); }
         .btn-send:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-        /* Info box */
         .info-box {
-            background: #eff6ff; border: 1.5px solid #bfdbfe;
-            border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;
-            font-size: 13px; color: #1e40af; font-weight: 600; line-height: 1.6;
+            background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px;
+            padding: 14px 16px; margin-bottom: 18px; font-size: 13px; color: #1e40af;
+            font-weight: 600; line-height: 1.6;
         }
         .info-box strong { display: block; margin-bottom: 4px; color: #1e3a5f; font-size: 14px; }
 
-        /* Numbers list — cards instead of table on mobile */
+        .provider-switcher {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: #f3f4f6; border-radius: 12px; padding: 5px;
+        }
+        .provider-btn {
+            flex: 1; padding: 10px; border-radius: 8px; text-decoration: none;
+            text-align: center; font-size: 13px; font-weight: 700; color: #6b7280; transition: all 0.2s;
+        }
+        .provider-btn.active { background: #fff; color: #1e3a5f; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .provider-badge {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle;
+        }
+        .badge-primary   { background: #dbeafe; color: #1d4ed8; }
+        .badge-secondary { background: #f0fdf4; color: #15803d; }
+
         .number-list { display: flex; flex-direction: column; gap: 12px; }
         .number-card {
-            background: #f9fafb; border: 1.5px solid #e5e7eb;
-            border-radius: 12px; padding: 14px 16px;
+            background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 14px 16px;
         }
         .number-card-header {
             display: flex; align-items: center; justify-content: space-between;
@@ -131,24 +124,24 @@
         }
         .phone-number {
             font-family: monospace; font-size: 15px; font-weight: 700;
-            color: #1e3a5f; background: #eff6ff; padding: 5px 10px;
-            border-radius: 6px; letter-spacing: 0.5px;
+            color: #1e3a5f; background: #eff6ff; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.5px;
         }
         .sms-code {
             font-family: monospace; font-size: 16px; font-weight: 900;
-            color: #15803d; background: #dcfce7; padding: 5px 12px;
-            border-radius: 6px; letter-spacing: 1px;
+            color: #15803d; background: #dcfce7; padding: 5px 12px; border-radius: 6px; letter-spacing: 1px;
         }
         .number-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .country-tag {
             display: inline-block; padding: 3px 10px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; text-transform: capitalize;
-            background: #dbeafe; color: #1d4ed8;
+            font-size: 11px; font-weight: 700; text-transform: capitalize; background: #dbeafe; color: #1d4ed8;
         }
         .service-tag {
             display: inline-block; padding: 3px 10px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; text-transform: capitalize;
-            background: #f3e8ff; color: #7c3aed;
+            font-size: 11px; font-weight: 700; text-transform: capitalize; background: #f3e8ff; color: #7c3aed;
+        }
+        .provider-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; background: #dbeafe; color: #1d4ed8;
         }
         .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
         .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
@@ -158,48 +151,38 @@
         .status-pill.CANCELLED::before  { background:#ef4444; }
 
         .btn-cancel {
-            background: #fee2e2; color: #dc2626; padding: 7px 14px;
-            border-radius: 8px; text-decoration: none; font-size: 12px;
-            font-weight: 700; display: inline-block; border: 1px solid #fca5a5;
+            background: #fee2e2; color: #dc2626; padding: 7px 14px; border-radius: 8px;
+            text-decoration: none; font-size: 12px; font-weight: 700;
+            display: inline-block; border: 1px solid #fca5a5; transition: background .2s;
         }
+        .btn-cancel:hover { background: #fecaca; }
+        .cancelled-label { font-size: 12px; color: #dc2626; font-weight: 700; }
         .waiting-text { color: #9ca3af; font-size: 13px; font-weight: 600; }
         .number-date  { font-size: 11px; color: #9ca3af; font-weight: 600; }
-
-        /* Price table (desktop only — hidden on mobile) */
-        .price-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 280px; }
-        thead th {
-            font-size: 11px; font-weight: 700; color: #9ca3af;
-            text-transform: uppercase; letter-spacing: 0.7px;
-            padding: 0 10px 12px; text-align: left; border-bottom: 1.5px solid #e5e7eb;
-            white-space: nowrap;
-        }
-        tbody td {
-            padding: 12px 10px; border-bottom: 1px solid #f3f4f6;
-            font-size: 13px; font-weight: 600; color: #374151;
-        }
-        tbody tr:last-child td { border-bottom: none; }
-        .avail-badge {
-            display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
-        }
-        .avail-badge.good { background: #dcfce7; color: #15803d; }
-        .avail-badge.low  { background: #fef9c3; color: #92400e; }
-        .avail-badge.none { background: #fee2e2; color: #dc2626; }
 
         .price-section-title {
             font-size: 13px; font-weight: 700; color: #374151;
             margin: 20px 0 10px; display: flex; align-items: center; gap: 6px;
         }
-        .price-badge {
-            background: #dbeafe; color: #1d4ed8; font-size: 11px;
-            padding: 2px 8px; border-radius: 20px; font-weight: 700;
+        .price-badge { background: #dbeafe; color: #1d4ed8; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+        .price-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 280px; }
+        thead th {
+            font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase;
+            letter-spacing: 0.7px; padding: 0 10px 12px; text-align: left;
+            border-bottom: 1.5px solid #e5e7eb; white-space: nowrap;
         }
+        tbody td { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; font-weight: 600; color: #374151; }
+        tbody tr:last-child td { border-bottom: none; }
+        .avail-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .avail-badge.good { background: #dcfce7; color: #15803d; }
+        .avail-badge.low  { background: #fef9c3; color: #92400e; }
+        .avail-badge.none { background: #fee2e2; color: #dc2626; }
 
         .spinner {
             display: inline-block; width: 16px; height: 16px;
             border: 2px solid #bfdbfe; border-top-color: #3b82f6;
-            border-radius: 50%; animation: spin .6s linear infinite;
-            vertical-align: middle; margin-right: 6px;
+            border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -207,7 +190,6 @@
         .empty-state .e-icon { font-size: 34px; margin-bottom: 10px; }
         .empty-state p { font-size: 13px; font-weight: 600; }
 
-        /* BOTTOM NAV */
         .bottom-nav {
             display: none; position: fixed; bottom: 0; width: 100%;
             background: white; border-top: 1.5px solid #e5e7eb;
@@ -222,43 +204,17 @@
 
         @media (max-width: 600px) {
             .bottom-nav { display: flex; }
-            .user-name { display: none; } /* save space on very small screens */
+            .user-name { display: none; }
         }
-
         @media (min-width: 600px) {
             .form-row { flex-direction: row; gap: 14px; }
             .form-row .field-group { flex: 1; }
             .container { padding: 28px 24px 100px; }
         }
-        
-        /* PROVIDER SWITCHER */
-          .provider-switcher {
-            display: flex; gap: 10px; margin-bottom: 20px;
-            background: #f3f4f6; border-radius: 12px; padding: 5px;
-        }
-        .provider-btn {
-            flex: 1; padding: 10px; border-radius: 8px; text-decoration: none;
-            text-align: center; font-size: 13px; font-weight: 700;
-            color: #6b7280; transition: all 0.2s;
-        }
-        .provider-btn.active {
-            background: #fff; color: #1e3a5f;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .provider-badge {
-            display: inline-block; font-size: 10px; font-weight: 700;
-            padding: 1px 6px; border-radius: 10px; margin-left: 4px;
-            vertical-align: middle;
-        }
-        .badge-primary { background: #dbeafe; color: #1d4ed8; }
-        .badge-secondary { background: #f0fdf4; color: #15803d; }
-
-        
     </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <nav class="topbar">
     <div class="brand-name">kolor</div>
     <div class="topbar-right">
@@ -276,17 +232,16 @@
             </div>
         {% endfor %}
     {% endif %}
-      <!-- PROVIDER SWITCHER -->
+
     <div class="provider-switcher">
-        <a href="{% url 'buy_foreign_number' %}" class="provider-btn">
+        <a href="{% url 'buy_foreign_number' %}" class="provider-btn active">
             5SIM <span class="provider-badge badge-primary">Primary</span>
         </a>
-        <a href="{% url 'buy_foreign_number_steadysim' %}" class="provider-btn active">
+        <a href="{% url 'buy_foreign_number_steadysim' %}" class="provider-btn">
             SteadySim <span class="provider-badge badge-secondary">Backup</span>
         </a>
     </div>
 
-    <!-- BALANCE BAR -->
     <div class="balance-bar">
         <div>
             <div class="label">Wallet Balance</div>
@@ -295,20 +250,17 @@
         <a href="{% url 'payment' %}">+ Fund Wallet</a>
     </div>
 
-    <!-- INFO BOX -->
     <div class="info-box">
         <strong>📱 How Foreign Numbers Work</strong>
         Buy a temporary virtual number from another country. Use it to receive SMS verification codes for WhatsApp, Telegram, Google and more. Select a country and service to see live prices.
     </div>
 
-    <!-- BUY FORM -->
     <div class="card">
-        <div class="card-title">Buy Foreign Number</div>
+        <div class="card-title">Buy Foreign Number via 5SIM</div>
         <div class="card-sub">Select country and service — live price loads before you confirm.</div>
 
         <form method="POST" action="{% url 'buy_foreign_number' %}" id="buy-form">
             {% csrf_token %}
-
             <div class="form-row">
                 <div class="field-group">
                     <label>Country</label>
@@ -317,7 +269,10 @@
                             <option value="">— Select Country —</option>
                             {% for country in countries %}
                                 <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>
-                                    {{ country|title }}
+                                    {{ country_display|default_if_none:""|dictsort:"0" }}
+                                    {% with display=country_display|default_if_none:country %}
+                                        {{ country|title }}
+                                    {% endwith %}
                                 </option>
                             {% endfor %}
                         </select>
@@ -338,7 +293,6 @@
                 </div>
             </div>
 
-            <!-- Live price preview -->
             <div id="price-preview"></div>
 
             <button class="btn-send" type="submit" id="buy-btn" disabled>
@@ -378,15 +332,15 @@
         {% elif selected_country and selected_service %}
         <div class="empty-state" style="padding:16px;">
             <div class="e-icon">😕</div>
-            <p>No prices found. Try a different combination.</p>
+            <p>No prices found. Try a different combination or use SteadySim.</p>
         </div>
         {% endif %}
     </div>
 
-    <!-- MY NUMBERS -->
+    <!-- 5SIM NUMBERS ONLY -->
     <div class="card">
-        <div class="card-title">My Rented Numbers</div>
-        <div class="card-sub">Your purchased foreign numbers and received SMS codes.</div>
+        <div class="card-title">My 5SIM Numbers</div>
+        <div class="card-sub">Numbers purchased via 5SIM. Cancel within the validity window for a refund.</div>
 
         {% if numbers %}
         <div class="number-list">
@@ -394,13 +348,20 @@
             <div class="number-card">
                 <div class="number-card-header">
                     <span class="phone-number">{{ number.phone_number }}</span>
-                    {% if number.status != "CANCELLED" %}
-                        <a href="{% url 'cancel_foreign_number' number.order_id %}" class="btn-cancel">Cancel</a>
+                    {% if number.status == "CANCELLED" %}
+                        <span class="cancelled-label">✕ Cancelled</span>
+                    {% else %}
+                        <a href="{% url 'cancel_foreign_number' number.order_id %}"
+                           class="btn-cancel"
+                           onclick="return confirm('Cancel this number? ₦{{ number.price }} will be refunded to your wallet.')">
+                            Cancel &amp; Refund
+                        </a>
                     {% endif %}
                 </div>
                 <div class="number-meta">
                     <span class="country-tag">{{ number.country|title }}</span>
                     <span class="service-tag">{{ number.service|title }}</span>
+                    <span class="provider-tag">5SIM</span>
                     <span class="status-pill {{ number.status }}">{{ number.status|title }}</span>
                     <span class="number-date">{{ number.created_at|date:"d M, H:i" }}</span>
                 </div>
@@ -415,6 +376,9 @@
                 {% if number.price %}
                 <div style="margin-top:8px;font-size:12px;color:#9ca3af;font-weight:600;">
                     Cost: ₦{{ number.price }}
+                    {% if number.status == "CANCELLED" %}
+                        · <span style="color:#15803d;">Refunded ✓</span>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -423,14 +387,13 @@
         {% else %}
         <div class="empty-state">
             <div class="e-icon">📱</div>
-            <p>No rented numbers yet. Buy your first foreign number above!</p>
+            <p>No 5SIM numbers yet. Buy your first foreign number above!</p>
         </div>
         {% endif %}
     </div>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
     <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
     <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
@@ -447,7 +410,6 @@ const buyBtn        = document.getElementById('buy-btn');
 function updatePreview() {
     const country = countrySelect.value;
     const service = serviceSelect.value;
-
     if (!country || !service) {
         pricePreview.className = '';
         pricePreview.innerHTML = '';
@@ -455,7 +417,6 @@ function updatePreview() {
         buyBtn.textContent = '🌍 Select Country & Service to Continue';
         return;
     }
-
     pricePreview.className = 'visible';
     pricePreview.innerHTML = '<span class="spinner"></span> Fetching live price…';
     buyBtn.disabled = true;
@@ -464,28 +425,23 @@ function updatePreview() {
         .then(r => r.json())
         .then(data => {
             const available = (data.prices || []).filter(p => p.count > 0);
-
             if (!available.length) {
                 pricePreview.className = 'visible unavailable';
-                pricePreview.innerHTML = `<strong>❌ No numbers available</strong><br>No ${service} numbers in ${country} right now.`;
+                pricePreview.innerHTML = `<strong>❌ No numbers available</strong><br>No ${service} numbers in ${country} right now. <a href="{% url 'buy_foreign_number_steadysim' %}" style="color:#1d4ed8;font-weight:700;">Try SteadySim →</a>`;
                 buyBtn.disabled = true;
                 buyBtn.textContent = '🌍 No Numbers Available';
                 return;
             }
-
             const cheapest   = available.reduce((a, b) => a.price_ngn < b.price_ngn ? a : b);
             const totalAvail = available.reduce((sum, p) => sum + p.count, 0);
             const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
             pricePreview.className = 'visible';
             pricePreview.innerHTML = `
                 <div class="price-val">₦${cheapest.price_ngn.toLocaleString()}</div>
                 <div style="font-size:12px;color:#3b82f6;margin-top:2px;">Raw cost: $${cheapest.price_usd} USD</div>
-                <div class="price-avail">
-                    ✅ ${totalAvail} number${totalAvail !== 1 ? 's' : ''} available
-                    · cheapest via <strong>${cheapest.operator}</strong>
-                </div>
-            `;
+                <div style="font-size:12px;color:#3b82f6;margin-top:4px;">
+                    ✅ ${totalAvail} number${totalAvail !== 1 ? 's' : ''} available · cheapest via <strong>${cheapest.operator}</strong>
+                </div>`;
             buyBtn.disabled = false;
             buyBtn.textContent = `🌍 Buy ${cap(service)} Number — ${cap(country)} (₦${cheapest.price_ngn.toLocaleString()})`;
         })

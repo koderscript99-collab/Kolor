@@ -30,7 +30,7 @@ urlpatterns = [
 
     # ── Data purchase ─────────────────────────────────────────────────────
     path("buy-data/",          views.buy_data,          name="buy_data"),
-    path("buy-special-bundle/",views.buy_special_bundle,name="buy_special_bundle"),
+    
 
     # ── SMM ───────────────────────────────────────────────────────────────
     path("market/",                        views.market,          name="market"),
