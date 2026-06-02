@@ -216,10 +216,10 @@
 
     <div class="provider-switcher">
         <a href="{% url 'buy_foreign_number' %}" class="provider-btn">
-            5SIM <span class="provider-badge badge-primary">Primary</span>
+            SERVER 1 <span class="provider-badge badge-primary">Primary</span>
         </a>
         <a href="{% url 'buy_foreign_number_steadysim' %}" class="provider-btn active">
-            SteadySim <span class="provider-badge badge-secondary">Backup</span>
+            SERVER 2 <span class="provider-badge badge-secondary">Backup</span>
         </a>
     </div>
 
@@ -232,12 +232,12 @@
     </div>
 
     <div class="info-box">
-        <strong>🟢 SteadySim — Backup Provider</strong>
-        Use SteadySim when 5SIM has no available numbers. Same countries and services, independently priced. Select a country and service to see live availability.
+        <strong>🟢 SERVER 2 — Backup Provider</strong>
+        Use SERVER 2 when SERVER 1 has no available numbers. Same countries and services, independently priced. Select a country and service to see live availability.
     </div>
 
     <div class="card">
-        <div class="card-title">Buy Foreign Number via SteadySim</div>
+        <div class="card-title">Buy Foreign Number via SERVER 2</div>
         <div class="card-sub">Live price loads automatically — no surprises before you confirm.</div>
 
         <form method="POST" action="{% url 'buy_foreign_number_steadysim' %}" id="buy-form">
@@ -279,10 +279,10 @@
         </form>
     </div>
 
-    <!-- STEADYSIM NUMBERS ONLY -->
+    <!-- SERVER 2 NUMBERS ONLY -->
     <div class="card">
-        <div class="card-title">My SteadySim Numbers</div>
-        <div class="card-sub">Numbers purchased via SteadySim. Cancel within the validity window for a refund.</div>
+        <div class="card-title">My SERVER 2 Numbers</div>
+        <div class="card-sub">Numbers purchased via SERVER 2. Cancel within the validity window for a refund.</div>
 
         {% if numbers %}
         <div class="number-list">
@@ -303,7 +303,7 @@
                 <div class="number-meta">
                     <span class="country-tag">{{ number.country|title }}</span>
                     <span class="service-tag">{{ number.service|title }}</span>
-                    <span class="provider-tag">SteadySim</span>
+                    <span class="provider-tag">SERVER 2</span>
                     <span class="status-pill {{ number.status }}">{{ number.status|title }}</span>
                     <span class="number-date">{{ number.created_at|date:"d M, H:i" }}</span>
                 </div>
@@ -329,7 +329,7 @@
         {% else %}
         <div class="empty-state">
             <div class="e-icon">📱</div>
-            <p>No SteadySim numbers yet. Buy your first foreign number above!</p>
+            <p>No SERVER 2 numbers yet. Buy your first foreign number above!</p>
         </div>
         {% endif %}
     </div>
@@ -340,7 +340,7 @@
     <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
     <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
     <a href="{% url 'market' %}"><span class="nav-icon">🛍️</span>Market</a>
-    <a href="{% url 'report' %}"><span class="nav-icon">📊</span>Reports</a>
+    <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer"><span class="nav-icon">📊</span>Buylogs</a>
 </div>
 
 <script>
@@ -362,7 +362,7 @@ function updatePreview() {
         return;
     }
     pricePreview.className = 'visible';
-    pricePreview.innerHTML = '<span class="spinner"></span> Fetching live SteadySim price…';
+    pricePreview.innerHTML = '<span class="spinner"></span> Fetching live SERVER 2 price…';
     buyBtn.disabled = true;
 
     fetch(`{% url 'buy_foreign_number_steadysim' %}?fetch_price=1&country=${country}&service=${service}`)
@@ -372,7 +372,7 @@ function updatePreview() {
                 pricePreview.className = 'visible unavailable';
                 pricePreview.innerHTML = `
                     <strong>❌ No numbers available</strong><br>
-                    No ${cap(service)} numbers in ${cap(country)} on SteadySim right now.
+                    No ${cap(service)} numbers in ${cap(country)} on SERVER 2 right now.
                     <br><a href="{% url 'buy_foreign_number' %}" style="color:#1d4ed8;font-weight:700;">Try 5SIM instead →</a>`;
                 buyBtn.disabled = true;
                 buyBtn.textContent = '🌍 No Numbers Available';
@@ -383,10 +383,10 @@ function updatePreview() {
                 <div class="price-val">₦${Number(data.price_ngn).toLocaleString()}</div>
                 <div style="font-size:12px;color:#16a34a;margin-top:2px;">Raw cost: $${data.cost_usd} USD</div>
                 <div style="font-size:12px;color:#16a34a;margin-top:4px;">
-                    ✅ ${data.count} number${data.count !== 1 ? 's' : ''} available via SteadySim
+                    ✅ ${data.count} number${data.count !== 1 ? 's' : ''} available via SERVER 2
                 </div>`;
             buyBtn.disabled = false;
-            buyBtn.textContent = `🟢 Buy via SteadySim — ${cap(service)} / ${cap(country)} (₦${Number(data.price_ngn).toLocaleString()})`;
+            buyBtn.textContent = `🟢 Buy via SERVER 2 — ${cap(service)} / ${cap(country)} (₦${Number(data.price_ngn).toLocaleString()})`;
         })
         .catch(() => {
             pricePreview.className = 'visible unavailable';

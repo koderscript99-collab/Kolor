@@ -235,10 +235,10 @@
 
     <div class="provider-switcher">
         <a href="{% url 'buy_foreign_number' %}" class="provider-btn active">
-            5SIM <span class="provider-badge badge-primary">Primary</span>
+            SERVER 1 <span class="provider-badge badge-primary">Primary</span>
         </a>
         <a href="{% url 'buy_foreign_number_steadysim' %}" class="provider-btn">
-            SteadySim <span class="provider-badge badge-secondary">Backup</span>
+            SERVER 2 <span class="provider-badge badge-secondary">Backup</span>
         </a>
     </div>
 
@@ -256,7 +256,7 @@
     </div>
 
     <div class="card">
-        <div class="card-title">Buy Foreign Number via 5SIM</div>
+        <div class="card-title">Buy Foreign Number via SERVER 1</div>
         <div class="card-sub">Select country and service — live price loads before you confirm.</div>
 
         <form method="POST" action="{% url 'buy_foreign_number' %}" id="buy-form">
@@ -332,15 +332,15 @@
         {% elif selected_country and selected_service %}
         <div class="empty-state" style="padding:16px;">
             <div class="e-icon">😕</div>
-            <p>No prices found. Try a different combination or use SteadySim.</p>
+            <p>No prices found. Try a different combination or use SERVER 2.</p>
         </div>
         {% endif %}
     </div>
 
-    <!-- 5SIM NUMBERS ONLY -->
+    <!-- SERVER 1 NUMBERS ONLY -->
     <div class="card">
-        <div class="card-title">My 5SIM Numbers</div>
-        <div class="card-sub">Numbers purchased via 5SIM. Cancel within the validity window for a refund.</div>
+        <div class="card-title">My SERVER 1 Numbers</div>
+        <div class="card-sub">Numbers purchased via SERVER 1. Cancel within the validity window for a refund.</div>
 
         {% if numbers %}
         <div class="number-list">
@@ -361,7 +361,7 @@
                 <div class="number-meta">
                     <span class="country-tag">{{ number.country|title }}</span>
                     <span class="service-tag">{{ number.service|title }}</span>
-                    <span class="provider-tag">5SIM</span>
+                    <span class="provider-tag">SERVER 1</span>
                     <span class="status-pill {{ number.status }}">{{ number.status|title }}</span>
                     <span class="number-date">{{ number.created_at|date:"d M, H:i" }}</span>
                 </div>
@@ -387,7 +387,7 @@
         {% else %}
         <div class="empty-state">
             <div class="e-icon">📱</div>
-            <p>No 5SIM numbers yet. Buy your first foreign number above!</p>
+            <p>No SERVER 1 numbers yet. Buy your first foreign number above!</p>
         </div>
         {% endif %}
     </div>
@@ -398,7 +398,7 @@
     <a href="{% url 'home' %}"><span class="nav-icon">🏠</span>Home</a>
     <a href="{% url 'payment' %}"><span class="nav-icon">💳</span>Payment</a>
     <a href="{% url 'market' %}"><span class="nav-icon">🛍️</span>Market</a>
-    <a href="{% url 'report' %}"><span class="nav-icon">📊</span>Reports</a>
+    <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer"><span class="nav-icon">📊</span>Buylogs</a>
 </div>
 
 <script>
@@ -427,7 +427,7 @@ function updatePreview() {
             const available = (data.prices || []).filter(p => p.count > 0);
             if (!available.length) {
                 pricePreview.className = 'visible unavailable';
-                pricePreview.innerHTML = `<strong>❌ No numbers available</strong><br>No ${service} numbers in ${country} right now. <a href="{% url 'buy_foreign_number_steadysim' %}" style="color:#1d4ed8;font-weight:700;">Try SteadySim →</a>`;
+                pricePreview.innerHTML = `<strong>❌ No numbers available</strong><br>No ${service} numbers in ${country} right now. <a href="{% url 'buy_foreign_number_steadysim' %}" style="color:#1d4ed8;font-weight:700;">Try SERVER 2 →</a>`;
                 buyBtn.disabled = true;
                 buyBtn.textContent = '🌍 No Numbers Available';
                 return;
