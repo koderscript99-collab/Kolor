@@ -1538,17 +1538,17 @@ def cancel_foreign_number_steadysim(request, order_id):
             fn.status = "CANCELLED"
             fn.save()
             customer_account = Account.objects.select_for_update().get(user=request.user)
-            customer_account.balance += fn.price
+            customer_account.balance += Decimal(str(fn.price))
             customer_account.save()
             try:
                 owner_account = get_owner_account()
                 if owner_account.pk != customer_account.pk:
                     owner_acc = Account.objects.select_for_update().get(pk=owner_account.pk)
-                    owner_acc.balance -= fn.price
+                    owner_acc.balance -= Decimal(str(fn.price))
                     owner_acc.save()
             except Exception as e:
                 logger.error(f"Owner balance deduct on SteadySim cancel failed: {e}")
-        messages.success(request, f"Number cancelled. ₦{foreign_number.price:,} refunded to your wallet.")
+        messages.success(request, f"Number cancelled. ₦{Decimal(str(foreign_number.price)):,} refunded to your wallet.")
 
     return redirect("buy_foreign_number_steadysim")
 
