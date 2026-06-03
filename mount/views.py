@@ -490,15 +490,16 @@ def deposit(request):
             transaction.status = "failed"
             transaction.save()
             messages.error(request, "Could not connect to payment provider.")
-            return redirect("payment")
+            return redirect("deposit")
         if resp_data.get("status") == "success":
             return redirect(resp_data["data"]["link"])
         logger.error(f"Flutterwave error response: {resp_data}")
         transaction.status = "failed"
         transaction.save()
         messages.error(request, "Payment initiation failed. Please try again.")
-        return redirect("payment")
-    return redirect("payment")
+        return redirect("deposit")
+    return render(request, "deposit.html", {"account": get_or_create_account(request.user)})
+
 
 
 @login_required
@@ -508,7 +509,7 @@ def payment_success(request):
     tx_ref         = request.GET.get("tx_ref")
     if status == "cancelled":
         messages.error(request, "Payment was cancelled.")
-        return redirect("payment")
+        return redirect("deposit")
     if status not in ("successful", "completed") or not transaction_id or not tx_ref:
         messages.error(request, "Payment incomplete. Contact support if money was deducted.")
         return redirect("payment")
@@ -769,129 +770,8 @@ def call_jap_api(action, extra_params=None):
         logger.error(f"JAP API error: {e}")
         return None
 
-
-@login_required
 def market(request):
-    account           = get_or_create_account(request.user)
-    recent_smm_orders = SMMOrder.objects.filter(user=request.user).order_by("-created_at")[:10]
-    context = {
-        "account":           account,
-        "smm_services_json": json.dumps(SMM_SERVICES),
-        "platforms":         list(SMM_SERVICES.keys()),
-        "recent_orders":     recent_smm_orders,
-        "platform_labels": {
-            "usa_traffic":    "🇺🇸 USA Traffic",
-            "uk_traffic":     "🇬🇧 UK Traffic",
-            "india_traffic":  "🇮🇳 India Traffic",
-            "global_traffic": "🌍 Global Traffic",
-        },
-    }
-    return render(request, "market.html", context)
-
-
-@login_required
-def buy_smm(request):
-    if request.method == "POST":
-        platform   = request.POST.get("platform", "").strip().lower()
-        service_id = request.POST.get("service_id", "").strip()
-        link       = request.POST.get("link", "").strip()
-        quantity   = request.POST.get("quantity", "0").strip()
-
-        if not platform or not service_id or not link or not quantity:
-            messages.error(request, "All fields are required.")
-            return redirect("market")
-        try:
-            quantity = int(quantity)
-        except ValueError:
-            messages.error(request, "Invalid quantity.")
-            return redirect("market")
-        if quantity <= 0:
-            messages.error(request, "Quantity must be greater than zero.")
-            return redirect("market")
-
-        service_info = next((s for s in SMM_SERVICES.get(platform, []) if s["id"] == service_id), None)
-        if not service_info:
-            messages.error(request, "Invalid service selected.")
-            return redirect("market")
-        if quantity < service_info["min"] or quantity > service_info["max"]:
-            messages.error(request, f"Quantity must be between {service_info['min']} and {service_info['max']}.")
-            return redirect("market")
-
-        amount = (Decimal(str(service_info["amount"])) * Decimal(quantity) / Decimal(1000)).quantize(Decimal("0.01"))
-
-        try:
-            account = Account.objects.get(user=request.user)
-        except Account.DoesNotExist:
-            messages.error(request, "Wallet account not found.")
-            return redirect("home")
-
-        if account.balance < amount:
-            return redirect("low_balance")
-
-        account.balance -= amount
-        account.save()
-
-        try:
-            result = call_jap_api("add", {"service": service_id, "link": link, "quantity": quantity})
-        except Exception as e:
-            account.balance += amount
-            account.save()
-            messages.error(request, "Something went wrong. Your balance has been refunded.")
-            return redirect("market")
-
-        if result and "order" in result:
-            SMMOrder.objects.create(
-                user=request.user, platform=platform, service_name=service_info["label"],
-                service_id=service_id, link=link, quantity=quantity, amount=amount,
-                jap_order_id=str(result["order"]), status="processing",
-            )
-            Transaction.objects.create(
-                user=request.user, account=account, amount=amount,
-                transaction_type="smm", status="successful",
-                description=f"{service_info['label']} x{quantity}",
-            )
-            messages.success(request, f"Order placed! {service_info['label']} x{quantity} is now processing.")
-            return redirect("market")
-
-        account.balance += amount
-        account.save()
-        error_detail = result.get("error", "Unknown error") if result else "No response"
-        SMMOrder.objects.create(
-            user=request.user, platform=platform, service_name=service_info["label"],
-            service_id=service_id, link=link, quantity=quantity, amount=amount, status="failed",
-        )
-        messages.error(request, f"Order failed: {error_detail}. Your balance has been refunded.")
-        return redirect("market")
-    return redirect("market")
-
-
-@login_required
-def check_smm_order(request, order_id):
-    try:
-        order = SMMOrder.objects.get(id=order_id, user=request.user)
-    except SMMOrder.DoesNotExist:
-        messages.error(request, "Order not found.")
-        return redirect("market")
-    if not order.jap_order_id:
-        messages.error(request, "No JAP order ID found for this order.")
-        return redirect("market")
-    result = call_jap_api("status", {"order": order.jap_order_id})
-    if result and "status" in result:
-        status_map = {
-            "completed":   "completed",
-            "partial":     "partial",
-            "cancelled":   "cancelled",
-            "processing":  "processing",
-            "pending":     "pending",
-            "in progress": "processing",
-        }
-        order.status = status_map.get(result["status"].lower(), "processing")
-        order.save()
-        messages.success(request, f"Order status updated: {order.status.title()}")
-    else:
-        messages.error(request, "Could not fetch order status. Try again later.")
-    return redirect("market")
-
+    return render(request, "01market.html")
 
 # =========================
 # FLUTTERWAVE WEBHOOK
@@ -1358,6 +1238,44 @@ def cancel_foreign_number(request, order_id):
         messages.error(request, f"Cancellation failed: {str(e)}")
 
     return redirect("buy_foreign_number")
+
+@login_required
+def check_sms_5sim(request, order_id):
+    """Poll 5SIM for an incoming SMS code and save it to the ForeignNumber record."""
+    try:
+        foreign_number = ForeignNumber.objects.get(
+            order_id=order_id, user=request.user, provider="5sim"
+        )
+    except ForeignNumber.DoesNotExist:
+        return JsonResponse({"error": "Number not found."}, status=404)
+
+    if foreign_number.sms_code:
+        return JsonResponse({
+            "status": "received",
+            "sms_code": foreign_number.sms_code,
+        })
+
+    try:
+        response = requests.get(
+            f"https://5sim.net/v1/user/check/{order_id}",
+            headers=_fivesim_headers(),
+            timeout=15,
+        )
+        data = response.json()
+    except Exception as e:
+        logger.error(f"5SIM check SMS error: {e}")
+        return JsonResponse({"error": "Could not reach 5SIM."}, status=502)
+
+    sms_list = data.get("sms", [])
+    if sms_list:
+        code = sms_list[-1].get("code") or sms_list[-1].get("text", "")
+        foreign_number.sms_code = code
+        foreign_number.status = "RECEIVED"
+        foreign_number.save()
+        return JsonResponse({"status": "received", "sms_code": code})
+
+    api_status = data.get("status", "PENDING").upper()
+    return JsonResponse({"status": api_status, "sms_code": None})
 
 # =========================
 # FOREIGN NUMBERS — STEADYSIM CONSTANTS

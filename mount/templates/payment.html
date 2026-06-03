@@ -1,377 +1,544 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kolor - Payment</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>Kolor - Buy Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Nunito', sans-serif; background: #ffffff; min-height: 100vh; }
+        :root {
+            --green: #00c165;
+            --green-dark: #009e52;
+            --green-pale: #e6f9f0;
+            --navy: #0a1628;
+            --navy2: #112240;
+            --slate: #64748b;
+            --border: #e8ecf0;
+            --bg: #f4f6f9;
+            --white: #fff;
+            --red: #ef4444;
+            --amber: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; max-width: 480px; margin: 0 auto; }
 
+        /* HEADER */
+        .header {
+            background: linear-gradient(160deg, #0a1628 0%, #0d2847 60%, #0f3460 100%);
+            padding: 0 20px 28px; position: relative; overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: -60px; right: -60px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(0,193,101,.12); pointer-events: none;
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: -40px; left: -40px;
+            width: 140px; height: 140px; border-radius: 50%;
+            background: rgba(0,193,101,.07); pointer-events: none;
+        }
         .topbar {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 18px 32px; border-bottom: 1.5px solid #e5e7eb;
-            position: sticky; top: 0; background: #fff; z-index: 100;
+            padding: 18px 0 20px; position: relative; z-index: 2;
         }
-        .brand-name {
-            font-size: 22px; font-weight: 900;
-            background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; letter-spacing: 1px;
+        .back-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,.1); border: none;
+            color: white; font-size: 18px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; text-decoration: none;
         }
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .avatar {
-            width: 38px; height: 38px; border-radius: 50%;
-            background: linear-gradient(135deg, #4facfe, #0078ff);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 900; font-size: 15px;
-        }
-        .user-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-
-        .container {
-            display: flex; gap: 24px; padding: 28px 32px;
-            max-width: 1200px; margin: 0 auto;
-        }
-        .left  { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
-        .right { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-
-        .card {
-            background: #fff; border-radius: 16px;
-            border: 1.5px solid #e5e7eb;
-            box-shadow: 0 4px 24px rgba(0,0,0,.06);
-            padding: 28px 24px;
-        }
-        .card.special {
-            border-color: #fbbf24;
-            background: linear-gradient(135deg, #fffbeb, #fff);
-            box-shadow: 0 4px 24px rgba(251,191,36,.15);
-        }
-        .card.special .card-title { color: #92400e; }
-        .card.special .card-sub   { color: #b45309; }
-        .badge-special {
-            display: inline-block; padding: 2px 10px; border-radius: 20px;
-            background: #fef3c7; color: #92400e; font-size: 11px;
-            font-weight: 700; border: 1px solid #fcd34d; margin-bottom: 12px;
+        .page-title { font-size: 17px; font-weight: 700; color: white; }
+        .avatar-small {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--green); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 14px; color: white;
         }
 
-        .card-title { font-size: 16px; font-weight: 900; color: #1a1a1a; margin-bottom: 4px; }
-        .card-sub   { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+        /* Balance block */
+        .balance-block { position: relative; z-index: 2; }
+        .bal-label { font-size: 11px; color: rgba(255,255,255,.55); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+        .bal-amount { font-size: 30px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 10px; }
+        .bal-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; }
+        .bal-eye { font-size: 15px; cursor: pointer; opacity: .6; background: none; border: none; color: white; }
 
-        .profile-card {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            border-radius: 16px; border: none;
-            box-shadow: 0 4px 24px rgba(0,0,0,.12);
-            padding: 28px 24px; color: white;
+        .header-actions { display: flex; gap: 10px; margin-top: 20px; position: relative; z-index: 2; }
+        .hdr-btn {
+            flex: 1; padding: 10px 8px; border-radius: 12px; border: none;
+            background: rgba(255,255,255,.1); color: white;
+            font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center;
+            gap: 5px; text-decoration: none; transition: background .2s;
         }
-        .profile-card .label {
-            font-size: 11px; font-weight: 600; color: #7dd3fc;
-            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px;
-        }
-        .profile-card .value { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 12px; }
-        .profile-username    { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 16px; }
-        .balance-label       { font-size: 11px; font-weight: 700; color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.8px; }
-        .balance-amount      { font-size: 30px; font-weight: 900; color: #fff; margin-top: 4px; letter-spacing: -0.5px; }
-        .divider             { height: 1px; background: rgba(255,255,255,.1); margin: 16px 0; }
+        .hdr-btn:hover { background: rgba(255,255,255,.18); }
+        .hdr-btn.active { background: var(--green); }
+        .hdr-btn-icon { font-size: 17px; }
 
-        .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        /* BODY */
+        .body { padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 16px; }
+
+        /* ALERTS */
+        .alert { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }
         .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
         .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 
-        label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
-        input, select {
-            width: 100%; padding: 12px 14px;
-            background: #f9fafb; border: 1.5px solid #e5e7eb;
-            border-radius: 10px; color: #1a1a1a;
-            font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
-            outline: none; transition: border-color .25s, background .2s;
-            margin-bottom: 14px; appearance: none; -webkit-appearance: none;
+        /* NETWORK TABS */
+        .network-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .network-tabs::-webkit-scrollbar { display: none; }
+        .net-tab {
+            flex-shrink: 0; padding: 8px 16px; border-radius: 20px;
+            border: 1.5px solid var(--border); background: var(--white);
+            font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+            color: var(--slate); cursor: pointer; transition: all .2s; white-space: nowrap;
         }
-        input:focus, select:focus { border-color: #3b82f6; background: #fff; }
+        .net-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+        .net-tab:active { transform: scale(.95); }
+
+        /* PLAN TYPE FILTER */
+        .plan-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+        .plan-chip {
+            padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+            background: var(--white); font-size: 11px; font-weight: 700; color: var(--slate);
+            cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif;
+        }
+        .plan-chip.active { background: var(--green-pale); color: var(--green-dark); border-color: var(--green); }
+
+        /* PLAN CARDS */
+        .plans-grid { display: flex; flex-direction: column; gap: 8px; }
+        .plan-card {
+            background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 14px; padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: all .2s;
+        }
+        .plan-card:hover  { border-color: var(--green); background: #f9fff9; }
+        .plan-card.selected { border-color: var(--green); background: var(--green-pale); box-shadow: 0 0 0 3px rgba(0,193,101,.1); }
+        .plan-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: var(--green-pale); display: flex; align-items: center;
+            justify-content: center; font-size: 20px; flex-shrink: 0;
+        }
+        .plan-info { flex: 1; min-width: 0; }
+        .plan-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+        .plan-detail { font-size: 11px; color: var(--slate); margin-top: 2px; font-weight: 500; }
+        .plan-price { font-size: 16px; font-weight: 700; color: var(--green-dark); font-family: 'DM Mono', monospace; white-space: nowrap; }
+        .plan-radio {
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 2px solid var(--border); flex-shrink: 0; transition: all .2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .plan-card.selected .plan-radio { border-color: var(--green); background: var(--green); }
+        .plan-card.selected .plan-radio::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: white; }
+
+        /* PURCHASE FORM PANEL */
+        .purchase-panel {
+            background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 16px; padding: 20px 16px;
+        }
+        .panel-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+        .panel-sub   { font-size: 12px; color: var(--slate); margin-bottom: 16px; }
+
+        .selected-plan-preview {
+            background: var(--green-pale); border: 1.5px solid #bbf7d0;
+            border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .selected-plan-preview .sp-name { font-size: 13px; font-weight: 700; color: var(--navy); flex: 1; }
+        .selected-plan-preview .sp-price { font-size: 16px; font-weight: 700; color: var(--green-dark); font-family: 'DM Mono', monospace; }
+        .no-plan-selected { color: var(--slate); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+
+        label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+        input {
+            width: 100%; padding: 12px 14px; background: #f9fafb; border: 1.5px solid var(--border);
+            border-radius: 10px; color: var(--navy); font-size: 14px;
+            font-family: 'DM Sans', sans-serif; font-weight: 600;
+            outline: none; transition: border-color .25s; margin-bottom: 12px;
+        }
+        input:focus { border-color: var(--green); background: var(--white); }
         input::placeholder { color: #b0b8c4; font-weight: 400; }
 
-        .select-wrap { position: relative; }
-        .select-wrap::after {
-            content: '▾'; position: absolute; right: 14px; top: 50%;
-            transform: translateY(-65%); color: #9ca3af; pointer-events: none; font-size: 13px;
-        }
-        .select-wrap select { margin-bottom: 0; padding-right: 36px; cursor: pointer; }
-
-        .field-group { margin-bottom: 14px; }
-        .field-group label { margin-bottom: 6px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .form-row .field-group { margin-bottom: 0; }
-
-        .cost-input { background: #f3f4f6 !important; color: #6b7280 !important; cursor: not-allowed !important; }
-
-        .btn-send {
-            width: 100%; padding: 13px; border: none; border-radius: 10px;
-            background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
+        .btn-buy {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
             color: white; font-size: 15px; font-weight: 700;
-            font-family: 'Nunito', sans-serif; cursor: pointer;
-            margin-top: 6px; transition: opacity .2s, transform .15s;
+            font-family: 'DM Sans', sans-serif; cursor: pointer;
+            transition: opacity .2s, transform .15s; letter-spacing: 0.2px;
         }
-        .btn-send:hover  { opacity: .9; transform: translateY(-1px); }
-        .btn-send:active { transform: translateY(0); }
+        .btn-buy:hover  { opacity: .9; transform: translateY(-1px); }
+        .btn-buy:active { transform: translateY(0); }
+        .btn-buy:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-        .btn-special {
-            width: 100%; padding: 13px; border: none; border-radius: 10px;
-            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
-            color: white; font-size: 15px; font-weight: 700;
-            font-family: 'Nunito', sans-serif; cursor: pointer;
-            margin-top: 6px; transition: opacity .2s, transform .15s;
+        /* TRANSACTION HISTORY */
+        .section-title {
+            font-size: 14px; font-weight: 700; color: var(--navy);
+            display: flex; align-items: center; gap: 8px;
         }
-        .btn-special:hover  { opacity: .9; transform: translateY(-1px); }
-        .btn-special:active { transform: translateY(0); }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            font-size: 11px; font-weight: 700; color: #9ca3af;
-            text-transform: uppercase; letter-spacing: 0.7px;
-            padding: 0 10px 12px; text-align: left;
-            border-bottom: 1.5px solid #e5e7eb;
+        .tx-list { display: flex; flex-direction: column; gap: 8px; }
+        .tx-card {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 14px; border-radius: 12px;
+            background: var(--white); border: 1.5px solid var(--border);
         }
-        tbody td {
-            padding: 13px 10px; border-bottom: 1px solid #f3f4f6;
-            font-size: 13px; font-weight: 600; color: #374151;
+        .tx-ico {
+            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
         }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: #f9fafb; }
+        .tx-ico.deposit  { background: #e6f9f0; }
+        .tx-ico.withdraw { background: #fee2e2; }
+        .tx-ico.transfer { background: #dbeafe; }
+        .tx-ico.data     { background: #fef9c3; }
+        .tx-ico.smm      { background: #f3e8ff; }
+        .tx-ico.default  { background: #f3f4f6; }
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-name { font-size: 13px; font-weight: 600; color: var(--navy); text-transform: capitalize; }
+        .tx-time { font-size: 11px; color: var(--slate); margin-top: 1px; }
+        .tx-right { text-align: right; flex-shrink: 0; }
+        .tx-amt  { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .tx-amt.plus  { color: var(--green); }
+        .tx-amt.minus { color: var(--red); }
+        .tx-status { font-size: 10px; font-weight: 600; margin-top: 2px; color: var(--slate); }
+        .tx-status.successful { color: var(--green); }
+        .tx-status.pending    { color: var(--amber); }
+        .tx-status.failed     { color: var(--red); }
 
-        .tag {
-            display: inline-block; padding: 3px 10px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; text-transform: capitalize; letter-spacing: 0.3px;
+        .empty-card {
+            text-align: center; padding: 28px; background: var(--white);
+            border-radius: 12px; border: 1.5px solid var(--border); color: var(--slate);
         }
-        .deposit  { background: #dcfce7; color: #15803d; }
-        .withdraw { background: #fee2e2; color: #dc2626; }
-        .transfer { background: #dbeafe; color: #1d4ed8; }
-        .data     { background: #fef9c3; color: #854d0e; }
-        .smm      { background: #f3e8ff; color: #7c3aed; }
 
-        .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
-        .status-pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
-        .status-pill.successful::before { background:#22c55e; }
-        .status-pill.pending::before    { background:#f59e0b; }
-        .status-pill.failed::before     { background:#ef4444; }
-
+        /* BOTTOM NAV */
         .bottom-nav {
-            display: none; position: fixed; bottom: 0; width: 100%;
-            background: white; border-top: 1.5px solid #e5e7eb;
-            justify-content: space-around; padding: 10px 0 6px; z-index: 100;
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px;
+            background: white; border-top: 1.5px solid var(--border);
+            display: flex; justify-content: space-around;
+            padding: 10px 0 max(env(safe-area-inset-bottom), 8px); z-index: 200;
         }
-        .bottom-nav a {
-            text-decoration: none; color: #9ca3af; font-size: 11px; font-weight: 700;
-            display: flex; flex-direction: column; align-items: center; gap: 3px;
+        .nav-item {
+            text-decoration: none; color: var(--slate); font-size: 10px; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 12px;
         }
-        .bottom-nav a.active { color: #3b82f6; }
-        .bottom-nav .nav-icon { font-size: 20px; }
+        .nav-item.active { color: var(--green); }
+        .nav-icon-wrap {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .nav-item.active .nav-icon-wrap { background: var(--green-pale); }
 
-        @media (max-width: 860px) {
-            .container { flex-direction: column; padding: 20px 16px 90px; }
-            .left { width: 100%; }
-            .form-row { grid-template-columns: 1fr; }
-            .bottom-nav { display: flex; }
+        /* TRANSFER / WITHDRAW PANELS */
+        .action-tabs { display: flex; gap: 0; background: #f4f6f9; border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+        .action-tab {
+            flex: 1; padding: 9px; border-radius: 9px; border: none;
+            background: none; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            font-weight: 700; color: var(--slate); cursor: pointer; transition: all .2s;
         }
+        .action-tab.active { background: var(--white); color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+        .action-panel { display: none; }
+        .action-panel.active { display: block; }
     </style>
 </head>
 <body>
 
-<nav class="topbar">
-    <div class="brand-name">kolor</div>
-    <div class="topbar-right">
-        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-        <span class="user-name">{{ user.username }}</span>
+<!-- HEADER -->
+<div class="header">
+    <div class="topbar">
+        <a href="{% url 'home' %}" class="back-btn">←</a>
+        <span class="page-title">Buy Data</span>
+        <div class="avatar-small">{{ user.username|slice:":1"|upper }}</div>
     </div>
-</nav>
-
-<div class="container">
-    <aside class="left">
-        <div class="profile-card">
-            <div class="profile-username">{{ user.username }}</div>
-            <div class="label">Email</div>
-            <div class="value">{{ user.email }}</div>
-            <div class="label">Phone</div>
-            <div class="value">{{ detail.phone_number|default:"—" }}</div>
-            <div class="label">Account No.</div>
-            <div class="value">{{ account.account_number }}</div>
-            <div class="divider"></div>
-            <div class="balance-label">Available Balance</div>
-            <div class="balance-amount">₦ {{ account.balance }}</div>
+    <div class="balance-block">
+        <div class="bal-label">Wallet Balance</div>
+        <div class="bal-amount">
+            <span id="bal-text">₦{{ account.balance }}</span>
+            <button class="bal-eye" onclick="toggleBal()">👁</button>
         </div>
-    </aside>
+        <div class="bal-sub">Acct: {{ account.account_number }}</div>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'deposit' %}" class="hdr-btn">
+            <span class="hdr-btn-icon">＋</span>Add Money
+        </a>
+        <button class="hdr-btn" id="tab-transfer-btn" onclick="showAction('transfer')">
+            <span class="hdr-btn-icon">🔄</span>Transfer
+        </button>
+        <button class="hdr-btn active" onclick="document.getElementById('buy-section').scrollIntoView({behavior:'smooth'})">
+            <span class="hdr-btn-icon">📶</span>Buy Data
+        </button>
+        <a href="{% url 'buy_electricity' %}" class="hdr-btn">
+            <span class="hdr-btn-icon">💡</span>Bills
+        </a>
+    </div>
+</div>
 
-    <main class="right">
+<div class="body">
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-        <!-- TRANSACTION CARD -->
-        <div class="card">
-            <div class="card-title">Make a Transaction</div>
-            <div class="card-sub">Deposit or transfer funds instantly.</div>
+    <!-- TRANSFER / WITHDRAW PANEL -->
+    <div class="purchase-panel" id="action-panel-wrap" style="display:none;">
+        <div class="action-tabs">
+            <button class="action-tab active" id="atab-transfer" onclick="switchActionTab('transfer')">Transfer</button>
+            <button class="action-tab" id="atab-withdraw" onclick="switchActionTab('withdraw')">Withdraw</button>
+        </div>
+
+        <div class="action-panel active" id="action-transfer">
             <form method="POST" action="{% url 'transaction' %}">
                 {% csrf_token %}
-                <div class="form-row">
-                    <div class="field-group">
-                        <label>Amount (₦)</label>
-                        <input type="number" name="amount" placeholder="0.00" min="1" required>
-                    </div>
-                    <div class="field-group">
-                        <label>Transaction Type</label>
-                        <div class="select-wrap">
-                            <select name="transaction_type" id="tx_type" onchange="toggleReceiverField()">
-                                <option value="deposit">Deposit</option>
-                                <option value="transfer">Transfer</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="field-group" id="receiver_field" style="display:none;">
-                    <label>Recipient Account Number</label>
-                    <input type="text" name="receiver" placeholder="10-digit account number" maxlength="10">
-                </div>
-                <button class="btn-send" type="submit">Submit Transaction</button>
+                <input type="hidden" name="transaction_type" value="transfer">
+                <label>Recipient Account Number</label>
+                <input type="text" name="receiver" placeholder="10-digit account number" maxlength="10">
+                <label>Amount (₦)</label>
+                <input type="number" name="amount" placeholder="0.00" min="1" required>
+                <button class="btn-buy" type="submit">Send Transfer</button>
             </form>
         </div>
 
-        <!-- BUY DATA — ClubKonnect -->
-        <div class="card">
-            <div class="card-title">Buy Data</div>
-            <div class="card-sub">Standard data plans via ClubKonnect for any Nigerian network.</div>
-            <form method="POST" action="{% url 'buy_data' %}">
+        <div class="action-panel" id="action-withdraw">
+            <form method="POST" action="{% url 'transaction' %}">
                 {% csrf_token %}
-                <div class="form-row">
-                    <div class="field-group">
-                        <label>Network</label>
-                        <div class="select-wrap">
-                            <select name="network" id="network" onchange="updatePlans()">
-                                <option value="MTN">MTN</option>
-                                <option value="GLO">Glo</option>
-                                <option value="AIRTEL">Airtel</option>
-                                <option value="9MOBILE">9mobile</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label>Phone Number</label>
-                        <input type="text" name="phone_number" placeholder="08XXXXXXXXX" maxlength="11" required>
-                    </div>
-                </div>
-                <div class="field-group">
-                    <label>Data Plan</label>
-                    <div class="select-wrap">
-                        <select name="product_code" id="product_code" onchange="updateCost()"></select>
-                    </div>
-                </div>
-                <div class="field-group">
-                    <label>Cost</label>
-                    <input type="text" id="plan_cost" class="cost-input" readonly placeholder="Select a plan">
-                </div>
-                <button class="btn-send" type="submit">Purchase Data</button>
+                <input type="hidden" name="transaction_type" value="withdraw">
+                <label>Amount (₦)</label>
+                <input type="number" name="amount" placeholder="0.00" min="1" required>
+                <button class="btn-buy" type="submit" style="background: linear-gradient(135deg,#ef4444,#dc2626);">Withdraw</button>
             </form>
         </div>
+    </div>
 
-        <!-- TRANSACTION HISTORY -->
-        <div class="card">
-            <div class="card-title">Recent Transactions</div>
-            <div class="card-sub">Your latest account activity.</div>
-            {% if transactions %}
-            <table>
-                <thead>
-                    <tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                    {% for t in transactions %}
-                    <tr>
-                        <td><span class="tag {{ t.transaction_type }}">{{ t.transaction_type }}</span></td>
-                        <td>₦ {{ t.amount }}</td>
-                        <td><span class="status-pill {{ t.status }}">{{ t.status|title }}</span></td>
-                        <td>{{ t.created_at|date:"d M, H:i" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p style="text-align:center;color:#9ca3af;font-size:13px;padding:24px 0;">No transactions yet.</p>
-            {% endif %}
+    <!-- BUY DATA SECTION -->
+    <div id="buy-section">
+
+        <!-- Network tabs -->
+        <div class="network-tabs" id="network-tabs">
+            <button class="net-tab active" data-net="MTN"    onclick="selectNetwork(this)">📶 MTN</button>
+            <button class="net-tab"        data-net="GLO"    onclick="selectNetwork(this)">🟢 Glo</button>
+            <button class="net-tab"        data-net="AIRTEL" onclick="selectNetwork(this)">🔴 Airtel</button>
+            <button class="net-tab"        data-net="9MOBILE" onclick="selectNetwork(this)">🟡 9mobile</button>
         </div>
 
-    </main>
+        <!-- Plan type filter -->
+        <div class="plan-filter" id="plan-filter">
+            <button class="plan-chip active" data-type="all"    onclick="filterPlans(this)">All</button>
+            <button class="plan-chip"        data-type="SME"    onclick="filterPlans(this)">SME</button>
+            <button class="plan-chip"        data-type="Awoof"  onclick="filterPlans(this)">Awoof</button>
+            <button class="plan-chip"        data-type="Direct" onclick="filterPlans(this)">Direct</button>
+        </div>
+
+        <!-- Plan list -->
+        <div class="plans-grid" id="plans-grid"></div>
+    </div>
+
+    <!-- PURCHASE FORM -->
+    <div class="purchase-panel" id="purchase-panel">
+        <div class="panel-title">Complete Purchase</div>
+        <div class="panel-sub">Enter phone number to receive the data.</div>
+
+        <div id="selected-plan-preview" class="selected-plan-preview" style="display:none;">
+            <span style="font-size:22px;">📶</span>
+            <span class="sp-name" id="sp-name">—</span>
+            <span class="sp-price" id="sp-price">—</span>
+        </div>
+        <div id="no-plan-msg" class="no-plan-selected">
+            👆 Select a plan above to continue
+        </div>
+
+        <form method="POST" action="{% url 'buy_data' %}" id="data-form" style="margin-top:12px;">
+            {% csrf_token %}
+            <input type="hidden" name="network"      id="form-network">
+            <input type="hidden" name="product_code" id="form-plan-id">
+            <label>Phone Number</label>
+            <input type="text" name="phone_number" id="phone-input" placeholder="08XXXXXXXXX" maxlength="11" inputmode="numeric">
+            <button class="btn-buy" type="submit" id="buy-btn" disabled>Select a plan first</button>
+        </form>
+    </div>
+
+    <!-- TRANSACTION HISTORY -->
+    <div class="section-title">Recent Transactions</div>
+    {% if transactions %}
+    <div class="tx-list">
+        {% for t in transactions %}
+        <div class="tx-card">
+            <div class="tx-ico {{ t.transaction_type|default:'default' }}">
+                {% if t.transaction_type == "deposit"  %}💵
+                {% elif t.transaction_type == "withdraw" %}💸
+                {% elif t.transaction_type == "transfer" %}🔄
+                {% elif t.transaction_type == "data"     %}📶
+                {% elif t.transaction_type == "smm"      %}🚀
+                {% else %}💳{% endif %}
+            </div>
+            <div class="tx-info">
+                <div class="tx-name">{{ t.transaction_type }}</div>
+                <div class="tx-time">{{ t.created_at|date:"d M Y · H:i" }}</div>
+            </div>
+            <div class="tx-right">
+                <div class="tx-amt {% if t.transaction_type == 'deposit' %}plus{% else %}minus{% endif %}">
+                    {% if t.transaction_type == "deposit" %}+{% else %}−{% endif %}₦{{ t.amount }}
+                </div>
+                <div class="tx-status {{ t.status }}">{{ t.status|title }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-card">
+        <div style="font-size:28px;margin-bottom:8px;">📭</div>
+        <p style="font-size:13px;font-weight:500;">No transactions yet.</p>
+    </div>
+    {% endif %}
+
 </div>
 
-<div class="bottom-nav">
-    <a href="/home/"><span class="nav-icon">🏠</span>Home</a>
-    <a href="/payment/" class="active"><span class="nav-icon">💳</span>Payment</a>
-    <a href="/market/"><span class="nav-icon">🛍️</span>Market</a>
-    <a href="/report/"><span class="nav-icon">📊</span>Reports</a>
-</div>
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav-item">
+        <div class="nav-icon-wrap">🏠</div>Home
+    </a>
+    <a href="{% url 'payment' %}" class="nav-item active">
+        <div class="nav-icon-wrap">💳</div>Payment
+    </a>
+    <a href="{% url 'market' %}" class="nav-item">
+        <div class="nav-icon-wrap">🛍️</div>Market
+    </a>
+    <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer" class="nav-item">
+        <div class="nav-icon-wrap">📊</div>Buylogs
+    </a>
+    <a href="https://wa.me/2347039190183" class="nav-item">
+        <div class="nav-icon-wrap">💬</div>Support
+    </a>
+</nav>
 
 <script>
-    const plans = {{ data_plans_json|safe }};
+const PLANS = {{ data_plans_json|safe }};
+let currentNetwork = 'MTN';
+let currentFilter  = 'all';
+let selectedPlan   = null;
 
-    function updatePlans() {
-        const network = document.getElementById("network").value;
-        const select  = document.getElementById("product_code");
-        select.innerHTML = "";
-        (plans[network] || []).forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.id;
-            opt.textContent = `${p.label} — ₦${p.amount.toLocaleString()}`;
-            opt.dataset.price = p.amount;
-            select.appendChild(opt);
-        });
-        updateCost();
+// Balance toggle
+const realBal = "₦{{ account.balance }}";
+let balVis = true;
+function toggleBal() {
+    balVis = !balVis;
+    document.getElementById('bal-text').textContent = balVis ? realBal : '₦ ••••••';
+}
+
+// Network selection
+function selectNetwork(el) {
+    document.querySelectorAll('.net-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentNetwork = el.dataset.net;
+    selectedPlan = null;
+    renderPlans();
+    resetPurchasePanel();
+}
+
+// Plan filter
+function filterPlans(el) {
+    document.querySelectorAll('.plan-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = el.dataset.type;
+    renderPlans();
+}
+
+function planMatchesFilter(label) {
+    if (currentFilter === 'all') return true;
+    return label.includes(`(${currentFilter})`);
+}
+
+function planIcon(network) {
+    const icons = { MTN: '🟡', GLO: '🟢', AIRTEL: '🔴', '9MOBILE': '🟣' };
+    return icons[network] || '📶';
+}
+
+function renderPlans() {
+    const grid = document.getElementById('plans-grid');
+    const plans = (PLANS[currentNetwork] || []).filter(p => planMatchesFilter(p.label));
+    grid.innerHTML = '';
+    plans.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'plan-card' + (selectedPlan && selectedPlan.id === p.id ? ' selected' : '');
+        card.innerHTML = `
+            <div class="plan-icon">${planIcon(currentNetwork)}</div>
+            <div class="plan-info">
+                <div class="plan-name">${p.label.split(' (')[0]}</div>
+                <div class="plan-detail">${p.label.match(/\(([^)]+)\)/)?.[1] || ''}</div>
+            </div>
+            <div class="plan-price">₦${p.amount.toLocaleString()}</div>
+            <div class="plan-radio"></div>`;
+        card.onclick = () => selectPlan(p, card);
+        grid.appendChild(card);
+    });
+    if (!plans.length) {
+        grid.innerHTML = '<div style="text-align:center;padding:24px;color:var(--slate);font-size:13px;">No plans in this category.</div>';
     }
+}
 
-    function updateCost() {
-        const select   = document.getElementById("product_code");
-        const selected = select.options[select.selectedIndex];
-        if (selected && selected.dataset.price) {
-            document.getElementById("plan_cost").value =
-                "₦" + Number(selected.dataset.price).toLocaleString();
-        }
+function selectPlan(plan, card) {
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedPlan = plan;
+
+    document.getElementById('selected-plan-preview').style.display = 'flex';
+    document.getElementById('no-plan-msg').style.display = 'none';
+    document.getElementById('sp-name').textContent  = plan.label;
+    document.getElementById('sp-price').textContent = '₦' + plan.amount.toLocaleString();
+    document.getElementById('form-network').value   = currentNetwork;
+    document.getElementById('form-plan-id').value   = plan.id;
+
+    const btn = document.getElementById('buy-btn');
+    btn.disabled = false;
+    btn.textContent = `Buy — ₦${plan.amount.toLocaleString()}`;
+
+    document.getElementById('purchase-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetPurchasePanel() {
+    document.getElementById('selected-plan-preview').style.display = 'none';
+    document.getElementById('no-plan-msg').style.display = 'flex';
+    const btn = document.getElementById('buy-btn');
+    btn.disabled = true;
+    btn.textContent = 'Select a plan first';
+}
+
+// Action tabs (transfer / withdraw)
+function showAction(type) {
+    const wrap = document.getElementById('action-panel-wrap');
+    wrap.style.display = 'block';
+    switchActionTab(type);
+    wrap.scrollIntoView({ behavior: 'smooth' });
+}
+function switchActionTab(type) {
+    ['transfer','withdraw'].forEach(t => {
+        document.getElementById(`atab-${t}`).classList.toggle('active', t === type);
+        document.getElementById(`action-${t}`).classList.toggle('active', t === type);
+    });
+}
+
+// Phone input validation
+document.getElementById('data-form').addEventListener('submit', function(e) {
+    const phone = document.getElementById('phone-input').value.trim();
+    if (phone.length < 11) {
+        e.preventDefault();
+        alert('Please enter a valid 11-digit phone number.');
+        return;
     }
-
-    const beewavePlans = {{ beewave_plans_json|safe }};
-
-    function updateBeewave() {
-        const network = document.getElementById("bw_network").value;
-        const select  = document.getElementById("bw_plan");
-        select.innerHTML = "";
-        (beewavePlans[network] || []).forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.qty;
-            opt.textContent = `${p.label} — ₦${p.amount.toLocaleString()}`;
-            opt.dataset.amount = p.amount;
-            select.appendChild(opt);
-        });
-        updateBeewaveCost();
+    if (!selectedPlan) {
+        e.preventDefault();
+        alert('Please select a data plan.');
     }
+});
 
-    function updateBeewaveCost() {
-        const select   = document.getElementById("bw_plan");
-        const selected = select.options[select.selectedIndex];
-        if (selected && selected.dataset.amount) {
-            document.getElementById("bw_cost").value =
-                "₦" + Number(selected.dataset.amount).toLocaleString();
-        }
-    }
-
-    function toggleReceiverField() {
-        const type  = document.getElementById("tx_type").value;
-        const field = document.getElementById("receiver_field");
-        field.style.display = type === "transfer" ? "block" : "none";
-    }
-
-    updatePlans();
-    updateBeewave();
-    toggleReceiverField();
+// Init
+renderPlans();
 </script>
 </body>
 </html>

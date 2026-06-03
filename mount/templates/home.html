@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +22,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
 
-        /* ── TOP HEADER ─────────────────────────────────── */
         .header {
             background: linear-gradient(160deg, #0a1628 0%, #0d2847 60%, #0f3460 100%);
             padding: 0 20px 28px; position: relative; overflow: hidden;
@@ -58,7 +55,6 @@
             font-weight: 700; font-size: 14px; color: white; cursor: pointer;
         }
 
-        /* Balance block */
         .balance-block { position: relative; z-index: 2; padding-bottom: 4px; }
         .bal-greeting { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 500; margin-bottom: 6px; }
         .bal-amount {
@@ -80,18 +76,15 @@
             background: rgba(255,255,255,.1); color: white;
             font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
             cursor: pointer; display: flex; flex-direction: column; align-items: center;
-            gap: 5px; transition: background .2s;
-            text-decoration: none;
+            gap: 5px; transition: background .2s; text-decoration: none;
         }
         .hdr-btn:hover { background: rgba(255,255,255,.18); }
         .hdr-btn.primary { background: var(--green); color: white; }
         .hdr-btn.primary:hover { background: var(--green-dark); }
         .hdr-btn-icon { font-size: 18px; }
 
-        /* ── BODY ───────────────────────────────────────── */
         .body { padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* ── ADVERT SCROLLER ────────────────────────────── */
         .advert-section {}
         .advert-scroll {
             display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px;
@@ -103,29 +96,25 @@
             min-width: 240px; border-radius: 16px; padding: 18px 20px;
             display: flex; align-items: center; gap: 14px;
             text-decoration: none; scroll-snap-align: start;
-            flex-shrink: 0; position: relative; overflow: hidden;
-            transition: transform .2s;
+            flex-shrink: 0; position: relative; overflow: hidden; transition: transform .2s;
         }
         .advert-card:active { transform: scale(.97); }
         .advert-card::before {
             content: ''; position: absolute; top: -30px; right: -30px;
-            width: 100px; height: 100px; border-radius: 50%;
-            background: rgba(255,255,255,.15);
+            width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,.15);
         }
         .advert-card::after {
             content: ''; position: absolute; bottom: -20px; right: 30px;
-            width: 60px; height: 60px; border-radius: 50%;
-            background: rgba(255,255,255,.08);
+            width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,.08);
         }
         .ad1 { background: linear-gradient(135deg, #0052cc, #2684ff); }
         .ad2 { background: linear-gradient(135deg, #b45309, #fbbf24); }
         .ad3 { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
         .ad4 { background: linear-gradient(135deg, #065f46, #10b981); }
         .ad5 { background: linear-gradient(135deg, #991b1b, #f87171); }
-        .ad6 { background: linear-gradient(135deg, #0c4a6e, #0ea5e9); }
 
         .ad-emoji { font-size: 30px; flex-shrink: 0; position: relative; z-index: 1; }
-        .ad-body { position: relative; z-index: 1; }
+        .ad-body  { position: relative; z-index: 1; }
         .ad-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 3px; }
         .ad-desc  { font-size: 11px; color: rgba(255,255,255,.8); font-weight: 500; line-height: 1.4; }
         .ad-cta {
@@ -134,7 +123,6 @@
             font-size: 10px; font-weight: 700; color: white;
         }
 
-        /* Dot indicators */
         .advert-dots { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
         .advert-dot {
             width: 6px; height: 6px; border-radius: 50%; background: var(--border);
@@ -142,14 +130,11 @@
         }
         .advert-dot.active { background: var(--green); width: 16px; border-radius: 3px; }
 
-        /* ── SERVICES GRID ──────────────────────────────── */
         .section-title {
             font-size: 15px; font-weight: 700; color: var(--navy);
             margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
         }
-        .section-title::after {
-            content: ''; flex: 1; height: 1px; background: var(--border);
-        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
         .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .svc-btn {
@@ -171,16 +156,13 @@
         .svc-icon.orange { background: #fff7ed; }
         .svc-icon.red    { background: #fee2e2; }
         .svc-icon.teal   { background: #ccfbf1; }
-
         .svc-label { text-align: center; line-height: 1.3; }
 
-        /* ── TRANSACTIONS ──────────────────────────────── */
         .tx-list { display: flex; flex-direction: column; gap: 8px; }
         .tx-card {
             display: flex; align-items: center; gap: 12px;
             padding: 14px 16px; border-radius: 14px;
-            background: var(--white); border: 1.5px solid var(--border);
-            transition: border-color .2s;
+            background: var(--white); border: 1.5px solid var(--border); transition: border-color .2s;
         }
         .tx-card:active { border-color: var(--green); }
         .tx-ico {
@@ -215,24 +197,20 @@
 
         .empty-card {
             text-align: center; padding: 36px 20px;
-            background: var(--white); border-radius: 14px; border: 1.5px solid var(--border);
-            color: var(--slate);
+            background: var(--white); border-radius: 14px; border: 1.5px solid var(--border); color: var(--slate);
         }
         .empty-card .e-emoji { font-size: 32px; margin-bottom: 10px; }
         .empty-card p { font-size: 13px; font-weight: 500; }
 
-        /* ── BOTTOM NAV ─────────────────────────────────── */
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px;
             background: white; border-top: 1.5px solid var(--border);
             display: flex; justify-content: space-around;
-            padding: 10px 0 max(env(safe-area-inset-bottom), 8px);
-            z-index: 200;
+            padding: 10px 0 max(env(safe-area-inset-bottom), 8px); z-index: 200;
         }
         .nav-item {
-            text-decoration: none; color: var(--slate);
-            font-size: 10px; font-weight: 600;
+            text-decoration: none; color: var(--slate); font-size: 10px; font-weight: 600;
             display: flex; flex-direction: column; align-items: center; gap: 4px;
             padding: 0 12px; transition: color .2s;
         }
@@ -244,32 +222,21 @@
         }
         .nav-item.active .nav-icon-wrap { background: var(--green-pale); }
 
-        /* ── WHATSAPP SUPPORT ───────────────────────────── */
         .wa-fab {
-    position: fixed;
-    bottom: 90px;
-    right: max(16px, calc((100vw - 480px) / 2 + 16px));
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #25d366;
-    box-shadow: 0 4px 20px rgba(37,211,102,.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    font-size: 28px;
-    z-index: 199;
-}
+            position: fixed; bottom: 90px;
+            right: max(16px, calc((100vw - 480px) / 2 + 16px));
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #25d366; box-shadow: 0 4px 20px rgba(37,211,102,.4);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; font-size: 28px; z-index: 199;
+        }
 
-        /* ── SIDEBAR ────────────────────────────────────── */
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; }
         .overlay.active { display: block; }
         .sidebar {
             position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
             background: var(--navy); padding: 0; z-index: 600;
-            transition: left .3s cubic-bezier(.4,0,.2,1);
-            display: flex; flex-direction: column;
+            transition: left .3s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column;
         }
         .sidebar.active { left: 0; }
         .sidebar-head {
@@ -289,38 +256,32 @@
         .sidebar-close {
             position: absolute; top: 16px; right: 16px; width: 32px; height: 32px;
             border-radius: 50%; background: rgba(255,255,255,.1); border: none;
-            color: white; font-size: 16px; cursor: pointer; display: flex;
-            align-items: center; justify-content: center;
+            color: white; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-        .sidebar-body { flex: 1; overflow-y: auto; padding: 12px 12px; }
+        .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
         .sidebar-section {
             font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3);
             text-transform: uppercase; letter-spacing: 1px; padding: 12px 8px 6px;
         }
         .sidebar a {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 12px; margin: 2px 0; color: rgba(255,255,255,.75);
-            text-decoration: none; border-radius: 10px;
-            font-size: 14px; font-weight: 500; transition: all .2s;
+            padding: 12px; margin: 2px 0; color: rgba(255,255,255,.75);
+            text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all .2s;
         }
-        .sidebar a:hover, .sidebar a.active-link {
-            background: rgba(0,193,101,.15); color: var(--green);
-        }
+        .sidebar a:hover, .sidebar a.active-link { background: rgba(0,193,101,.15); color: var(--green); }
         .sidebar a .s-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
-        .sidebar-foot {
-            padding: 16px; border-top: 1px solid rgba(255,255,255,.06);
-        }
+        .sidebar-foot { padding: 16px; border-top: 1px solid rgba(255,255,255,.06); }
         .sidebar-foot a {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px; color: #f87171;
-            text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 12px; padding: 12px;
+            color: #f87171; text-decoration: none; border-radius: 10px;
+            font-size: 14px; font-weight: 500;
         }
         .sidebar-foot a:hover { background: rgba(248,113,113,.1); }
     </style>
 </head>
 <body>
 
-<!-- OVERLAY + SIDEBAR -->
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-head">
@@ -337,8 +298,8 @@
     <div class="sidebar-body">
         <div class="sidebar-section">Menu</div>
         <a href="{% url 'home' %}" class="active-link"><span class="s-icon">🏠</span> Home</a>
+        <a href="{% url 'deposit' %}"><span class="s-icon">＋</span> Add Money</a>
         <a href="{% url 'payment' %}"><span class="s-icon">💳</span> Payment & Data</a>
-        <a href="{% url 'market' %}"><span class="s-icon">🚀</span> Buy Traffic</a>
         <a href="{% url 'buy_foreign_number' %}"><span class="s-icon">🌍</span> Foreign Numbers</a>
         <a href="{% url 'buy_electricity' %}"><span class="s-icon">💡</span> Electricity</a>
         <a href="{% url 'buy_cable_tv' %}"><span class="s-icon">📺</span> Cable TV</a>
@@ -371,12 +332,14 @@
     </div>
 
     <div class="header-actions">
-        <a href="{% url 'payment' %}" class="hdr-btn primary">
+        <!-- Add Money → deposit page -->
+        <a href="{% url 'deposit' %}" class="hdr-btn primary">
             <span class="hdr-btn-icon">＋</span>Add Money
         </a>
         <a href="{% url 'payment' %}" class="hdr-btn">
             <span class="hdr-btn-icon">📤</span>Transfer
         </a>
+        <!-- Buy Data → payment page -->
         <a href="{% url 'payment' %}" class="hdr-btn">
             <span class="hdr-btn-icon">📶</span>Buy Data
         </a>
@@ -389,7 +352,7 @@
 <!-- BODY -->
 <div class="body">
 
-    <!-- ADVERT SCROLLER -->
+    <!-- ADVERT SCROLLER — no traffic cards -->
     <div class="advert-section">
         <div class="section-title">Offers</div>
         <div class="advert-scroll" id="advert-scroll">
@@ -433,20 +396,11 @@
                     <div class="ad-cta">Subscribe →</div>
                 </div>
             </a>
-            <a href="{% url 'market' %}" class="advert-card ad6">
-                <div class="ad-emoji">🚀</div>
-                <div class="ad-body">
-                    <div class="ad-title">Website Traffic</div>
-                    <div class="ad-desc">USA, UK, India & global<br>Boost your site visits</div>
-                    <div class="ad-cta">Buy Traffic →</div>
-                </div>
-            </a>
-            
         </div>
         <div class="advert-dots" id="advert-dots"></div>
     </div>
 
-    <!-- SERVICES -->
+    <!-- SERVICES — no traffic button -->
     <div>
         <div class="section-title">Services</div>
         <div class="services-grid">
@@ -454,9 +408,9 @@
                 <div class="svc-icon green">📶</div>
                 <div class="svc-label">Buy Data</div>
             </a>
-            <a href="{% url 'payment' %}" class="svc-btn">
-                <div class="svc-icon yellow">⚡</div>
-                <div class="svc-label">Bundle</div>
+            <a href="{% url 'deposit' %}" class="svc-btn">
+                <div class="svc-icon yellow">💵</div>
+                <div class="svc-label">Deposit</div>
             </a>
             <a href="{% url 'buy_electricity' %}" class="svc-btn">
                 <div class="svc-icon teal">💡</div>
@@ -470,13 +424,13 @@
                 <div class="svc-icon purple">🌍</div>
                 <div class="svc-label">Rent No.</div>
             </a>
-            <a href="{% url 'market' %}" class="svc-btn">
-                <div class="svc-icon blue">🚀</div>
-                <div class="svc-label">Traffic</div>
+            <a href="{% url 'payment' %}" class="svc-btn">
+                <div class="svc-icon blue">🔄</div>
+                <div class="svc-label">Transfer</div>
             </a>
             <a href="{% url 'payment' %}" class="svc-btn">
-                <div class="svc-icon orange">💸</div>
-                <div class="svc-label">Transfer</div>
+                <div class="svc-icon pink">💳</div>
+                <div class="svc-label">Payment</div>
             </a>
             <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer" class="svc-btn">
                 <div class="svc-icon orange">📊</div>
@@ -531,14 +485,14 @@
     <a href="{% url 'home' %}" class="nav-item active">
         <div class="nav-icon-wrap">🏠</div>Home
     </a>
+    <a href="{% url 'deposit' %}" class="nav-item">
+        <div class="nav-icon-wrap">💵</div>Deposit
+    </a>
     <a href="{% url 'payment' %}" class="nav-item">
         <div class="nav-icon-wrap">💳</div>Payment
     </a>
-    <a href="{% url 'market' %}" class="nav-item">
-        <div class="nav-icon-wrap">🛍️</div>Market
-    </a>
     <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer" class="nav-item">
-    <div class="nav-icon-wrap">📊</div>Buylogs
+        <div class="nav-icon-wrap">📊</div>Buylogs
     </a>
     <a href="https://wa.me/2347039190183" class="nav-item">
         <div class="nav-icon-wrap">💬</div>Support
@@ -546,7 +500,6 @@
 </nav>
 
 <script>
-// ── Balance toggle ───────────────────────────────────────
 const realBal = "₦{{ account.balance }}";
 let balVisible = true;
 function toggleBalance() {
@@ -555,7 +508,6 @@ function toggleBalance() {
     document.getElementById('bal-toggle').textContent = balVisible ? '👁' : '🙈';
 }
 
-// ── Sidebar ──────────────────────────────────────────────
 function openSidebar() {
     document.getElementById('sidebar').classList.add('active');
     document.getElementById('overlay').classList.add('active');
@@ -565,31 +517,22 @@ function closeSidebar() {
     document.getElementById('overlay').classList.remove('active');
 }
 
-// ── Advert scroll dots ───────────────────────────────────
 (function() {
     const scroll = document.getElementById('advert-scroll');
     const dotsEl = document.getElementById('advert-dots');
     const cards  = scroll.querySelectorAll('.advert-card');
     const count  = cards.length;
-
-    // Build dots
     for (let i = 0; i < count; i++) {
         const d = document.createElement('div');
         d.className = 'advert-dot' + (i === 0 ? ' active' : '');
-        d.onclick = () => {
-            cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-        };
+        d.onclick = () => cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
         dotsEl.appendChild(d);
     }
     const dots = dotsEl.querySelectorAll('.advert-dot');
-
-    // Update active dot on scroll
     scroll.addEventListener('scroll', () => {
         const idx = Math.round(scroll.scrollLeft / 252);
         dots.forEach((d, i) => d.classList.toggle('active', i === idx));
     }, { passive: true });
-
-    // Auto-scroll every 3.5s
     let current = 0;
     setInterval(() => {
         current = (current + 1) % count;

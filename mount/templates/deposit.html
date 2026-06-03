@@ -1,444 +1,288 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kolor - Deposit</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - Fund Wallet</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00c165;
+            --green-dark: #009e52;
+            --green-pale: #e6f9f0;
+            --navy: #0a1628;
+            --navy2: #112240;
+            --slate: #64748b;
+            --border: #e8ecf0;
+            --bg: #f4f6f9;
+            --white: #fff;
+            --amber: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; max-width: 480px; margin: 0 auto; }
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+        /* HEADER */
+        .header {
+            background: linear-gradient(160deg, #0a1628 0%, #0d2847 60%, #0f3460 100%);
+            padding: 0 20px 32px; position: relative; overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: -60px; right: -60px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(0,193,101,.12); pointer-events: none;
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: -40px; left: -40px;
+            width: 140px; height: 140px; border-radius: 50%;
+            background: rgba(0,193,101,.07); pointer-events: none;
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 0 24px; position: relative; z-index: 2;
+        }
+        .back-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,.1); border: none;
+            color: white; font-size: 18px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; text-decoration: none;
+        }
+        .page-title { font-size: 17px; font-weight: 700; color: white; }
+        .avatar-small {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--green); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 14px; color: white;
+        }
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+        /* Balance block */
+        .balance-block { position: relative; z-index: 2; }
+        .bal-greeting { font-size: 13px; color: rgba(255,255,255,.55); font-weight: 500; margin-bottom: 6px; }
+        .bal-amount { font-size: 34px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+        .bal-eye { font-size: 16px; cursor: pointer; opacity: .6; background: none; border: none; color: white; }
+        .bal-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; }
 
-    body {
-      font-family: 'Nunito', sans-serif;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
+        /* BODY */
+        .body { padding: 20px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
 
-    /* ── Logo ── */
-    .logo-wrap {
-      margin-bottom: 32px;
-      text-align: center;
-    }
+        /* ALERTS */
+        .alert { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+        .alert-error   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 
-    .brand-name {
-      font-size: 24px;
-      font-weight: 900;
-      background: linear-gradient(90deg, #7dd3fc, #3b82f6, #1d4ed8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: 1px;
-    }
+        /* DEPOSIT CARD */
+        .deposit-card {
+            background: var(--white); border-radius: 20px; border: 1.5px solid var(--border);
+            box-shadow: 0 4px 24px rgba(0,0,0,.06); padding: 24px 20px;
+        }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+        .card-sub   { font-size: 12px; color: var(--slate); margin-bottom: 20px; font-weight: 500; }
 
-    /* ── Card ── */
-    .card {
-      background: #fff;
-      width: 100%;
-      max-width: 480px;
-      padding: 36px 32px;
-      border-radius: 16px;
-      border: 1.5px solid #e5e7eb;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    }
+        /* Amount input */
+        .amount-wrap {
+            background: #f9fafb; border: 2px solid var(--border);
+            border-radius: 14px; padding: 16px 18px; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 10px; transition: border-color .25s;
+        }
+        .amount-wrap:focus-within { border-color: var(--green); background: var(--white); }
+        .currency-sym { font-size: 22px; font-weight: 700; color: var(--green); flex-shrink: 0; font-family: 'DM Mono', monospace; }
+        .amount-input {
+            flex: 1; border: none; background: none; outline: none;
+            font-size: 28px; font-weight: 700; color: var(--navy);
+            font-family: 'DM Mono', monospace; width: 100%;
+            -moz-appearance: textfield;
+        }
+        .amount-input::-webkit-inner-spin-button,
+        .amount-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .amount-input::placeholder { color: #c4cdd6; font-size: 24px; }
+        .min-hint { font-size: 11px; color: var(--slate); margin-bottom: 16px; font-weight: 500; padding-left: 2px; }
 
-    .card-title {
-      font-size: 20px;
-      font-weight: 900;
-      color: #1a1a1a;
-      margin-bottom: 4px;
-    }
+        /* Quick amounts */
+        .quick-label { font-size: 11px; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .quick-btn {
+            padding: 10px 4px; background: #f9fafb; border: 1.5px solid var(--border);
+            border-radius: 10px; color: var(--slate); font-size: 12px; font-weight: 700;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; text-align: center;
+            transition: all .2s;
+        }
+        .quick-btn:hover  { border-color: var(--green); color: var(--green-dark); background: var(--green-pale); }
+        .quick-btn.active { border-color: var(--green); color: var(--green-dark); background: var(--green-pale); }
 
-    .card-sub {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 24px;
-    }
+        /* Submit */
+        .btn-pay {
+            width: 100%; padding: 15px; border: none; border-radius: 14px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white; font-size: 16px; font-weight: 700;
+            font-family: 'DM Sans', sans-serif; cursor: pointer;
+            transition: opacity .2s, transform .15s; letter-spacing: 0.3px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-pay:hover  { opacity: .92; transform: translateY(-1px); }
+        .btn-pay:active { transform: translateY(0); }
+        .btn-pay:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-    /* ── Balance pill ── */
-    .balance-pill {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f0f7ff;
-      border: 1.5px solid #bfdbfe;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-    }
+        /* Security badge */
+        .security-row {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-top: 14px; font-size: 12px; color: var(--slate); font-weight: 600;
+        }
+        .flw-badge { font-weight: 900; color: #f5a623; }
 
-    .balance-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+        /* Redirect overlay */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,.94);
+            backdrop-filter: blur(10px); z-index: 999;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 16px;
+            opacity: 0; pointer-events: none; transition: opacity .3s;
+        }
+        .overlay.show { opacity: 1; pointer-events: all; }
+        .spinner {
+            width: 48px; height: 48px; border: 3px solid var(--border);
+            border-top-color: var(--green); border-radius: 50%;
+            animation: spin .85s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .overlay-title { font-size: 17px; font-weight: 700; color: var(--navy); }
+        .overlay-sub   { font-size: 13px; color: var(--slate); text-align: center; max-width: 240px; font-weight: 500; }
 
-    .balance-value {
-      font-size: 18px;
-      font-weight: 900;
-      color: #3b82f6;
-    }
-
-    /* ── Messages ── */
-    .messages {
-      margin-bottom: 16px;
-    }
-
-    .msg {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .msg.error {
-      background: #fef2f2;
-      border: 1.5px solid #fecaca;
-      color: #dc2626;
-    }
-
-    .msg.success {
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
-      color: #16a34a;
-    }
-
-    /* ── Label ── */
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: #374151;
-      margin-bottom: 8px;
-    }
-
-    /* ── Amount input ── */
-    .input-wrap {
-      position: relative;
-      margin-bottom: 16px;
-    }
-
-    .currency-symbol {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 18px;
-      font-weight: 900;
-      color: #3b82f6;
-      pointer-events: none;
-    }
-
-    input[type="number"] {
-      width: 100%;
-      padding: 14px 16px 14px 36px;
-      background: #f9fafb;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 10px;
-      color: #1a1a1a;
-      font-size: 22px;
-      font-weight: 900;
-      font-family: 'Nunito', sans-serif;
-      outline: none;
-      transition: border-color 0.25s, background 0.25s;
-      -moz-appearance: textfield;
-    }
-
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-    }
-
-    input[type="number"]:focus {
-      border-color: #3b82f6;
-      background: #fff;
-    }
-
-    input[type="number"]::placeholder {
-      color: #b0b8c4;
-      font-size: 18px;
-    }
-
-    /* ── Quick amounts ── */
-    .quick-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
-    }
-
-    .quick-amounts {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .quick-btn {
-      padding: 10px 4px;
-      background: #f9fafb;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 8px;
-      color: #6b7280;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .quick-btn:hover {
-      border-color: #3b82f6;
-      color: #3b82f6;
-      background: #eff6ff;
-    }
-
-    .quick-btn.active {
-      border-color: #3b82f6;
-      color: #3b82f6;
-      background: #dbeafe;
-    }
-
-    /* ── Submit button — exact same as report.html ── */
-    .btn-send {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      margin-top: 4px;
-      transition: opacity 0.2s, transform 0.15s;
-      letter-spacing: 0.3px;
-    }
-
-    .btn-send:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    .btn-send:active {
-      transform: translateY(0);
-    }
-
-    .btn-send:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* ── Divider ── */
-    .divider {
-      height: 1px;
-      background: #e5e7eb;
-      margin: 20px 0;
-    }
-
-    /* ── Flutterwave footer ── */
-    .flw-footer {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #9ca3af;
-      font-weight: 600;
-    }
-
-    .flw-name {
-      font-weight: 900;
-      color: #f5a623;
-    }
-
-    /* ── Back link ── */
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      color: #9ca3af;
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: none;
-      margin-bottom: 20px;
-      transition: color 0.2s;
-    }
-
-    .back-link:hover { color: #3b82f6; }
-
-    /* ── Redirect overlay ── */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.93);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-
-    .overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
-      animation: spin 0.85s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .overlay-text {
-      font-size: 16px;
-      font-weight: 900;
-      color: #1a1a1a;
-    }
-
-    .overlay-sub {
-      font-size: 13px;
-      color: #9ca3af;
-      font-weight: 600;
-      text-align: center;
-      max-width: 240px;
-    }
-  </style>
+        /* How it works */
+        .how-card {
+            background: var(--white); border-radius: 16px; border: 1.5px solid var(--border);
+            padding: 18px 16px;
+        }
+        .how-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+        .how-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        .how-step:last-child { margin-bottom: 0; }
+        .step-num {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--green-pale); color: var(--green-dark);
+            font-size: 12px; font-weight: 700; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; margin-top: 1px;
+        }
+        .step-text { font-size: 13px; font-weight: 500; color: var(--slate); line-height: 1.5; }
+        .step-text strong { color: var(--navy); font-weight: 700; }
+    </style>
 </head>
 <body>
 
-  <div class="logo-wrap">
-    <div class="brand-name">kolor</div>
-  </div>
-
-  <div class="card">
-
-    <a href="{% url 'home' %}" class="back-link">← Back to dashboard</a>
-
-    <div class="card-title">Fund Wallet</div>
-    <div class="card-sub">Enter an amount and pay securely via Flutterwave.</div>
-
-    {% if account %}
-    <div class="balance-pill">
-      <span class="balance-label">Current Balance</span>
-      <span class="balance-value">₦{{ account.balance|floatformat:2 }}</span>
+<!-- HEADER -->
+<div class="header">
+    <div class="topbar">
+        <a href="{% url 'home' %}" class="back-btn">←</a>
+        <span class="page-title">Fund Wallet</span>
+        <div class="avatar-small">{{ user.username|slice:":1"|upper }}</div>
     </div>
-    {% endif %}
+    <div class="balance-block">
+        <div class="bal-greeting">Current balance</div>
+        <div class="bal-amount">
+            <span id="bal-text">₦{{ account.balance }}</span>
+            <button class="bal-eye" onclick="toggleBal()">👁</button>
+        </div>
+        <div class="bal-sub">Acct: {{ account.account_number }}</div>
+    </div>
+</div>
+
+<div class="body">
 
     {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="msg {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
     {% endif %}
 
-    <form method="POST" action="{% url 'deposit' %}" id="depositForm">
-      {% csrf_token %}
+    <div class="deposit-card">
+        <div class="card-title">Enter Amount</div>
+        <div class="card-sub">Minimum deposit is ₦100. Funds reflect instantly.</div>
 
-      <label for="amount">Amount (NGN)</label>
-      <div class="input-wrap">
-        <span class="currency-symbol">₦</span>
-        <input
-          type="number"
-          id="amount"
-          name="amount"
-          placeholder="0.00"
-          min="100"
-          step="any"
-          required
-          autocomplete="off"
-        />
-      </div>
+        <form method="POST" action="{% url 'deposit' %}" id="depositForm">
+            {% csrf_token %}
 
-      <div class="quick-label">Quick amounts</div>
-      <div class="quick-amounts">
-        <button type="button" class="quick-btn" data-val="500">₦500</button>
-        <button type="button" class="quick-btn" data-val="1000">₦1k</button>
-        <button type="button" class="quick-btn" data-val="5000">₦5k</button>
-        <button type="button" class="quick-btn" data-val="10000">₦10k</button>
-      </div>
+            <div class="amount-wrap">
+                <span class="currency-sym">₦</span>
+                <input type="number" class="amount-input" id="amount" name="amount"
+                       placeholder="0.00" min="100" step="any" required autocomplete="off">
+            </div>
+            <div class="min-hint">Minimum: ₦100</div>
 
-      <button type="submit" class="btn-send" id="submitBtn">
-        Proceed to Payment
-      </button>
-    </form>
+            <div class="quick-label">Quick amounts</div>
+            <div class="quick-grid">
+                <button type="button" class="quick-btn" data-val="500">₦500</button>
+                <button type="button" class="quick-btn" data-val="1000">₦1,000</button>
+                <button type="button" class="quick-btn" data-val="5000">₦5,000</button>
+                <button type="button" class="quick-btn" data-val="10000">₦10,000</button>
+                <button type="button" class="quick-btn" data-val="20000">₦20,000</button>
+                <button type="button" class="quick-btn" data-val="50000">₦50,000</button>
+                <button type="button" class="quick-btn" data-val="100000">₦100k</button>
+                <button type="button" class="quick-btn" data-val="200000">₦200k</button>
+            </div>
 
-    <div class="divider"></div>
+            <button type="submit" class="btn-pay" id="submitBtn">
+                🔒 Proceed to Payment
+            </button>
+        </form>
 
-    <div class="flw-footer">
-      🔒 Secured &amp; powered by <span class="flw-name">Flutterwave</span>
+        <div class="security-row">
+            🔐 Secured by <span class="flw-badge">Flutterwave</span>
+        </div>
     </div>
 
-  </div>
+    <div class="how-card">
+        <div class="how-title">How it works</div>
+        <div class="how-step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Enter amount</strong> — choose from presets or type a custom amount above.</div>
+        </div>
+        <div class="how-step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Pay securely</strong> — you'll be redirected to Flutterwave's checkout.</div>
+        </div>
+        <div class="how-step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Instant credit</strong> — your wallet is topped up automatically on success.</div>
+        </div>
+    </div>
 
-  <!-- Redirect overlay -->
-  <div class="overlay" id="overlay">
+</div>
+
+<!-- Redirect overlay -->
+<div class="overlay" id="overlay">
     <div class="spinner"></div>
-    <div class="overlay-text">Redirecting to Flutterwave…</div>
+    <div class="overlay-title">Redirecting to Flutterwave…</div>
     <div class="overlay-sub">Please wait while we prepare your secure payment page.</div>
-  </div>
+</div>
 
-  <script>
-    // Quick amount buttons
-    const amountInput = document.getElementById('amount');
-    const quickBtns = document.querySelectorAll('.quick-btn');
+<script>
+const realBal = "₦{{ account.balance }}";
+let balVis = true;
+function toggleBal() {
+    balVis = !balVis;
+    document.getElementById('bal-text').textContent = balVis ? realBal : '₦ ••••••';
+}
 
-    quickBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+const amountInput = document.getElementById('amount');
+document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
         amountInput.value = btn.dataset.val;
-        quickBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-      });
     });
-
-    amountInput.addEventListener('input', () => {
-      quickBtns.forEach(b => {
+});
+amountInput.addEventListener('input', () => {
+    document.querySelectorAll('.quick-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.val === amountInput.value);
-      });
     });
+});
 
-    // Show overlay on submit
-    const form = document.getElementById('depositForm');
-    const overlay = document.getElementById('overlay');
-    const submitBtn = document.getElementById('submitBtn');
-
-    form.addEventListener('submit', () => {
-      const val = parseFloat(amountInput.value);
-      if (!val || val < 100) return;
-      overlay.classList.add('show');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Processing…';
-    });
-  </script>
-
+document.getElementById('depositForm').addEventListener('submit', function() {
+    const val = parseFloat(amountInput.value);
+    if (!val || val < 100) return;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').textContent = 'Processing…';
+});
+</script>
 </body>
 </html>

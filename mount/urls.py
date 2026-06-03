@@ -34,8 +34,6 @@ urlpatterns = [
 
     # ── SMM ───────────────────────────────────────────────────────────────
     path("market/",                        views.market,          name="market"),
-    path("buy-smm/",                       views.buy_smm,         name="buy_smm"),
-    path("smm-order/<int:order_id>/check/",views.check_smm_order, name="check_smm_order"),
 
     # ── 5SIM foreign numbers (primary provider) ───────────────────────────
     path("buy-foreign-number/",
@@ -76,4 +74,6 @@ urlpatterns = [
 
     # ── Report ───────────────────────────────────────────────────────────
     path("report-issue/", views.report_view, name="report_view"),
+    path('check-sms/5sim/<str:order_id>/', views.check_sms_5sim, name='check_sms_5sim'),
+    
 ]

@@ -169,3 +169,14 @@ REST_FRAMEWORK = {
 # DEFAULT PRIMARY KEY
 # =========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Session settings — keeps users logged in after payment redirects on mobile
+SESSION_ENGINE          = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE   = True       # set False only for local dev
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE      = 1209600    # 2 weeks
+
+CSRF_COOKIE_SAMESITE    = 'Lax'
+CSRF_COOKIE_SECURE      = True       # set False only for local dev

@@ -117,7 +117,10 @@
         .number-list { display: flex; flex-direction: column; gap: 12px; }
         .number-card {
             background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 14px 16px;
+            transition: border-color .3s;
         }
+        .number-card.sms-arrived { border-color: #86efac; background: #f0fdf4; }
+
         .number-card-header {
             display: flex; align-items: center; justify-content: space-between;
             flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
@@ -126,10 +129,26 @@
             font-family: monospace; font-size: 15px; font-weight: 700;
             color: #1e3a5f; background: #eff6ff; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.5px;
         }
+
+        /* SMS code + copy button */
+        .sms-code-wrap {
+            display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
         .sms-code {
             font-family: monospace; font-size: 16px; font-weight: 900;
             color: #15803d; background: #dcfce7; padding: 5px 12px; border-radius: 6px; letter-spacing: 1px;
         }
+        .btn-copy {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #dcfce7; border: 1.5px solid #86efac; color: #15803d;
+            padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer; transition: background .2s, transform .15s;
+            white-space: nowrap;
+        }
+        .btn-copy:hover  { background: #bbf7d0; transform: translateY(-1px); }
+        .btn-copy:active { transform: translateY(0); }
+        .btn-copy.copied { background: #bfdbfe; border-color: #93c5fd; color: #1d4ed8; }
+
         .number-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .country-tag {
             display: inline-block; padding: 3px 10px; border-radius: 6px;
@@ -159,6 +178,14 @@
         .cancelled-label { font-size: 12px; color: #dc2626; font-weight: 700; }
         .waiting-text { color: #9ca3af; font-size: 13px; font-weight: 600; }
         .number-date  { font-size: 11px; color: #9ca3af; font-weight: 600; }
+
+        /* Pulsing dot for numbers actively waiting */
+        @keyframes pulse-dot { 0%,100%{opacity:1}50%{opacity:.3} }
+        .pulse-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: #f59e0b; animation: pulse-dot 1.4s ease-in-out infinite;
+            vertical-align: middle; margin-right: 5px;
+        }
 
         .spinner {
             display: inline-block; width: 16px; height: 16px;
@@ -233,7 +260,7 @@
 
     <div class="info-box">
         <strong>🟢 SERVER 2 — Backup Provider</strong>
-        Use SERVER 2 when SERVER 1 has no available numbers. Same countries and services, independently priced. Select a country and service to see live availability.
+        Use SERVER 2 when SERVER 1 has no available numbers. Same countries and services, independently priced. SMS codes appear automatically once received.
     </div>
 
     <div class="card">
@@ -282,17 +309,22 @@
     <!-- SERVER 2 NUMBERS ONLY -->
     <div class="card">
         <div class="card-title">My SERVER 2 Numbers</div>
-        <div class="card-sub">Numbers purchased via SERVER 2. Cancel within the validity window for a refund.</div>
+        <div class="card-sub">SMS codes appear automatically. Cancel within the validity window for a refund.</div>
 
         {% if numbers %}
-        <div class="number-list">
+        <div class="number-list" id="numbers-list">
             {% for number in numbers %}
-            <div class="number-card">
+            <div class="number-card {% if number.sms_code %}sms-arrived{% endif %}"
+                 id="card-{{ number.order_id }}"
+                 data-order-id="{{ number.order_id }}"
+                 data-status="{{ number.status }}"
+                 data-created="{{ number.created_at|date:'U' }}">
+
                 <div class="number-card-header">
                     <span class="phone-number">{{ number.phone_number }}</span>
                     {% if number.status == "CANCELLED" %}
                         <span class="cancelled-label">✕ Cancelled</span>
-                    {% else %}
+                    {% elif number.status != "RECEIVED" and number.status != "FINISHED" %}
                         <a href="{% url 'cancel_foreign_number_steadysim' number.order_id %}"
                            class="btn-cancel"
                            onclick="return confirm('Cancel this number? ₦{{ number.price }} will be refunded to your wallet.')">
@@ -300,21 +332,35 @@
                         </a>
                     {% endif %}
                 </div>
+
                 <div class="number-meta">
                     <span class="country-tag">{{ number.country|title }}</span>
                     <span class="service-tag">{{ number.service|title }}</span>
                     <span class="provider-tag">SERVER 2</span>
-                    <span class="status-pill {{ number.status }}">{{ number.status|title }}</span>
+                    <span class="status-pill {{ number.status }}" id="pill-{{ number.order_id }}">
+                        {{ number.status|title }}
+                    </span>
                     <span class="number-date">{{ number.created_at|date:"d M, H:i" }}</span>
                 </div>
-                <div style="margin-top:10px;">
+
+                <div style="margin-top:10px;" id="sms-area-{{ number.order_id }}">
                     {% if number.sms_code %}
-                        <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:4px;">SMS Code Received:</div>
-                        <span class="sms-code">{{ number.sms_code }}</span>
-                    {% else %}
-                        <span class="waiting-text">⏳ Waiting for SMS code…</span>
+                        <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">✅ SMS Code Received:</div>
+                        <div class="sms-code-wrap">
+                            <span class="sms-code" id="code-{{ number.order_id }}">{{ number.sms_code }}</span>
+                            <button class="btn-copy"
+                                    onclick="copyCode('{{ number.sms_code }}', this)"
+                                    title="Copy code">
+                                📋 Copy
+                            </button>
+                        </div>
+                    {% elif number.status != "CANCELLED" %}
+                        <span class="waiting-text" id="wait-{{ number.order_id }}">
+                            <span class="pulse-dot"></span>Waiting for SMS code…
+                        </span>
                     {% endif %}
                 </div>
+
                 {% if number.price %}
                 <div style="margin-top:8px;font-size:12px;color:#9ca3af;font-weight:600;">
                     Cost: ₦{{ number.price }}
@@ -344,6 +390,7 @@
 </div>
 
 <script>
+/* ── Price preview ── */
 const countrySelect = document.getElementById('country-select');
 const serviceSelect = document.getElementById('service-select');
 const pricePreview  = document.getElementById('price-preview');
@@ -373,7 +420,7 @@ function updatePreview() {
                 pricePreview.innerHTML = `
                     <strong>❌ No numbers available</strong><br>
                     No ${cap(service)} numbers in ${cap(country)} on SERVER 2 right now.
-                    <br><a href="{% url 'buy_foreign_number' %}" style="color:#1d4ed8;font-weight:700;">Try 5SIM instead →</a>`;
+                    <br><a href="{% url 'buy_foreign_number' %}" style="color:#1d4ed8;font-weight:700;">Try SERVER 1 instead →</a>`;
                 buyBtn.disabled = true;
                 buyBtn.textContent = '🌍 No Numbers Available';
                 return;
@@ -398,6 +445,105 @@ function updatePreview() {
 countrySelect.addEventListener('change', updatePreview);
 serviceSelect.addEventListener('change', updatePreview);
 if (countrySelect.value && serviceSelect.value) updatePreview();
+
+
+/* ── Copy code ── */
+function copyCode(code, btn) {
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.position = 'fixed';
+        ta.style.opacity  = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+
+/* ── SMS polling ── */
+const POLL_MAX_AGE_MS  = 20 * 60 * 1000;  // stop after 20 minutes
+const POLL_INTERVAL_MS = 12000;             // check every 12 seconds
+
+function getPollableCards() {
+    const nowSec = Math.floor(Date.now() / 1000);
+    return Array.from(document.querySelectorAll('.number-card'))
+        .filter(card => {
+            if (card.dataset.status !== 'PENDING') return false;
+            if (!document.getElementById(`wait-${card.dataset.orderId}`)) return false;
+            const created = parseInt(card.dataset.created || '0', 10);
+            if (created && (nowSec - created) > (POLL_MAX_AGE_MS / 1000)) {
+                card.dataset.status = 'EXPIRED';
+                const waitEl = document.getElementById(`wait-${card.dataset.orderId}`);
+                if (waitEl) waitEl.innerHTML = '<span style="color:#9ca3af;font-size:12px;">⏰ Expired — no SMS received</span>';
+                return false;
+            }
+            return true;
+        });
+}
+
+function applyCodeToCard(card, smsCode) {
+    const orderId = card.dataset.orderId;
+    const smsArea = document.getElementById(`sms-area-${orderId}`);
+    if (smsArea) {
+        smsArea.innerHTML = `
+            <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">✅ SMS Code Received:</div>
+            <div class="sms-code-wrap">
+                <span class="sms-code" id="code-${orderId}">${smsCode}</span>
+                <button class="btn-copy"
+                        onclick="copyCode('${smsCode}', this)"
+                        title="Copy code">
+                    📋 Copy
+                </button>
+            </div>`;
+    }
+    const pill = document.getElementById(`pill-${orderId}`);
+    if (pill) { pill.className = 'status-pill RECEIVED'; pill.textContent = 'Received'; }
+    card.classList.add('sms-arrived');
+    card.dataset.status = 'RECEIVED';
+}
+
+function pollSmsForCard(card) {
+    const orderId = card.dataset.orderId;
+    fetch(`/check-sms/steadysim/${orderId}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.sms_code) {
+            applyCodeToCard(card, data.sms_code);
+        } else if (data.status === 'CANCELLED' || data.status === 'FINISHED') {
+            card.dataset.status = data.status;
+        }
+    })
+    .catch(err => console.warn('SMS poll error (SERVER 2):', err));
+}
+
+function startPolling() {
+    const pollable = getPollableCards();
+    if (!pollable.length) return;  // nothing pending — no interval created at all
+
+    pollable.forEach(pollSmsForCard);
+
+    const interval = setInterval(() => {
+        const stillPollable = getPollableCards();
+        if (!stillPollable.length) {
+            clearInterval(interval);  // all resolved — stop completely
+            return;
+        }
+        stillPollable.forEach(pollSmsForCard);
+    }, POLL_INTERVAL_MS);
+}
+
+document.addEventListener('DOMContentLoaded', startPolling);
 </script>
 
 </body>
