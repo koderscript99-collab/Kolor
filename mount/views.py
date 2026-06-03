@@ -368,16 +368,27 @@ def payment(request):
     return render(request, "payment.html", context)
 
 
+
 @login_required
 def report(request):
-    transactions   = Transaction.objects.filter(user=request.user).order_by("-created_at")
-    data_purchases = DataPurchase.objects.filter(user=request.user).order_by("-created_at")
-    smm_orders     = SMMOrder.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "report.html", {
-        "transactions":   transactions,
-        "data_purchases": data_purchases,
-        "smm_orders":     smm_orders,
-    })
+    if request.method == "POST":
+        Report.objects.create(
+            user=request.user,
+            message=request.POST.get("message")
+        )
+        return redirect("report_success")
+
+    return render(request, "report.html")
+
+
+@login_required
+def report_success(request):
+    return render(request, "report_success.html")
+
+@login_required
+def my_reports(request):
+    reports = Report.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "my_reports.html", {"reports": reports})
 
 
 @login_required

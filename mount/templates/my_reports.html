@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Reports</title>
+</head>
+<body>
+
+<h2>My Reports</h2>
+
+{% for report in reports %}
+<div class="report-box" style="border:1px solid #ddd; padding:15px; margin-bottom:10px;">
+    
+    <p><strong>Your Report:</strong></p>
+    <p>{{ report.message }}</p>
+
+    {% if report.admin_reply %}
+        <hr>
+        <p><strong>Admin Reply:</strong></p>
+        <p>{{ report.admin_reply }}</p>
+    {% else %}
+        <p><em>Awaiting response...</em></p>
+    {% endif %}
+
+</div>
+{% empty %}
+    <p>No reports yet.</p>
+{% endfor %}
+
+</body>
+</html>

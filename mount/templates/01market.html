@@ -340,24 +340,6 @@
         <!-- LEFT PANEL -->
         <aside class="left">
 
-            <!-- BALANCE CARD -->
-            <div class="profile-card">
-                <div class="profile-username">{{ user.username }}</div>
-
-                <div class="label">Email</div>
-                <div class="value">{{ user.email }}</div>
-
-                <div class="label">Phone</div>
-                <div class="value">{{ detail.phone_number }}</div>
-
-                <div class="label">Account No.</div>
-                <div class="value">{{ account.account_number }}</div>
-
-                <div class="divider"></div>
-
-                <div class="balance-label">Available Balance</div>
-                <div class="balance-amount">₦ {{ account.balance }}</div>
-            </div>
 
             <!-- QUICK NAV CARD -->
             <div class="card">
@@ -365,8 +347,8 @@
                 <div class="card-sub">Navigate your account</div>
 
                 <div class="nav-links">
-                    <a href="{% url 'payment' %}" class="nav-link-item">
-                        <span class="nav-icon">💳</span> Payment
+                    <a href="{% url 'home' %}" class="nav-link-item">
+                        <span class="nav-icon">🏠</span> home
                     </a>
                     <a href="{% url 'report' %}" class="nav-link-item">
                         <span class="nav-icon">📊</span> Reports
@@ -386,7 +368,7 @@
             <div class="market-hero">
                 <div class="market-icon">🛍️</div>
                 <h2>Kolor Market</h2>
-                <p>Browse and shop products from our marketplace. Tap the button below to visit the market and start exploring.</p>
+                <p>Browse and shop products from our marketplace. Tap the button below to visit the market and start exploring.  Funds used here is not concerned with your main account balance.</p>
 
                 <!--
                     ✏️  REPLACE THE href BELOW WITH YOUR MARKET URL

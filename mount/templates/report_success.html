@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kolor - Report</title>
+<title>Kolor - Report Submitted</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 
@@ -44,107 +45,82 @@
     background: #fff;
     width: 100%;
     max-width: 480px;
-    padding: 36px 32px;
+    padding: 40px 32px;
     border-radius: 16px;
     border: 1.5px solid #e5e7eb;
     box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    text-align: center;
+  }
+
+  .success-icon {
+    font-size: 60px;
+    margin-bottom: 18px;
   }
 
   .card-title {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 900;
     color: #1a1a1a;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
   }
 
   .card-sub {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-bottom: 24px;
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin-bottom: 28px;
   }
 
-  textarea {
-    width: 100%;
-    height: 160px;
-    padding: 14px 16px;
-    background: #f9fafb;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    color: #1a1a1a;
-    font-size: 15px;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    resize: none;
-    transition: border-color 0.25s;
-    line-height: 1.6;
-  }
-
-  textarea::placeholder {
-    color: #b0b8c4;
-  }
-
-  textarea:focus {
-    border-color: #3b82f6;
-    background: #fff;
-  }
-
-  .btn-send {
+  .btn-home {
+    display: inline-block;
     width: 100%;
     padding: 14px;
-    border: none;
     border-radius: 10px;
+    text-decoration: none;
     background: linear-gradient(90deg, #4facfe 0%, #0078ff 100%);
     color: white;
     font-size: 16px;
     font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    margin-top: 14px;
     transition: opacity 0.2s, transform 0.15s;
-    letter-spacing: 0.3px;
   }
 
-  .btn-send:hover {
+  .btn-home:hover {
     opacity: 0.9;
     transform: translateY(-1px);
   }
 
-  .btn-send:active {
+  .btn-home:active {
     transform: translateY(0);
   }
 </style>
+
 </head>
 <body>
-<a href="{% url 'my_reports' %}">View My Reports</a>
+
   <div class="logo-wrap">
     <div class="brand-name">kolor</div>
   </div>
 
   <div class="card">
-    <div class="card-title">Report</div>
-    <div class="card-sub">Describe the issue and we'll look into it. Only affairs of market are concerned.</div>
+    <div class="success-icon">✅</div>
 
-    {% for report in reports %}
-<div class="report-box">
-    <p><strong>Your Report:</strong></p>
-    <p>{{ report.message }}</p>
-
-    {% if report.admin_reply %}
-        <hr>
-        <p><strong>Admin Reply:</strong></p>
-        <p>{{ report.admin_reply }}</p>
-    {% else %}
-        <p><em>Awaiting response...</em></p>
-    {% endif %}
+```
+<div class="card-title">
+  Report Submitted
 </div>
-{% endfor %}
 
-    <form method="POST">
-      {% csrf_token %}
-      <textarea name="message" placeholder="Write your report here..." required></textarea>
-      <button class="btn-send" type="submit">Send Report</button>
-    </form>
+<div class="card-sub">
+  Your report has been received successfully.
+  Our team will review it and take appropriate action if necessary.
+</div>
+
+<a href="{% url 'home' %}" class="btn-home">
+  Return to Home
+</a>
+```
+
   </div>
 
 </body>
 </html>
+

@@ -16,7 +16,9 @@ urlpatterns = [
     # ── Core pages ────────────────────────────────────────────────────────
     path("home/",         views.home,          name="home"),
     path("payment/",      views.payment,       name="payment"),
-    path("report/",       views.report,        name="report"),
+    path("report/",       views.report, name="report"),
+    path("report-success/", views.report_success, name="report_success"),
+    path("my-reports/", views.my_reports, name="my_reports"),
     path("success/",      views.success,       name="success"),
     path("succed-data/",  views.succed_data,   name="succed_data"),
     path("succed-trans/", views.succed_trans,  name="succed_trans"),
