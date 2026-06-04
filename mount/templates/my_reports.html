@@ -1,30 +1,350 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Reports</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolor - My Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00c165;
+            --green-dark: #009e52;
+            --green-pale: #e6f9f0;
+            --navy: #0a1628;
+            --navy2: #112240;
+            --slate: #64748b;
+            --border: #e8ecf0;
+            --bg: #f4f6f9;
+            --white: #fff;
+            --red: #ef4444;
+            --amber: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+        /* ── HEADER ── */
+        .header {
+            background: linear-gradient(160deg, #0a1628 0%, #0d2847 60%, #0f3460 100%);
+            padding: 0 20px 28px; position: relative; overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: -60px; right: -60px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(0,193,101,.12); pointer-events: none;
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: -40px; left: -40px;
+            width: 140px; height: 140px; border-radius: 50%;
+            background: rgba(0,193,101,.07); pointer-events: none;
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 0 20px; position: relative; z-index: 2;
+        }
+        .back-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,.1); border: none; color: white;
+            font-size: 18px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; text-decoration: none;
+        }
+        .page-title { font-size: 17px; font-weight: 700; color: white; }
+        .avatar-small {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--green); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 14px; color: white;
+        }
+
+        /* header summary row */
+        .header-summary {
+            position: relative; z-index: 2;
+            display: flex; gap: 10px;
+        }
+        .summary-pill {
+            flex: 1; background: rgba(255,255,255,.08); border-radius: 12px;
+            padding: 12px 14px; border: 1px solid rgba(255,255,255,.1);
+        }
+        .summary-pill .sp-label { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px; }
+        .summary-pill .sp-val   { font-size: 20px; font-weight: 700; color: white; font-family: 'DM Mono', monospace; }
+        .summary-pill.green-pill { background: rgba(0,193,101,.15); border-color: rgba(0,193,101,.3); }
+        .summary-pill.green-pill .sp-val { color: #6ee7b7; }
+
+        /* ── BODY ── */
+        .body { padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 16px; }
+
+        /* ── NEW REPORT FORM ── */
+        .compose-card {
+            background: var(--white); border-radius: 16px; border: 1.5px solid var(--border);
+            box-shadow: 0 4px 24px rgba(0,0,0,.05); overflow: hidden;
+        }
+        .compose-header {
+            padding: 16px 18px 0; display: flex; align-items: center; gap: 10px;
+        }
+        .compose-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--green-pale); display: flex; align-items: center;
+            justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .compose-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+        .compose-sub   { font-size: 11px; color: var(--slate); margin-top: 1px; font-weight: 500; }
+
+        .compose-body { padding: 14px 18px 18px; }
+        textarea {
+            width: 100%; min-height: 100px; padding: 12px 14px;
+            background: #f9fafb; border: 1.5px solid var(--border);
+            border-radius: 12px; color: var(--navy); font-size: 14px;
+            font-family: 'DM Sans', sans-serif; font-weight: 500;
+            outline: none; resize: vertical; transition: border-color .25s;
+            line-height: 1.6;
+        }
+        textarea:focus { border-color: var(--green); background: var(--white); }
+        textarea::placeholder { color: #b0b8c4; font-weight: 400; }
+
+        .btn-submit {
+            width: 100%; margin-top: 10px; padding: 13px; border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white; font-size: 14px; font-weight: 700;
+            font-family: 'DM Sans', sans-serif; cursor: pointer;
+            transition: opacity .2s, transform .15s; display: flex;
+            align-items: center; justify-content: center; gap: 7px;
+        }
+        .btn-submit:hover  { opacity: .9; transform: translateY(-1px); }
+        .btn-submit:active { transform: translateY(0); }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            font-size: 13px; font-weight: 700; color: var(--navy);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .section-count {
+            font-size: 11px; font-weight: 700; padding: 2px 8px;
+            border-radius: 20px; background: var(--green-pale); color: var(--green-dark);
+        }
+
+        /* ── REPORT CARD ── */
+        .report-card {
+            background: var(--white); border-radius: 16px; border: 1.5px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0,0,0,.04); overflow: hidden;
+            transition: border-color .2s;
+        }
+        .report-card.has-reply { border-color: #bbf7d0; }
+
+        .report-user-block {
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--bg);
+        }
+        .report-meta {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+        .meta-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #0078ff);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
+        }
+        .meta-info { flex: 1; }
+        .meta-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+        .meta-date { font-size: 11px; color: var(--slate); font-weight: 500; margin-top: 1px; }
+        .status-badge {
+            font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+            flex-shrink: 0;
+        }
+        .status-badge.pending  { background: #fef9c3; color: #92400e; }
+        .status-badge.replied  { background: var(--green-pale); color: var(--green-dark); }
+
+        .report-message {
+            font-size: 14px; color: #374151; line-height: 1.65; font-weight: 500;
+            background: #f9fafb; padding: 12px 14px; border-radius: 10px;
+        }
+
+        /* admin reply block */
+        .reply-block {
+            padding: 14px 18px 16px;
+            background: linear-gradient(135deg, #f0fdf4, #f9fafb);
+        }
+        .reply-header {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+        .reply-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--green); display: flex; align-items: center;
+            justify-content: center; font-size: 14px; flex-shrink: 0;
+        }
+        .reply-label { font-size: 12px; font-weight: 700; color: var(--green-dark); }
+        .reply-badge {
+            font-size: 10px; font-weight: 700; padding: 2px 7px;
+            background: var(--green-pale); color: var(--green-dark);
+            border-radius: 20px; margin-left: auto;
+        }
+        .reply-message {
+            font-size: 14px; color: #166534; line-height: 1.65; font-weight: 500;
+            background: rgba(0,193,101,.08); border: 1px solid rgba(0,193,101,.2);
+            padding: 12px 14px; border-radius: 10px;
+        }
+
+        /* awaiting block */
+        .awaiting-block {
+            padding: 14px 18px 16px; display: flex; align-items: center; gap: 10px;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .awaiting-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+            animation: pulse 1.6s ease-in-out infinite; flex-shrink: 0;
+        }
+        .awaiting-text { font-size: 13px; color: var(--slate); font-weight: 600; }
+
+        /* ── EMPTY STATE ── */
+        .empty-card {
+            text-align: center; padding: 44px 20px;
+            background: var(--white); border-radius: 16px;
+            border: 1.5px solid var(--border);
+        }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+        .empty-sub   { font-size: 13px; color: var(--slate); font-weight: 500; line-height: 1.5; }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px;
+            background: white; border-top: 1.5px solid var(--border);
+            display: flex; justify-content: space-around;
+            padding: 10px 0 max(env(safe-area-inset-bottom), 8px); z-index: 200;
+        }
+        .nav-item {
+            text-decoration: none; color: var(--slate); font-size: 10px; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 12px;
+        }
+        .nav-item.active { color: var(--green); }
+        .nav-icon-wrap {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .nav-item.active .nav-icon-wrap { background: var(--green-pale); }
+    </style>
 </head>
 <body>
 
-<h2>My Reports</h2>
+<!-- HEADER -->
+<div class="header">
+    <div class="topbar">
+        <a href="{% url 'home' %}" class="back-btn">←</a>
+        <span class="page-title">My Reports</span>
+        <div class="avatar-small">{{ user.username|slice:":1"|upper }}</div>
+    </div>
 
-{% for report in reports %}
-<div class="report-box" style="border:1px solid #ddd; padding:15px; margin-bottom:10px;">
-    
-    <p><strong>Your Report:</strong></p>
-    <p>{{ report.message }}</p>
+    <div class="header-summary">
+        <div class="summary-pill">
+            <div class="sp-label">Total Reports</div>
+            <div class="sp-val">{{ reports|length }}</div>
+        </div>
+        <div class="summary-pill green-pill">
+            <div class="sp-label">Replied</div>
+            <div class="sp-val">{{ reports|length }}</div>
+        </div>
+    </div>
+</div>
 
-    {% if report.admin_reply %}
-        <hr>
-        <p><strong>Admin Reply:</strong></p>
-        <p>{{ report.admin_reply }}</p>
+<!-- BODY -->
+<div class="body">
+
+    <!-- COMPOSE FORM -->
+    <div class="compose-card">
+        <div class="compose-header">
+            <div class="compose-icon">✉️</div>
+            <div>
+                <div class="compose-title">Send a Report</div>
+                <div class="compose-sub">Describe your issue and we'll get back to you.</div>
+            </div>
+        </div>
+        <div class="compose-body">
+            <form method="POST" action="{% url 'report' %}">
+                {% csrf_token %}
+                <textarea name="message" placeholder="Describe your issue or request here…" required></textarea>
+                <button type="submit" class="btn-submit">
+                    📨 Send Report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- REPORT LIST -->
+    {% if reports %}
+    <div class="section-title">
+        Report History
+        <span class="section-count">{{ reports|length }}</span>
+    </div>
+
+    {% for report in reports %}
+    <div class="report-card {% if report.admin_reply %}has-reply{% endif %}">
+
+        <!-- User message -->
+        <div class="report-user-block">
+            <div class="report-meta">
+                <div class="meta-avatar">{{ user.username|slice:":1"|upper }}</div>
+                <div class="meta-info">
+                    <div class="meta-name">{{ user.username }}</div>
+                    <div class="meta-date">
+                        {% if report.created_at %}{{ report.created_at|date:"d M Y · H:i" }}{% else %}Just now{% endif %}
+                    </div>
+                </div>
+                {% if report.admin_reply %}
+                    <span class="status-badge replied">✓ Replied</span>
+                {% else %}
+                    <span class="status-badge pending">⏳ Pending</span>
+                {% endif %}
+            </div>
+            <div class="report-message">{{ report.message }}</div>
+        </div>
+
+        <!-- Admin reply or awaiting -->
+        {% if report.admin_reply %}
+        <div class="reply-block">
+            <div class="reply-header">
+                <div class="reply-avatar">🛡️</div>
+                <span class="reply-label">Kolor Support</span>
+                <span class="reply-badge">Official Reply</span>
+            </div>
+            <div class="reply-message">{{ report.admin_reply }}</div>
+        </div>
+        {% else %}
+        <div class="awaiting-block">
+            <div class="awaiting-dot"></div>
+            <span class="awaiting-text">Awaiting response from support…</span>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
     {% else %}
-        <p><em>Awaiting response...</em></p>
+    <div class="empty-card">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No reports yet</div>
+        <div class="empty-sub">Use the form above to send your first report.<br>Our team usually replies within 24 hours.</div>
+    </div>
     {% endif %}
 
 </div>
-{% empty %}
-    <p>No reports yet.</p>
-{% endfor %}
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav-item">
+        <div class="nav-icon-wrap">🏠</div>Home
+    </a>
+    <a href="{% url 'payment' %}" class="nav-item">
+        <div class="nav-icon-wrap">💳</div>Payment
+    </a>
+    <a href="{% url 'market' %}" class="nav-item">
+        <div class="nav-icon-wrap">🛍️</div>Market
+    </a>
+    <a href="https://francistechsms.store" target="_blank" rel="noopener noreferrer" class="nav-item">
+        <div class="nav-icon-wrap">📊</div>Buylogs
+    </a>
+    <a href="https://wa.me/2347039190183" class="nav-item active">
+        <div class="nav-icon-wrap">💬</div>Support
+    </a>
+</nav>
 
 </body>
 </html>
